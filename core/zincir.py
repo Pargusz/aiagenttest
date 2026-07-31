@@ -102,9 +102,18 @@ def _etiketli_sayilar(soru):
     (dogrusu 2πr/T = 1,57 m/s).
     """
     try:
-        return [(d, b, e) for e, d, b in (nlu.adli_degerler(soru) or [])]
+        ham = nlu.adli_degerler(soru) or []
     except Exception:
         return []
+    # Etiket, sayiya KOMSU kelimelerdir. Olculdu: "surtunme katsayisi
+    # 0.4 olan 10 kg cisme" ifadesinde 10 kg'in etiketi "surtunme
+    # katsayisi 0.4 olan" diye cikiyor, "surtunme katsayisi" baska bir
+    # buyuklugu (mu) adlandirdigi icin kutle atamasi reddediliyordu.
+    out = []
+    for etiket, d, b in ham:
+        kelimeler = (etiket or "").split()
+        out.append((d, b, " ".join(kelimeler[-3:])))
+    return out
 
 
 def _atama_uygun_mu(f, sym, deger, etiketliler, tum_adlar):
@@ -205,15 +214,29 @@ def _hedef_adaylari(soru, adaylar, bilinen, en_fazla=5):
     """
     out, gorulen = [], set()
     for _skor, f in adaylar:
+        # Formulun adi gecen TUM degiskenlerini sirayla dene; bilinen
+        # olanlari atla. Olculdu: surtunme sorusunda "katsayi" hedef
+        # seciliyor, oysa o verilmis; "kuvvet" ise atlaniyordu.
         try:
-            h = problem.hedef_tahmin(f, soru)
+            sirali = problem.hedef_siralamasi(f, soru)
         except Exception:
-            h = None
-        if h and _uyar(bilinen, h, f["vars"][h][2]) is None:
+            sirali = []
+        if not sirali:
+            try:
+                h = problem.hedef_tahmin(f, soru)
+                sirali = [h] if h else []
+            except Exception:
+                sirali = []
+        for h in sirali:
+            if h not in f["vars"]:
+                continue
+            if _uyar(bilinen, h, f["vars"][h][2]) is not None:
+                continue          # zaten biliniyor: hedef olamaz
             anahtar = (h, f["id"])
             if anahtar not in gorulen:
                 gorulen.add(anahtar)
                 out.append((h, f))
+            break
     for _skor, f in adaylar:
         eksik = [s for s in f["vars"]
                  if _uyar(bilinen, s, f["vars"][s][2]) is None]
@@ -245,8 +268,7 @@ def _adim_coz(f, bilinen, sabitler):
     gercel = [x for x in cozumler if isinstance(x, float)]
     if not gercel:
         return None
-    pozitif = [x for x in gercel if x >= 0]
-    deger = (pozitif or gercel)[0]
+    deger = problem.kok_sec(f, hedef, gercel)
     ok, _sebep = problem.makul_mu(f, hedef, deger)
     if not ok:
         # Diger kok makul olabilir (ikinci dereceden denklemler)
@@ -417,6 +439,35 @@ def coz(soru, lang="tr", max_adim=MAX_ADIM):
                     adimlar.append((f, sym, deger, girdiler))
                     return True
             kullanilan.discard(f["id"])
+
+        # Havuz tukendi. Son care: TUM tabanda, bu sembolu veren ve
+        # DIGER butun degiskenleri zaten bilinen bir baginti var mi?
+        # Bu genisleme guvenlidir: hicbir sey tahmin etmez, yalnizca
+        # elde olan degerlerle tek adimda sonuc veren bir baginti arar.
+        # Olculdu: "10 m yuksekten birakilan 2 kg cismin kinetik
+        # enerjisi" sorusunda hizi veren v = sqrt(2gh) bagintisi havuza
+        # girmiyordu (soru kinetik enerji soruyor) ve zincir kuruluyordu.
+        if derinlik > 0:
+            for f in formulas.FORMULAS:
+                if f["id"] in kullanilan or sym not in f["vars"]:
+                    continue
+                if f.get("uretilmis"):
+                    continue
+                if not _birim_ayni(f["vars"][sym][2], birim):
+                    continue
+                sabitler = _sabit_doldur(f, bilinen)
+                eksikler = [v for v in f["vars"]
+                            if v != sym and v not in sabitler
+                            and _uyar(bilinen, v, f["vars"][v][2]) is None]
+                if eksikler:
+                    continue          # tahmin yok: hepsi bilinmeli
+                sonuc = _adim_coz(f, bilinen, sabitler)
+                if sonuc and sonuc[0] == sym:
+                    _s, deger, girdiler = sonuc
+                    bilinen[sym] = (deger, f["vars"][sym][2])
+                    kullanilan.add(f["id"])
+                    adimlar.append((f, sym, deger, girdiler))
+                    return True
         return False
 
     son, hedef, hedef_f = None, None, None

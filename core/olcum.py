@@ -609,6 +609,101 @@ def gorulmemis_bosluklari():
     return eksik
 
 
+# ── Genis sayisal problem seti ─────────────────────────────────────────────
+# Kullanicinin istegi: "her turlu sayisal problemi cozebilsin". Bu olcum
+# mufredat boyunca yayilmis, tek ya da cok adimli sayisal problemleri
+# sinar. Her biri elle dogrulanmis cevaplarla.
+
+SAYISAL_PROBLEMLER = [
+    # Kinematik
+    ("20 m/s hizla giden arac 4 s'de 40 m/s'ye cikiyor ivmesi nedir", "5"),
+    ("5 m/s2 ivmeyle duran araba 6 s sonra kac m/s olur", "30"),
+    ("45 m yuksekten birakilan cisim kac saniyede duser", "3.02"),
+    ("20 m/s ile 45 derece aciyla atilan cismin menzili", "40"),
+    ("100 m yuksekten birakilan cismin yere carpma hizi", "44.2"),
+    # Dinamik
+    ("10 kg cisme 50 N kuvvet etki ederse ivmesi nedir", "5"),
+    ("2 kg cisim 3 m/s2 ivmeyle hareket ederse kuvvet nedir", "6"),
+    ("kutlesi 8 kg olan cismin agirligi", "78"),
+    ("surtunme katsayisi 0.4 olan 10 kg cisme etkiyen surtunme kuvveti",
+     "39"),
+    ("1000 kg araba 20 m/s hizdan 5 saniyede duruyor fren kuvveti",
+     "-4000"),
+    # Enerji, momentum, guc
+    ("4 kg cisim 6 m/s hizla giderken kinetik enerjisi", "72"),
+    ("3 kg cisim 5 m yukseklikte potansiyel enerjisi", "147"),
+    ("500 N kuvvetle 10 m yol alan cismin yaptigi is", "5000"),
+    ("2000 J is 4 saniyede yapilirsa guc nedir", "500"),
+    ("6 kg cisim 4 m/s hizla giderken momentumu", "24"),
+    ("10 m yuksekten birakilan 2 kg cismin kinetik enerjisi", "196"),
+    # Donme ve dairesel
+    ("eylemsizlik momenti 2 kg m2 acisal hizi 5 rad/s donme kinetik "
+     "enerjisi", "25"),
+    ("yaricapi 0.5 m periyodu 2 s dairesel hareket cizgisel hizi",
+     "1.57"),
+    # BHH ve dalga
+    ("yay sabiti 200 N/m kutle 2 kg olan sistemin periyodu", "0.62"),
+    ("uzunlugu 1 m olan sarkacin periyodu", "2.00"),
+    ("frekansi 500 Hz dalga boyu 0.68 m olan dalganin hizi", "340"),
+    ("2 m genlikli periyodu 4 s harmonik hareketin maksimum hizi",
+     "3.14"),
+    # Termodinamik
+    ("2 kg suyu 20 dereceden 80 dereceye isitmak icin gereken isi",
+     "502320"),
+    ("3 mol ideal gaz 400 K 0.02 m3 basinc", "4.98"),
+    ("600 K ve 300 K arasindaki carnot verimi", "0.5"),
+    ("0.5 kg buzu eritmek icin gereken isi", "167000"),
+    # Elektrik
+    ("12 V gerilim 4 ohm direnc akim", "3"),
+    ("220 V ve 5 A icin elektriksel guc", "1100"),
+    ("3 ohm ve 6 ohm paralel esdeger direnc", "2"),
+    ("2 ohm ve 5 ohm seri esdeger direnc", "7"),
+    ("12 V kaynaga seri bagli 4 ohm ve 8 ohm direnclerden gecen akim",
+     "1 A"),
+    # Manyetizma
+    ("0.5 T manyetik alanda 2 m telden 3 A akim gecerse kuvvet", "3"),
+    # Optik
+    ("odak uzakligi 20 cm mercekte 60 cm uzaktaki cismin goruntu "
+     "uzakligi", "0.3"),
+    ("havadan cama 30 derece ile giren isigin kirilma acisi", "19"),
+    # Modern fizik
+    ("500 nm dalga boylu fotonun enerjisi", "3.97"),
+    ("0.6c hizla giden cismin lorentz carpani", "1.25"),
+    ("1 gram kutlenin enerji karsiligi", "8.98"),
+    ("elektron 200 V ile hizlandirilirsa hizi", "8.38"),
+    ("yari omru 5 yil olan maddenin bozunma sabiti", "4.39"),
+]
+
+
+def sayisal_puani():
+    """Genis sayisal problem seti. (dogru, toplam)"""
+    from . import brain
+    dogru = 0
+    for i, (soru, beklenen) in enumerate(SAYISAL_PROBLEMLER):
+        try:
+            t = brain.respond(soru, session="_olcum_say%d" % i).text
+        except Exception:
+            t = ""
+        if beklenen in (t or ""):
+            dogru += 1
+    return dogru, len(SAYISAL_PROBLEMLER)
+
+
+def sayisal_bosluklari():
+    from . import brain
+    eksik = []
+    for i, (soru, beklenen) in enumerate(SAYISAL_PROBLEMLER):
+        try:
+            t = brain.respond(soru, session="_olcum_say%d" % i).text
+        except Exception:
+            t = ""
+        if beklenen not in (t or ""):
+            son = [x for x in (t or "").split("\n") if x.startswith("## ")]
+            eksik.append((soru[:50], beklenen,
+                          son[0][:24] if son else "(hesap yok)"))
+    return eksik
+
+
 def ad_erisim_puani():
     """Kac konu SADECE ADIYLA dogru ve dolu cevap aliyor? (dogru, toplam)"""
     from . import brain

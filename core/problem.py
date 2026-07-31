@@ -161,9 +161,7 @@ def _sembolik_coz(f, bilinen, hedef):
     gercel = [x for x in cozumler if isinstance(x, float)]
     if not gercel:
         return None
-    # Fiziksel buyuklukte pozitif kok
-    pozitif = [x for x in gercel if x >= 0]
-    return (pozitif or gercel)[0]
+    return kok_sec(f, hedef, gercel)
 
 
 # ── Sorulan buyugu belirleme ────────────────────────────────────────────────
@@ -218,8 +216,13 @@ def hedef_tahmin(f, soru, lang="tr"):
         # "a", ivme sembolu sanildi ve hedef yanlis secildi.
         if nlu.norm(sym) in _KELIME_SEMBOL:
             continue
-        kalip = r"(?<![\w])%s(?:'\w*|\w{0,2})?(?![\w])" % re.escape(
-            nlu.norm(sym))
+        # Tek harfli sembole EK verilmez: "V" sembolu Turkce "ve"
+        # kelimesini tutuyordu ve "220 V ve 5 A" sorusunda hedef V
+        # seciliyordu (olculdu). Iki harften uzun sembollerde ek serbest.
+        _s = nlu.norm(sym)
+        kalip = ((r"(?<![\w])%s(?![\w])" % re.escape(_s)) if len(_s) <= 1
+                 else (r"(?<![\w])%s(?:'\w*|\w{0,2})?(?![\w])"
+                       % re.escape(_s)))
         for m in re.finditer(kalip, n):
             onceki = n[:m.start()].rstrip()
             if onceki and re.search(r"[\d.,]$", onceki):
@@ -282,6 +285,33 @@ def hedef_tahmin(f, soru, lang="tr"):
     return adaylar[0][1]
 
 
+def hedef_siralamasi(f, soru, lang="tr"):
+    """Adi soruda gecen TUM degiskenler, en olasidan az olasiya.
+
+    hedef_tahmin tek bir sembol dondurur; ama soruda birden fazla
+    buyuklugun adi gecebilir. Olculdu: "surtunme katsayisi 0.4 olan
+    10 kg cisme etkiyen surtunme kuvveti" sorusunda hem katsayi hem
+    kuvvet adlandirilmis; uzun olan (katsayi) kazandi, oysa o VERILMIS.
+    Cagiran taraf bilinenleri eleyip siradakini secebilmeli.
+    """
+    n = nlu.norm(soru or "")
+    adaylar = []
+    for sym, (tr_ad, en_ad, _u) in f["vars"].items():
+        for ad in (tr_ad, en_ad):
+            a = nlu.norm(ad or "").strip()
+            if len(a) < 4:
+                continue
+            if re.search(_yumusak_kalip(a), n):
+                adaylar.append((len(a), sym))
+                break
+    adaylar.sort(reverse=True)
+    out = []
+    for _p, sym in adaylar:
+        if sym not in out:
+            out.append(sym)
+    return out
+
+
 # ── Senaryo bilgisi ─────────────────────────────────────────────────────────
 # Bazi ifadeler bir DEGERI dogrudan belirtir: "yukari atiliyor" demek
 # ivmenin -g olmasi demektir. Bu fizik bilgisidir, metinden cikarilamaz.
@@ -331,6 +361,148 @@ SENARYOLAR = [
 ]
 
 
+# ── Malzeme ve baglam sabitleri ────────────────────────────────────────────
+# Olculdu: "2 kg suyu 20 dereceden 80 dereceye isitmak icin gereken isi"
+# sorusu cozulemiyordu, cunku SUYUN OZGUL ISISI bilinmiyordu. Ogrenci
+# bunu tablodan bakar; sistemin de bilmesi gerekir. Ayni sey buzun
+# erime isisi, camin kirilma indisi, hidrojenin atom numarasi icin de
+# gecerli.
+#
+# Bu degerler FIZIK bilgisidir ve elle yazilmistir; metinden cikarilamaz.
+MALZEME = [
+    {"kw": r"\bsu(yu|yun|ya|da)?\b|\bwater\b",
+     "degerler": {"c": 4186.0},
+     "not_tr": "Suyun özgül ısısı `c = 4186 J/(kg·K)` alındı.",
+     "not_en": "Specific heat of water: 4186 J/(kg K)."},
+    {"kw": r"\bbuz(u|un|dan)?\b|\bice\b",
+     "degerler": {"L": 334000.0, "c": 2100.0},
+     "not_tr": "Buzun erime gizli ısısı `L = 3,34×10⁵ J/kg`, özgül ısısı "
+               "`c = 2100 J/(kg·K)` alındı.",
+     "not_en": "Ice: latent heat 3.34e5 J/kg, specific heat 2100."},
+    {"kw": r"\bbuhar(lastir|lasma)|\bkaynat|\bevaporat|\bboil",
+     "degerler": {"L": 2260000.0},
+     "not_tr": "Suyun buharlaşma gizli ısısı `L = 2,26×10⁶ J/kg` alındı.",
+     "not_en": "Latent heat of vaporisation: 2.26e6 J/kg."},
+    {"kw": r"\bhavadan cam\w*|\bhava\w*.{0,12}cam\w*|"
+           r"\bair.{0,8}glass\b",
+     "degerler": {"n1": 1.0, "n2": 1.5},
+     "not_tr": "Havanın kırılma indisi `n₁ = 1,00`, camınki `n₂ = 1,50` "
+               "alındı.",
+     "not_en": "Air n1 = 1.00, glass n2 = 1.50."},
+    {"kw": r"\bcamdan hava\w*|\bglass.{0,8}air\b",
+     "degerler": {"n1": 1.5, "n2": 1.0},
+     "not_tr": "Camın kırılma indisi `n₁ = 1,50`, havanınki `n₂ = 1,00` "
+               "alındı.",
+     "not_en": "Glass n1 = 1.50, air n2 = 1.00."},
+    {"kw": r"\bhavadan su\w*|\bhava\w*.{0,12}\bsu(ya|da)\b",
+     "degerler": {"n1": 1.0, "n2": 1.33},
+     "not_tr": "Hava `n₁ = 1,00`, su `n₂ = 1,33` alındı.",
+     "not_en": "Air n1 = 1.00, water n2 = 1.33."},
+    {"kw": r"\bhidrojen\b|\bhydrogen\b",
+     "degerler": {"Z": 1.0},
+     "not_tr": "Hidrojen için atom numarası `Z = 1`.",
+     "not_en": "Hydrogen: Z = 1."},
+    {"kw": r"\bdusey (yukari )?(atil|firlat)|\bdik(ey)? yukari\b|"
+           r"\bvertically upward\b",
+     "degerler": {"theta": 1.5707963268},
+     "not_tr": "Düşey atış: `θ = 90°`.",
+     "not_en": "Vertical throw: theta = 90 degrees."},
+    {"kw": r"\bdur(gun|an|uyorken)\b|"
+           r"\bilk hiz(i|siz)? (sifir|yok)\b|\bfrom rest\b|"
+           r"\bstarting from rest\b|\bharekete gec\w*",
+     "degerler": {"v0": 0.0},
+     "not_tr": "Durgun halden başlıyor: `v₀ = 0`.",
+     "not_en": "Starts from rest: v0 = 0."},
+    {"kw": r"\bdunya (yuzey|yuzeyinden)|\bearth'?s surface\b",
+     "degerler": {"M": 5.972e24, "R": 6.371e6, "r": 6.371e6},
+     "not_tr": "Dünya için `M = 5,97×10²⁴ kg`, `R = 6,37×10⁶ m` alındı.",
+     "not_en": "Earth: M = 5.97e24 kg, R = 6.37e6 m."},
+]
+
+
+# "20 dereceden 80 dereceye" gibi ifadeler bir FARK bildirir. Olculdu:
+# "2 kg suyu 20 dereceden 80 dereceye isitmak" sorusunda sicaklik farki
+# (dT = 60 K) hic okunamiyordu ve isi hesabi yapilamiyordu.
+_FARK = re.compile(
+    r"(\d+(?:[.,]\d+)?)\s*(?:derece|°|C|K|santigrat)?\s*"
+    r"(?:den|dan|'den|'dan)\s+"
+    r"(\d+(?:[.,]\d+)?)\s*(?:derece|°|C|K|santigrat)?\s*"
+    r"(?:ye|ya|'ye|'ya|e|a)\b", re.I)
+
+
+def fark_degerleri(soru):
+    """'X dereceden Y dereceye' -> {dT: Y-X}. Yoksa bos."""
+    m = _FARK.search(soru or "")
+    if not m:
+        return {}
+    try:
+        a = float(m.group(1).replace(",", "."))
+        b = float(m.group(2).replace(",", "."))
+    except ValueError:
+        return {}
+    return {"dT": b - a, "dt": b - a}
+
+
+# Isik hizinin kati olarak verilen hizlar: "0.6c", "0,8 c".
+_ISIK_KATI = re.compile(r"(\d+(?:[.,]\d+)?)\s*c\b(?!\w)")
+
+
+def isik_hizi_degerleri(soru):
+    """'0.6c' -> {v: 1.8e8}. Olculdu: bu bicim hic okunamiyordu."""
+    m = _ISIK_KATI.search(soru or "")
+    if not m:
+        return {}
+    try:
+        kat = float(m.group(1).replace(",", "."))
+    except ValueError:
+        return {}
+    if not (0 < kat <= 1):
+        return {}
+    return {"v": kat * 299792458.0}
+
+
+# Soruda acikca yazilmayan ama FIZIKTEN bilinen acilar. Bir kuvvet
+# "yol boyunca" uygulanmissa aci sifirdir; manyetik alandaki tel
+# aksi soylenmedikce alana diktir.
+VARSAYILAN_ACI = [
+    (r"\bis\b|\byaptigi is\b|\byapilan is\b|\bwork done\b",
+     "theta", 0.0,
+     "Kuvvet yol boyunca kabul edildi: `θ = 0`, `cos θ = 1`.",
+     "Force taken along the displacement: theta = 0."),
+    (r"\bmanyetik alan\w*.{0,40}\btel\w*|\btel\w*.{0,40}"
+     r"\bmanyetik\w*|\bakim tasiyan tel\w*",
+     "theta", 1.5707963268,
+     "Tel alana dik kabul edildi: `θ = 90°`, `sin θ = 1`.",
+     "Wire taken perpendicular to the field: theta = 90 degrees."),
+]
+
+
+def varsayilan_aci(soru, f):
+    """Formul bir aci istiyorsa ve soruda yoksa fizikten doldur."""
+    n = nlu.norm(soru or "")
+    out, notlar = {}, []
+    if re.search(r"\d+\s*(derece|°)", n):
+        return out, notlar          # aci acikca verilmis
+    for kalip, sym, deger, tr, en in VARSAYILAN_ACI:
+        if sym in (f or {}).get("vars", {}) and re.search(kalip, n):
+            out[sym] = deger
+            notlar.append({"not_tr": tr, "not_en": en})
+            break
+    return out, notlar
+
+
+def malzeme_degerleri(soru):
+    """Metnin ima ettigi malzeme sabitleri: (degerler, notlar)."""
+    n = nlu.norm(soru or "")
+    degerler, notlar = {}, []
+    for m in MALZEME:
+        if re.search(m["kw"], n):
+            for k, v in m["degerler"].items():
+                degerler.setdefault(k, v)
+            notlar.append(m)
+    return degerler, notlar
+
+
 def senaryo_degerleri(soru):
     """Ifadenin ima ettigi degerleri dondur: (degerler, notlar)."""
     n = nlu.norm(soru or "")
@@ -339,6 +511,17 @@ def senaryo_degerleri(soru):
         if re.search(sen["kw"], n):
             degerler.update(sen["degerler"])
             notlar.append(sen)
+    # Malzeme sabitleri (suyun ozgul isisi, camin kirilma indisi...)
+    md, mn = malzeme_degerleri(soru)
+    for k, v in md.items():
+        degerler.setdefault(k, v)
+    notlar.extend(mn)
+    # "20 dereceden 80 dereceye" -> dT = 60
+    for k, v in fark_degerleri(soru).items():
+        degerler.setdefault(k, v)
+    # "0.6c" -> v = 1.8e8 m/s
+    for k, v in isik_hizi_degerleri(soru).items():
+        degerler.setdefault(k, v)
     return degerler, notlar
 
 
@@ -403,6 +586,25 @@ def girdi_denetle(f, sayisal, lang="tr"):
         "Değeri düzeltip tekrar sorarsanız hesabı yaparım.",
         "Fix the value and ask again.") + "_")
     return "\n".join(satirlar)
+
+
+def kok_sec(f, hedef, kokler):
+    """Birden fazla gercel kok varsa FIZIKSEL olani sec.
+
+    Olculdu: "havadan cama 30 derece ile giren isigin kirilma acisi"
+    sorusunda SymPy once t2 = π − asin(...) kokunu donduruyordu; bu
+    matematiksel olarak dogru ama 160 derecelik bir kirilma acisi
+    fiziksel degildir. Kirilma ve gelme acilari dar acidir.
+    """
+    if not kokler:
+        return None
+    birim = (f["vars"].get(hedef) or ("", "", ""))[2]
+    if birim in ("rad", "radyan"):
+        dar = [x for x in kokler if 0 <= x <= 1.5707963268 + 1e-9]
+        if dar:
+            return dar[0]
+    pozitif = [x for x in kokler if x >= 0]
+    return (pozitif or kokler)[0]
 
 
 def makul_mu(f, hedef, deger):
@@ -717,6 +919,9 @@ def coz(soru, lang="tr"):
 
     # Senaryonun ima ettigi degerler ("yukari atiliyor" -> a = -g)
     _sen_degerler, _sen_notlar = senaryo_degerleri(soru)
+    _aci, _aci_not = varsayilan_aci(soru, f)
+    _sen_degerler.update(_aci)
+    _sen_notlar.extend(_aci_not)
     for _s, _v in _sen_degerler.items():
         if _s in f["vars"] and _s != hedef_ipucu:
             sayisal[_s] = _v
@@ -828,7 +1033,18 @@ def coz(soru, lang="tr"):
         pass
     lines.append("**" + ("Sonuç" if tr else "Result") + "**")
     lines.append("")
-    lines.append("## `%s` = **%s %s**" % (hedef, _oku_sayi(sonuc), birim))
+    # Aci DERECE ile soruldu ise cevabi da derece ile ver. Olculdu:
+    # "30 derece ile giren isigin kirilma acisi" sorusuna 0,3398 rad
+    # deniyordu — dogru ama ogrencinin bekledigi bicim degil.
+    if birim in ("rad", "radyan") and re.search(
+            r"\bderece\b|°|\bdegree", nlu.norm(soru or "")):
+        import math as _mt
+        lines.append("## `%s` = **%s derece**  (%s rad)"
+                     % (hedef, _oku_sayi(_mt.degrees(sonuc)),
+                        _oku_sayi(sonuc)))
+    else:
+        lines.append("## `%s` = **%s %s**"
+                     % (hedef, _oku_sayi(sonuc), birim))
     lines.append("")
     lines.append(("_Aranan büyüklük: %s. Hesap SymPy ile yapıldı._" if tr
                   else "_Target: %s. Computed symbolically._") % hedef_ad)

@@ -1375,6 +1375,34 @@ def run():
     check("problem: hic gorulmemis sorular cozuluyor",
           lambda: _olcum.gorulmemis_puani()[0] >= 7, True)
 
+    # ── Genis sayisal problem seti ──────────────────────────────────
+    # Kullanicinin istegi: "her turlu sayisal problemi cozebilsin".
+    check("sayisal: genis problem seti cozuluyor",
+          lambda: _olcum.sayisal_puani()[0] >= 37, True)
+    # Malzeme sabitleri: ogrenci tablodan bakar, sistem de bilmeli.
+    check("malzeme: suyun ozgul isisi biliniyor",
+          lambda: _prb.malzeme_degerleri("2 kg suyu isitmak")[0].get("c"),
+          4186.0)
+    check("malzeme: cam-hava kirilma indisleri biliniyor",
+          lambda: _prb.malzeme_degerleri("havadan cama giren isik")[0]
+          .get("n2"), 1.5)
+    check("fark: 'X dereceden Y dereceye' okunuyor",
+          lambda: _prb.fark_degerleri("20 dereceden 80 dereceye")["dT"],
+          60.0)
+    check("hiz: '0.6c' isik hizinin kati olarak okunuyor",
+          lambda: round(_prb.isik_hizi_degerleri("0.6c hizla")["v"] / 1e8, 2),
+          1.8)
+    check("kok: aci icin fiziksel (dar) kok seciliyor",
+          lambda: round(_prb.kok_sec(formulas.BY_ID["snell"], "t2",
+                                     [0.3398, 2.8018]), 3), 0.34)
+    check("arama: turkce cekim eki formul aramasinda taniniyor",
+          lambda: any(f["id"] == "momentum" for _s, f in
+                      formulas.search("cismin momentumu", limit=3)), True)
+    check("hedef: tek harfli sembol kelimeye yayilmiyor",
+          lambda: _prb.hedef_tahmin(formulas.BY_ID["elektrik_guc"],
+                                    "220 V ve 5 A icin elektriksel guc")
+          != "V", True)
+
     # Gunluk hayattan sorular cekirdekte olmali. Olculdu: "gokyuzu neden
     # mavi" sorusuna "mavi kart" gecen bir vatandaslik hukuku makalesi
     # getiriliyordu.

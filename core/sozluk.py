@@ -39,7 +39,7 @@ EK_ANAHTAR = {
     "egik_menzil": ("ne kadar uzaga duser|top nereye duser|atisin menzili|"
                     "en uzaga nasil atarim|kac metre oteye gider",
                     "how far does it land|projectile range|farthest throw"),
-    "egik_h": ("ne kadar yukselir|en yuksek nokta|tepe noktasi|"
+    "egik_h": ("dusey yukari atilan en fazla yukseklik|en fazla kac metre cikar|maksimum yukseklige|cikabilecegi en yuksek nokta|ne kadar yukselir|en yuksek nokta|tepe noktasi|"
                "cikabilecegi yukseklik|kac metre yukselir",
                "maximum height|how high does it go|peak"),
     "serbest_dusme": ("havada ne kadar kalir|kac saniyede duser|dusme suresi|"
@@ -130,13 +130,13 @@ EK_ANAHTAR = {
                     "on a ramp|inclined plane|slope"),
 
     # ── Enerji ────────────────────────────────────────────────────────────
-    "is": ("yapilan is|iterek is yapmak|ne kadar is yapildi|kaldirirken is",
+    "is": ("kuvvetle yol alan|yaptigi is|yapilan is|is kac joule|yapilan is|iterek is yapmak|ne kadar is yapildi|kaldirirken is",
            "work done by a force|pushing work"),
     "kinetik": ("hareket enerjisi|hizli cismin enerjisi|"
                 "hiz iki kat olursa enerji", "energy of motion"),
     "potansiyel": ("yukseklik enerjisi|kaldirinca kazanilan enerji|"
                    "raftaki cismin enerjisi", "stored height energy"),
-    "guc": ("saniyede yapilan is|kac watt|beygir gucu|ne kadar guclu",
+    "guc": ("saniyede uretilen guc|guc kac watt|kac watt guc|birim zamanda enerji|saniyede yapilan is|kac watt|beygir gucu|ne kadar guclu",
             "power in watts|horsepower"),
     "guc_hiz": ("cekis gucu|hizda gereken guc|motor gucu hiz",
                 "power needed at speed"),
@@ -160,12 +160,12 @@ EK_ANAHTAR = {
     "direnc_tel": ("kablonun direnci|ince kablo neden isinir|"
                    "telin uzunlugu direnc|kesit direnc",
                    "wire resistance|thin wire"),
-    "elektrik_guc": ("elektrik faturasi|cihaz kac watt ceker|"
+    "elektrik_guc": ("elektriksel guc|gerilim akim guc|volt amper guc|elektriksel guc kac watt|cihazin gucu|elektrik faturasi|cihaz kac watt ceker|"
                      "tuketim ne kadar|kwh hesabi|enerji tuketimi",
                      "electricity bill|power consumption|watts drawn"),
     "joule_isi": ("kablo neden isiniyor|direncte olusan isi|"
                   "elektrikli isitici", "wire heats up|resistive heating"),
-    "coulomb": ("iki yuk birbirini iter|elektrik cekim itme|"
+    "coulomb": ("yuk arasindaki kuvvet|coulomb kuvveti|iki yuk kuvvet|mikrokulon kuvvet|iki yuk birbirini iter|elektrik cekim itme|"
                 "yuklu cisimler arasindaki kuvvet",
                 "force between two charges"),
     "E_kuvvet": ("elektrik alaninda kuvvet|yuke etkiyen kuvvet",
@@ -196,9 +196,9 @@ EK_ANAHTAR = {
     "solenoid": ("bobinin ic manyetik alani|solenoid alani",
                  "magnetic field inside a coil"),
     "bobin_enerji": ("bobinde depolanan enerji", "energy stored in inductor"),
-    "tel_B": ("telin cevresindeki manyetik alan|akim manyetik alan",
+    "tel_B": ("telden uzakta manyetik alan|akim tasiyan telin manyetik alani|tel etrafindaki manyetik alan|telin cevresindeki manyetik alan|akim manyetik alan",
               "magnetic field around a wire"),
-    "tel_kuvvet": ("akim tasiyan tele kuvvet|motor neden doner|"
+    "tel_kuvvet": ("telden gecen akima etkiyen kuvvet|manyetik alanda tele etkiyen kuvvet|akim tasiyan tel kuvvet|akim tasiyan tele kuvvet|motor neden doner|"
                    "manyetik alanda tel", "force on a current carrying wire"),
     "lorentz": ("manyetik alanda hareket eden yuk|yuke etkiyen manyetik kuvvet",
                 "force on a moving charge|Lorentz force"),

@@ -356,6 +356,31 @@ FORMULAS = [
     # Hizlandirici gerilimden HIZ: qV = ½mv². Her fizik kitabinda ayri
     # bir baginti olarak verilir; olculdu: "elektron 200 V ile
     # hizlandirilirsa hizi" sorusu cozulemiyordu.
+    # Yatay yuzeyde normal kuvvet. Olculdu: "surtunme katsayisi 0.4 olan
+    # 10 kg cisme etkiyen surtunme kuvveti" sorusu cozulemiyordu, cunku
+    # f = mu*N bagintisindaki N'yi uretecek halka yoktu.
+    # Serbest dusmede carpma hizi: v = sqrt(2gh). Yer degistirme ile
+    # YUKSEKLIK ayri buyuklukler oldugu icin (etiket kurali) yukseklikten
+    # dogrudan hiz veren bir baginti gerekiyordu.
+    F("dusme_hizi", "kinematik", "Serbest dusmede carpma hizi",
+      "Impact speed in free fall",
+      "v = sqrt(2*g*h)",
+      {"v": ("carpma hizi", "impact speed", "m/s"),
+       "g": ("yercekimi ivmesi", "gravity", "m/s^2"),
+       "h": ("yukseklik", "height", "m")},
+      "yuksekten dusen cismin hizi|yere carpma hizi|carpma hizi|"
+      "dusen cismin carpma hizi|yuksekten birakilan cismin hizi|"
+      "serbest dusme hizi",
+      "impact speed|speed on impact|free fall speed"),
+    F("normal_kuvvet", "dinamik", "Yatay yuzeyde normal kuvvet",
+      "Normal force on a horizontal surface",
+      "N = m*g",
+      {"N": ("normal kuvvet", "normal force", "N"),
+       "m": ("kutle", "mass", "kg"),
+       "g": ("yercekimi ivmesi", "gravity", "m/s^2")},
+      "normal kuvvet|yuzeyin tepki kuvveti|tepki kuvveti|"
+      "yatay yuzeyde normal",
+      "normal force|surface reaction force"),
     F("hizlandirma_hizi", "elektrik", "Hizlandirilan yukun hizi",
       "Speed of an accelerated charge",
       "v = sqrt(2*q*V/m)",
@@ -1606,9 +1631,17 @@ def _indeks():
                 kws = frozenset(k.split())
                 onemli = tuple(w[:4] for w in kws
                                if len(w) > 3 and w not in _SORU_KELIMESI)
+                # Turkce cekim eki: "momentum" anahtari "momentumu"
+                # sorgusunu tutmuyordu (olculdu: "6 kg cisim 4 m/s
+                # momentumu" sorusu hicbir formule ulasamiyordu, ama
+                # "momentum" yazinca 114 puanla buluyordu). Konu
+                # aramasinda bu tolerans zaten vardi; formul aramasinda
+                # yoktu. Kisa anahtarlarda ek verilmez ki "is" -> "isik"
+                # gibi yanlis eslesmeler olmasin.
+                _ek = r"\w{0,3}" if len(k) >= 5 else ""
                 anahtarlar.append((
                     k,
-                    re.compile(r"(?<!\w)%s(?!\w)" % re.escape(k)),
+                    re.compile(r"(?<!\w)%s%s(?!\w)" % (re.escape(k), _ek)),
                     kws,
                     onemli,
                     (30 + len(k)) if (len(k) >= 5 or " " in k) else 10,

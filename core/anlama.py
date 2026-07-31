@@ -119,6 +119,8 @@ simule simüle simulasyon simülasyon simulasyonu benzetim video videolar
 ders dersi dersler dersleri anlat anlatim anlatım ogret öğret ogretir
 uret üret uretir üretir uretim üretim uretme üretme soru sorular sorusu
 ornek örnek ornegi örneği ozet özet cizim çizim ciz çiz goster göster
+cam cama camdan camin camı su suya sudan suyun hava havaya havadan
+buz buza buzdan cisim cisme cismin tel telden telin
 """.split())
 
 
