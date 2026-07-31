@@ -1278,6 +1278,63 @@ def run():
           lambda: [x for x in db.list_sessions(80)
                    if x["id"].startswith("_")], [])
 
+    # ── Tuzak sorular: kandirilmadan cozme ──────────────────────────
+    # Kullanicinin sozleri: "kandirilmadan problem cozebilmesi lazim".
+    # Olculdu: "surtunmesiz alanda ... surtunme degerini hesapla"
+    # sorusuna BHH dersi anlatildi; "1 kg + 30 m + 22 cm" sorusuna
+    # 1 kg'in birim cevrimi yapildi.
+    from . import boyut as _byt, ayrintili as _ayr
+    check("tuzak: tuzak sorular dogru cevaplaniyor",
+          lambda: _olcum.tuzak_puani()[0] >= 17, True)
+    check("girdi: negatif kutle reddediliyor",
+          lambda: "fiziksel değil" in (_prb.girdi_denetle(
+              formulas.BY_ID["kinetik"], {"m": -5.0, "v": 10.0}) or ""),
+          True)
+    check("girdi: gecerli deger reddedilmiyor",
+          lambda: _prb.girdi_denetle(
+              formulas.BY_ID["kinetik"], {"m": 5.0, "v": 10.0}), None)
+    check("hedef: verilen degil SORULAN buyukluk seciliyor",
+          lambda: _prb.hedef_tahmin(
+              formulas.BY_ID["agirlik"],
+              "kutlesi 5 kg olan cismin agirligi kac newton"), "W")
+    check("atama: etiketli sayi baska degiskene verilmiyor",
+          lambda: "1.57" in brain.respond(
+              "yaricapi 0.5 m periyodu 2 s dairesel hareket cizgisel hizi",
+              session="_t_dair").text, True)
+    check("oncul: birim sorulan buyuklugu izliyor",
+          lambda: "0 N" in (_prb.oncul_cevabi(
+              "sabit hizla giden trenin net kuvveti nedir") or ""), True)
+    check("boyut: farkli boyutlar toplanmiyor",
+          lambda: "yapılamaz" in (_byt.coz("1 kg + 30 metre + 22 cm") or ""),
+          True)
+    check("boyut: ayni boyut dogru toplaniyor",
+          lambda: "30.22" in (_byt.coz("30 m + 22 cm") or ""), True)
+    check("boyut: toplanabilenler ayrica hesaplaniyor",
+          lambda: "30.22" in (_byt.coz("1 kg + 30 metre + 22 cm") or ""),
+          True)
+    check("oncul: surtunmesiz ortamda surtunme sifir",
+          lambda: "0 N" in (_prb.oncul_cevabi(
+              "surtunmesiz yuzeyde giden cismin surtunme kuvveti nedir")
+              or ""), True)
+    check("oncul: oncul yoksa devreye girmiyor",
+          lambda: _prb.oncul_cevabi("surtunme kuvveti nedir"), None)
+    check("bhh: maksimum hiz dogru hesaplaniyor",
+          lambda: "18.85" in brain.respond(
+              "30 m genlikli basit harmonik hareket periyodu 10 s "
+              "maksimum hizi nedir", session="_t_bhh").text, True)
+    check("zincir: konu disina cikmiyor",
+          lambda: "Torricelli" not in brain.respond(
+              "30 m genlikli basit harmonik hareket periyodu 10 s "
+              "maksimum hizi nedir", session="_t_bhh2").text, True)
+    check("birim: 'sny' kisaltmasi taniniyor",
+          lambda: units.to_si(10.0, "sny")[0], 10.0)
+    check("yonerge: cozum bicimi istegi konu sanilmiyor",
+          lambda: _ayr.yonerge_mi(
+              "Bu problemi cozerken: birim analizini yap, sembolik coz, "
+              "varsayimlari listele"), True)
+    check("yonerge: normal soru yonerge sanilmiyor",
+          lambda: _ayr.yonerge_mi("boyut analizi nedir"), False)
+
     # Gunluk hayattan sorular cekirdekte olmali. Olculdu: "gokyuzu neden
     # mavi" sorusuna "mavi kart" gecen bir vatandaslik hukuku makalesi
     # getiriliyordu.

@@ -1856,8 +1856,16 @@ def h_formul(msg, lang, ctx):
     # devre cozumunde "Sonuç" basligi yok ama "## `I` = ..." satiri var
     # ve cevap tam olarak budur (olculdu: cozum uretildigi halde
     # atiliyor, yerine yanlis isaretli tek-baginti sonucu basiliyordu).
+    # Cozucunun KASITLI reddi de bir cevaptir: "negatif kutle olmaz",
+    # "bu toplama yapilamaz", "tek bagintiyla cozemedim". Olculdu:
+    # "-5 kg kutleli cismin kinetik enerjisi" sorusunda cozucu dogru
+    # uyariyi uretti ama sonuc satiri olmadigi icin atildi ve yerine
+    # formul listesi basildi.
+    _kasitli_ret = tam and any(x in tam for x in (
+        "fiziksel değil", "not physical", "yapılamaz", "not valid",
+        "tek bağıntıyla çözemedim", "more than one relation"))
     if tam and ("Sonuç" in tam or "Result" in tam
-                or re.search(r"^## `", tam, re.M)):
+                or re.search(r"^## `", tam, re.M) or _kasitli_ret):
         return Response(tam, kind="solution")
 
     # Tek baginti yetmediyse COK ADIMLI zincirlemeyi dene: aranan
@@ -3436,6 +3444,96 @@ def respond(message, session="default", lang_override=None):
                            subject=nlu.strip_command_words(etkin)[:60])
                 resp.extra["lang"] = lang
                 return resp
+    except Exception:
+        pass
+
+    # AYRINTILI COZUM yonergesi: "Her formulu turet, birim analizini
+    # yap, sembolik coz, ... varsayimlari listele" gibi bir mesaj bir
+    # KONU sorusu degil, bir onceki problem icin BICIM talebidir.
+    # Olculdu: sistem bunu "Fizikte Sayisal Yontemler" konusu sanip
+    # ders anlatti.
+    try:
+        from . import ayrintili as _ayr
+        if _ayr.yonerge_mi(message):
+            _hedef_soru = message
+            if not re.search(r"\d", message):
+                # Yonergenin kendi sayisi yok: onceki problemi cozuyoruz
+                _onceki_soru = ""
+                for _m in reversed(ctx.get("history") or []):
+                    if _m.get("role") == "user" and re.search(
+                            r"\d", _m.get("content") or ""):
+                        _onceki_soru = _m["content"]
+                        break
+                _hedef_soru = _onceki_soru or (ctx.get("last_subject") or "")
+            if _hedef_soru:
+                _det = _ayr.coz(_hedef_soru, lang)
+                if _det:
+                    resp = Response(_det, kind="solution")
+                    _save_turn(session, message, resp.text, "formul",
+                               subject=nlu.strip_command_words(
+                                   _hedef_soru)[:60])
+                    resp.extra["intent"] = "formul"
+                    resp.extra["lang"] = lang
+                    return resp
+            # Problem bulunamadiysa durustce sor
+            resp = Response(L(lang,
+                "Hangi problemi bu ayrıntıda çözmemi istiyorsunuz? "
+                "Problemi yazarsanız her adımı istediğiniz biçimde "
+                "yaparım: birim analizi, sembolik çözüm, sayısal çözüm, "
+                "yerine koyarak doğrulama, varsayımlar ve hata "
+                "kaynakları.",
+                "Which problem should I solve in that detail?"),
+                kind="chat")
+            _save_turn(session, message, resp.text, "sohbet")
+            resp.extra["intent"] = "sohbet"
+            resp.extra["lang"] = lang
+            return resp
+    except Exception:
+        pass
+
+    # BOYUT denetimi: "1 kg + 30 metre + 22 cm" gibi bir ifade
+    # toplanamaz. Olculdu: sistem yalnizca "1 kg = 1 (SI)" diye birim
+    # cevrimi yapiyordu; oysa asil cevap toplamanin gecersiz oldugudur.
+    try:
+        from . import boyut as _byt
+        _bd = _byt.coz(etkin, lang)
+        if _bd:
+            resp = Response(_bd, kind="calc")
+            _save_turn(session, message, resp.text, "hesap")
+            resp.extra["intent"] = "hesap"
+            resp.extra["lang"] = lang
+            return resp
+    except Exception:
+        pass
+
+    # ONCUL cevabi: sorunun kendi ifadesi cevabi veriyorsa ("surtunmesiz
+    # ... surtunme degeri") formule hic gitmeden soyle. Niyet ne olursa
+    # olsun gecerlidir; boyle sorular cogu zaman "konu" diye siniflaniyor.
+    try:
+        _onc = problem.oncul_cevabi(etkin, lang)
+        if _onc:
+            # Soruda AYRICA hesaplanabilir bir buyukluk varsa onu da ver:
+            # ogrenci "peki hiz neydi" diye tekrar sormak zorunda kalmasin.
+            try:
+                from . import zincir as _zn
+                # Sorulan buyukluk oncul yuzunden sifir; DIGER buyuklugu
+                # bulmak icin o ifadeyi metinden cikariyoruz. Aksi hâlde
+                # hedef tespiti yine sifirlanan buyuklugu secer.
+                _sade = problem.oncul_sadelestir(etkin) or etkin
+                _ek = _zn.coz(_sade, lang)
+            except Exception:
+                _ek = None
+            if _ek and "## `" in _ek:
+                _onc += ("\n\n---\n\n" +
+                         L(lang, "**Sorudaki diğer büyüklük**",
+                           "**The other quantity in the problem**") +
+                         "\n\n" + _ek)
+            resp = Response(_onc, kind="solution")
+            _save_turn(session, message, resp.text, "formul",
+                       subject=nlu.strip_command_words(etkin)[:60])
+            resp.extra["intent"] = "formul"
+            resp.extra["lang"] = lang
+            return resp
     except Exception:
         pass
 

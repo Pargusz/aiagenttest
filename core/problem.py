@@ -172,23 +172,67 @@ def _sembolik_coz(f, bilinen, hedef):
 # R2'yi cozdu. Oysa SORULAN Rp'dir. Sorulan buyukluk once belirlenip
 # deger atamasindan cikarilmalidir.
 
-# Degisken adlarinda sik gecen, tek basina ayirt edici OLMAYAN kelimeler
+# Bu "semboller" aslinda gunluk kelimelerdir; sembol olarak aranmazlar.
+_KELIME_SEMBOL = {"a", "an", "the", "in", "of", "at", "on", "to", "is",
+                  "it", "by", "as", "or", "if", "be", "no", "so", "we",
+                  "ve", "ya", "da", "de", "bu", "su", "o", "ki", "mi"}
+
+# Degiskenlerin adlarinda sik gecen, tek basina ayirt edici OLMAYAN kelimeler
 _GENEL_AD = {"enerji", "energy", "deger", "value", "sayi", "number",
              "buyukluk", "quantity", "sabit", "constant", "katsayi",
              "coefficient", "fark", "difference", "toplam", "total",
              "ilk", "son", "first", "final", "initial"}
 
 
+def _yumusak_kalip(ad):
+    """Turkce unsuz yumusamasini da taniyan arama kalibi.
+
+    "agirlik" + iyelik eki -> "agirligi" (k -> g). Duz onek eslesmesi
+    bunu kaciriyordu ve olculdu: "cismin AGIRLIGI kac newton" sorusunda
+    hedef, verilmis olan kutle secildi.
+    """
+    if not ad:
+        return None
+    son = ad[-1]
+    yumusak = {"k": "[kg]", "p": "[pb]", "t": "[td]", "c": "[cc]"}
+    govde = re.escape(ad[:-1])
+    if son in yumusak:
+        return r"(?<!\w)%s%s\w{0,3}(?!\w)" % (govde, yumusak[son])
+    return r"(?<!\w)%s\w{0,3}(?!\w)" % re.escape(ad)
+
+
 def hedef_tahmin(f, soru, lang="tr"):
     """Soruda ADIYLA anilan ve sorulan degiskeni bul (yoksa None)."""
     n = nlu.norm(soru or "")
     adaylar = []
+    # Ogrenci cogu zaman adi degil SEMBOLU yazar: "V si en yuksek",
+    # "F kactir". Sembol tek harflidir ama YALNIZ basina duruyorsa
+    # ayirt edicidir. Olculdu: "bu hareketlinin V si" ifadesinde hedef
+    # bulunamiyor ve zincir yanlis buyuklugu ariyordu.
+    #
+    # Sayidan hemen sonra gelen harf BIRIMDIR, sembol degil: "30 m"
+    # ifadesindeki m, kutle sembolu sanilmamali.
+    for sym in f["vars"]:
+        # Tek harfli sembol, o dilde bir KELIME olabilir. Olculdu:
+        # "a ball dropped from 100 m" cumlesindeki Ingilizce artikel
+        # "a", ivme sembolu sanildi ve hedef yanlis secildi.
+        if nlu.norm(sym) in _KELIME_SEMBOL:
+            continue
+        kalip = r"(?<![\w])%s(?:'\w*|\w{0,2})?(?![\w])" % re.escape(
+            nlu.norm(sym))
+        for m in re.finditer(kalip, n):
+            onceki = n[:m.start()].rstrip()
+            if onceki and re.search(r"[\d.,]$", onceki):
+                continue          # birim olarak kullanilmis
+            adaylar.append((len(sym) + 6, sym))
+            break
+
     for sym, (tr_ad, en_ad, _u) in f["vars"].items():
         for ad in (tr_ad, en_ad):
             a = nlu.norm(ad or "").strip()
             if len(a) < 4:
                 continue
-            if re.search(r"(?<!\w)%s\w{0,3}(?!\w)" % re.escape(a), n):
+            if re.search(_yumusak_kalip(a), n):
                 adaylar.append((len(a), sym))
                 continue
             # Cok kelimeli ad birebir gecmiyorsa AYIRT EDICI kelimesi
@@ -205,6 +249,34 @@ def hedef_tahmin(f, soru, lang="tr"):
                     break
     if not adaylar:
         return None
+
+    # SORU KELIMESINE YAKINLIK. Olculdu: "kutlesi 5 kg olan cismin
+    # agirligi kac newton" sorusunda hedef "kutle" secildi — oysa kutle
+    # VERILMIS, sorulan agirliktir. Sorulan buyukluk, soru kelimesinin
+    # yanindaki buyukluktur.
+    soru_yeri = None
+    for m in re.finditer(r"\b(kac|nedir|ne kadar|bul|bulunuz|hesapla|"
+                         r"kactir|what|find|calculate)\b", n):
+        soru_yeri = m.start()
+    if soru_yeri is not None:
+        yeni_adaylar = []
+        for puan, sym in adaylar:
+            yer = None
+            for ad in (f["vars"][sym][0], f["vars"][sym][1], sym):
+                a = nlu.norm(ad or "").strip()
+                if not a:
+                    continue
+                m = re.search(_yumusak_kalip(a), n)
+                if m:
+                    yer = m.start() if yer is None else min(yer, m.start())
+            # Soru kelimesine yakinlik, puana eklenir (en fazla +8)
+            if yer is not None:
+                uzaklik = abs(soru_yeri - yer)
+                yeni_adaylar.append((puan + max(0, 8 - uzaklik // 12), sym))
+            else:
+                yeni_adaylar.append((puan, sym))
+        adaylar = yeni_adaylar
+
     # En UZUN eslesme kazanir: "esdeger direnc", "direnc"ten daha ozeldir.
     adaylar.sort(reverse=True)
     return adaylar[0][1]
@@ -280,6 +352,57 @@ NEGATIF_OLAMAZ = {
     "kg": "kutle", "m^3": "hacim", "s": "sure", "Hz": "frekans",
     "kg/m^3": "yogunluk", "J/K": "entropi kapasitesi", "mol": "mol sayisi",
 }
+
+
+# Girdi denetimi: bazi buyuklukler NEGATIF OLAMAZ. Olculdu: "-5 kg
+# kutleli cismin kinetik enerjisi 10 m/s hizda" sorusuna sistem
+# "Ek = -250 J" dedi. Negatif kutle de negatif kinetik enerji de yoktur;
+# boyle bir girdiyi sessizce kabul etmek, kullaniciyi yaniltmaktir.
+GIRDI_NEGATIF_OLAMAZ = {
+    "kg": "kütle", "K": "mutlak sıcaklık", "m^3": "hacim",
+    "kg/m^3": "yoğunluk", "ohm": "direnç", "F": "sığa", "H": "indüktans",
+    "mol": "mol sayısı", "s": "süre", "Hz": "frekans",
+}
+
+
+def girdi_denetle(f, sayisal, lang="tr"):
+    """Verilen degerler fiziksel olarak mumkun mu? Metin ya da None."""
+    tr = lang == "tr"
+    hatalar = []
+    for sym, deger in (sayisal or {}).items():
+        if sym not in f["vars"]:
+            continue
+        birim = f["vars"][sym][2]
+        ad = f["vars"][sym][0] if tr else f["vars"][sym][1]
+        try:
+            d = float(deger)
+        except (TypeError, ValueError):
+            continue
+        if d < 0 and birim in GIRDI_NEGATIF_OLAMAZ:
+            hatalar.append((sym, ad, d, birim,
+                            GIRDI_NEGATIF_OLAMAZ[birim]))
+    if not hatalar:
+        return None
+    L = lambda a, b: a if tr else b
+    satirlar = ["### " + L("Bu değer fiziksel değil",
+                           "This value is not physical"), ""]
+    for sym, ad, d, birim, tur in hatalar:
+        satirlar.append(
+            L("`%s` = %g %s verdiniz. **%s negatif olamaz.**"
+              % (sym, d, birim, tur.capitalize()),
+              "`%s` = %g %s is not possible: %s cannot be negative."
+              % (sym, d, birim, tur)))
+    satirlar.append("")
+    satirlar.append(L(
+        "Hesabı yine de yapsaydım anlamsız bir sayı çıkardı — örneğin "
+        "negatif kütleyle kinetik enerji negatif görünür, oysa kinetik "
+        "enerji hiçbir zaman negatif olamaz (½mv², v² ≥ 0).",
+        "Computing anyway would produce a meaningless number."))
+    satirlar.append("")
+    satirlar.append("_" + L(
+        "Değeri düzeltip tekrar sorarsanız hesabı yaparım.",
+        "Fix the value and ask again.") + "_")
+    return "\n".join(satirlar)
 
 
 def makul_mu(f, hedef, deger):
@@ -365,12 +488,133 @@ def devre_zinciri(soru, lang="tr"):
     return "\n".join(s)
 
 
+# ── Oncul okuma: sorunun kendi verdigi bilgiyi kacirma ─────────────────────
+# Olculdu: "SURTUNMESIZ alanda ... SURTUNME degerini hesapla" sorusuna
+# sistem basit harmonik hareket dersi anlatti. Oysa cevap sorunun
+# icindeydi: surtunmesiz denmisse surtunme sifirdir.
+#
+# Bu tur sorular ogrenciyi de sinar: onculu okumadan formule atlayan
+# yanilir. Bir cozucunun ilk isi VERILENLERI okumaktir.
+
+ONCULLER = [
+    {"kw": r"\bsurtunmesiz\b|\bsurtunme (yok|ihmal|sifir)|"
+           r"\bfrictionless\b|\bno friction\b",
+     "sorulan": r"\bsurtunme\w*\b|\bfriction\b",
+     "deger": 0.0, "birim": "N",
+     "tr": "Soruda ortam **sürtünmesiz** denmiş. O hâlde sürtünme "
+           "kuvveti her noktada **sıfırdır** — hızın en büyük olduğu "
+           "noktada da, başka bir noktada da.",
+     "en": "The problem states a frictionless medium, so the friction "
+           "force is zero everywhere."},
+    {"kw": r"\bhava direnci (yok|ihmal|olmadig)|\bhavasiz ortam\b|"
+           r"\bno air resistance\b|\bneglect(ing)? air\b",
+     "sorulan": r"\bhava direnci\b|\bsurukleme\b|\bdrag\b",
+     "deger": 0.0, "birim": "N",
+     "tr": "Soruda **hava direnci ihmal ediliyor** denmiş; o hâlde "
+           "sürükleme kuvveti **sıfırdır**.",
+     "en": "Air resistance is neglected, so the drag force is zero."},
+    {"kw": r"\byalitilmis\b|\byalitkan kap\b|\badyabatik\b|"
+           r"\bisolated\b|\badiabatic\b",
+     # Olculdu: "yalitilmis sistemde disariya verilen isi kac joule"
+     # sorusu bu kalibi tutmayip makale ozetlerine dusuyordu.
+     "sorulan": r"\bisi alisverisi\b|\bisi transferi\b|\bQ\b|"
+                r"\b(disariya |cevreye |ortama )?(verilen|alinan|"
+                r"kaybedilen|kazanilan) isi\b|\bisi kac\b|"
+                r"\bheat exchange\b|\bheat (lost|gained|transferred)\b",
+     "deger": 0.0, "birim": "J",
+     "tr": "Sistem **yalıtılmış/adyabatik** denmiş: dışarıyla ısı "
+           "alışverişi **yoktur** (Q = 0).",
+     "en": "The system is isolated/adiabatic, so Q = 0."},
+    {"kw": r"\bsabit hizla\b|\bduzgun hizla\b|\bdegismeyen hizla\b|"
+           r"\bconstant (speed|velocity)\b",
+     "sorulan": r"\bivme\w*\b|\bkuvvet\w*\b|\bacceleration\b|"
+                r"\bforce\b",
+     "deger": 0.0, "birim": "m/s^2",
+     # Sorulan KUVVETSE birim newton olmali. Olculdu: "sabit hizla
+     # giden trenin uzerindeki net kuvvet" sorusuna "0 m/s^2" dendi.
+     "birim_secimi": [(r"\bkuvvet\w*\b|\bforce\b", "N"),
+                      (r"\bivme\w*\b|\bacceleration\b", "m/s^2")],
+     "tr": "**Sabit hızla** gidiyorsa ivme **sıfırdır**; Newton'un "
+           "2. yasasına göre net kuvvet de sıfırdır.",
+     "en": "At constant velocity the acceleration and the net force "
+           "are zero."},
+    {"kw": r"\bdengede\b|\bdurgun\b|\bhareketsiz\b|"
+           r"\bin equilibrium\b|\bat rest\b",
+     "sorulan": r"\bnet kuvvet\b|\bivme\w*\b|\bnet force\b|"
+                r"\bacceleration\b",
+     "deger": 0.0, "birim": "N",
+     "birim_secimi": [(r"\bivme\w*\b|\bacceleration\b", "m/s^2"),
+                      (r"\bkuvvet\w*\b|\bforce\b", "N")],
+     "tr": "Cisim **dengede** olduğuna göre net kuvvet ve ivme "
+           "**sıfırdır**.",
+     "en": "In equilibrium the net force and acceleration vanish."},
+]
+
+
+def oncul_sadelestir(soru):
+    """Onculun sifirladigi buyuklugu soru metninden cikar.
+
+    Geriye kalan metin, sorudaki DIGER buyuklugu hesaplamak icin
+    kullanilir: "surtunmesiz ... surtunme degerini hesapla" sorusunda
+    surtunme sifirdir, ama ogrenci maksimum hizi da merak eder.
+    """
+    n = nlu.norm(soru or "")
+    for o in ONCULLER:
+        if re.search(o["kw"], n) and re.search(o["sorulan"], n):
+            kalan = re.sub(o["sorulan"], " ", n)
+            kalan = re.sub(r"\b(degerini|degeri|kuvvetini|kuvveti)\b",
+                           " ", kalan)
+            return re.sub(r"\s+", " ", kalan).strip()
+    return None
+
+
+def oncul_cevabi(soru, lang="tr"):
+    """Sorunun kendi onculu cevabi veriyorsa dogrudan soyle.
+
+    Doner: metin ya da None.
+    """
+    n = nlu.norm(soru or "")
+    for o in ONCULLER:
+        if not re.search(o["kw"], n):
+            continue
+        if not re.search(o["sorulan"], n):
+            continue
+        tr = lang == "tr"
+        # Birim, SORULAN buyuklugu izler: ayni oncul hem ivmeyi hem
+        # kuvveti sifirlar, ama ogrenci hangisini sorduysa onun
+        # birimiyle cevap almalidir. Olculdu: "sabit hizla giden trenin
+        # uzerindeki net KUVVET" sorusuna "0 m/s^2" deniyordu.
+        birim = o["birim"]
+        for kalip, br in (o.get("birim_secimi") or []):
+            if re.search(kalip, n):
+                birim = br
+                break
+        satirlar = [
+            "### " + ("Önce verilenleri okuyalım" if tr
+                      else "Read the premise first"), "",
+            o["tr"] if tr else o["en"], "",
+            "## **%g %s**" % (o["deger"], birim), "",
+            "_" + ("Bu soru, öncülü okumadan formüle atlayanı yanıltmak "
+                   "için kurulmuş. Bir problemin ilk adımı her zaman "
+                   "verilenleri okumaktır." if tr else
+                   "This question is designed to catch anyone who jumps "
+                   "to a formula without reading the premise.") + "_",
+        ]
+        return "\n".join(satirlar)
+    return None
+
+
 def coz(soru, lang="tr"):
     """Soruyu bastan sona coz: karar + hesap + adimlar.
 
     Doner: metin ya da None (cozulemezse cagiran normal yola devam eder).
     """
     tr = lang == "tr"
+    # Sorunun kendi onculu cevabi veriyor mu? ("surtunmesiz ... surtunme")
+    _oncul = oncul_cevabi(soru, lang)
+    if _oncul:
+        return _oncul
+
     # Once bilinen COK ADIMLI kaliplar
     try:
         _zincir = devre_zinciri(soru, lang)
@@ -503,6 +747,11 @@ def coz(soru, lang="tr"):
             sayisal[_bos[0]] = sayisal.pop(hedef_ipucu)
         elif _ayni:
             sayisal.pop(hedef_ipucu)
+
+    # Girdiler fiziksel mi? (negatif kutle, negatif mutlak sicaklik...)
+    _girdi_hatasi = girdi_denetle(f, sayisal, lang)
+    if _girdi_hatasi:
+        return _girdi_hatasi
 
     eksikler = [s for s in f["vars"] if s not in sayisal]
     if len(eksikler) != 1:

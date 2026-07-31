@@ -119,7 +119,7 @@ _u("u amu dalton Da", 1.66053906892e-27, D(kg=1))
 _u("Msun gunes_kutlesi solarmass", 1.98892e30, D(kg=1))
 
 # Zaman
-_u("s saniye sec second seconds sn", 1.0, D(s=1))
+_u("s saniye sec second seconds sn sny snye saniyesi", 1.0, D(s=1))
 _u("ms milisaniye millisecond", 1e-3, D(s=1))
 _u("us µs mikrosaniye microsecond", 1e-6, D(s=1))
 _u("ns nanosaniye nanosecond", 1e-9, D(s=1))

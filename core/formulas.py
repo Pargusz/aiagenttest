@@ -490,6 +490,53 @@ FORMULAS = [
       "doppler|frekans kaymasi", "doppler effect"),
     # Yay-kutle sisteminde maksimum hiz: enerji korunumundan gelir
     # (½kx² = ½mv²), kitaplarda ayri baginti olarak verilir.
+    # Basit harmonik hareketin KINEMATIGI eksikti. Olculdu: "30 m
+    # genlikli, periyodu 10 s olan BHH'nin maksimum hizi" sorusuna
+    # sistem Torricelli akis hizini ve kacis hizini zincirleyip
+    # 24,26 m/s dedi; dogru cevap 2πA/T = 18,85 m/s. Yanlis cevap,
+    # cevapsizliktan kotudur.
+    # Duzgun dairesel harekette cizgisel hiz. Olculdu: "yaricapi 0.5 m,
+    # periyodu 2 s dairesel hareketin cizgisel hizi" sorusunda sistem
+    # yaricapi YER DEGISTIRME sanip v = dx/dt uyguladi ve 0,25 m/s dedi.
+    # Dogru cevap 2πr/T = 1,57 m/s. Yaricap bir yer degistirme degildir.
+    F("dairesel_hiz", "kinematik", "Duzgun dairesel harekette cizgisel hiz",
+      "Linear speed in uniform circular motion",
+      "v = 2*pi*r/T",
+      {"v": ("cizgisel hiz", "linear speed", "m/s"),
+       "r": ("yaricap", "radius", "m"),
+       "T": ("periyot", "period", "s")},
+      "dairesel hareket cizgisel hiz|dairesel hizi|cember uzerinde hiz|"
+      "donme periyodundan hiz|tur atma hizi|yaricap periyot hiz",
+      "circular motion linear speed|speed from radius and period"),
+    F("bhh_acisal", "dalga", "Acisal frekans (periyottan)",
+      "Angular frequency from period",
+      "omega = 2*pi/T",
+      {"omega": ("acisal frekans", "angular frequency", "rad/s"),
+       "T": ("periyot", "period", "s")},
+      "acisal frekans|omega periyot|acisal hiz periyottan|"
+      "periyottan acisal frekans",
+      "angular frequency|omega from period"),
+    F("bhh_max_hiz", "dalga", "Basit harmonik harekette maksimum hiz",
+      "Maximum speed in simple harmonic motion",
+      "v = A*omega",
+      {"v": ("maksimum hiz", "maximum speed", "m/s"),
+       "A": ("genlik", "amplitude", "m"),
+       "omega": ("acisal frekans", "angular frequency", "rad/s")},
+      "basit harmonik hareket maksimum hiz|bhh maksimum hiz|"
+      "genlikli harmonik hareket hizi|salinim maksimum hizi|"
+      "harmonik hareket en yuksek hiz|denge noktasindaki hiz|"
+      "yari capli harmonik hareket hizi",
+      "maximum speed simple harmonic|shm maximum velocity|"
+      "amplitude angular frequency speed"),
+    F("bhh_max_ivme", "dalga", "Basit harmonik harekette maksimum ivme",
+      "Maximum acceleration in simple harmonic motion",
+      "a = A*omega**2",
+      {"a": ("maksimum ivme", "maximum acceleration", "m/s^2"),
+       "A": ("genlik", "amplitude", "m"),
+       "omega": ("acisal frekans", "angular frequency", "rad/s")},
+      "basit harmonik hareket maksimum ivme|bhh maksimum ivme|"
+      "salinimda en buyuk ivme|uc noktadaki ivme",
+      "maximum acceleration simple harmonic|shm maximum acceleration"),
     F("yay_max_hiz", "dalga", "Yay-kutle sisteminde maksimum hiz",
       "Maximum speed of a spring-mass system",
       "v = x*sqrt(k/m)",

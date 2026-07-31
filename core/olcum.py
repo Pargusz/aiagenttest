@@ -472,6 +472,74 @@ def odev_bosluklari(lang="tr"):
     return eksik
 
 
+# ── Tuzak sorular: kandirilmadan cozme ─────────────────────────────────────
+# Kullanicinin sozleri: "hic zorlanmadan dogru cevaplar ile KANDIRILMADAN
+# problem cozebilmesi lazim". Bu olcum tam da onu sinar: her soruda
+# ogrenciyi (ve sistemi) yaniltacak bir tuzak var.
+
+TUZAK_SORULARI = [
+    # (soru, cevapta gecmesi gereken)
+    ("1 kg + 30 metre + 22 cm kac eder", "yapılamaz"),
+    ("30 m + 22 cm kac eder", "30.22"),
+    ("5 J + 3 N kac eder", "yapılamaz"),
+    # Oncul cevabi veriyor: surtunmesiz ortamda surtunme sifirdir
+    ("surtunmesiz alanda 30 m yari capli basit harmonik hareket yapan "
+     "bir hareketlinin periyodu 10 sny bu hareketlinin V si en yuksek "
+     "oldugu noktadaki surtunme degerini hesapla", "0 N"),
+    ("hava direnci ihmal edilen ortamda dusen cisme etkiyen hava "
+     "direnci kuvveti nedir", "0 N"),
+    ("sabit hizla giden arabanin ivmesi nedir", "0"),
+    # Dogru fizik: BHH maksimum hizi
+    ("30 m genlikli basit harmonik hareket periyodu 10 s maksimum hizi",
+     "18.85"),
+    ("2 m genlikli, periyodu 4 s olan harmonik hareketin maksimum hizi",
+     "3.14"),
+    # Fiziksel olmayan girdi sessizce kabul edilmemeli
+    ("-5 kg kutleli cismin kinetik enerjisi 10 m/s hizda", "fiziksel değil"),
+    ("-100 K sicaklikta 2 mol gazin 0.05 m3 hacimde basinci",
+     "fiziksel değil"),
+    # Sorulan buyuklugun birimi dogru olmali
+    ("sabit hizla giden trenin uzerindeki net kuvvet nedir", "0 N"),
+    ("dengede duran cismin ivmesi nedir", "0 m/s^2"),
+    # Verilen ile sorulan karismamali
+    ("kutlesi 5 kg olan cismin agirligi kac newton", "49"),
+    # Yaricap bir yer degistirme degildir
+    ("yaricapi 0.5 m periyodu 2 s dairesel hareket cizgisel hizi", "1.57"),
+    ("yalitilmis sistemde disariya verilen isi kac joule", "0 J"),
+    ("kutlesi 2 kg hizi 5 m/s olan cismin momentumu nedir", "10"),
+    ("10 kg + 5 saniye kac eder", "yapılamaz"),
+    ("3 saat kac saniye eder", "10800"),
+]
+
+
+def tuzak_puani():
+    """Kac tuzak soru dogru cevaplaniyor? (dogru, toplam)"""
+    from . import brain
+    dogru = 0
+    for i, (soru, beklenen) in enumerate(TUZAK_SORULARI):
+        try:
+            t = brain.respond(soru, session="_olcum_tuzak%d" % i).text
+        except Exception:
+            t = ""
+        if beklenen.lower() in (t or "").lower():
+            dogru += 1
+    return dogru, len(TUZAK_SORULARI)
+
+
+def tuzak_bosluklari():
+    from . import brain
+    eksik = []
+    for i, (soru, beklenen) in enumerate(TUZAK_SORULARI):
+        try:
+            t = brain.respond(soru, session="_olcum_tuzak%d" % i).text
+        except Exception:
+            t = ""
+        if beklenen.lower() not in (t or "").lower():
+            eksik.append((soru[:52], beklenen,
+                          (t or "").split("\n")[0][:40]))
+    return eksik
+
+
 def ad_erisim_puani():
     """Kac konu SADECE ADIYLA dogru ve dolu cevap aliyor? (dogru, toplam)"""
     from . import brain

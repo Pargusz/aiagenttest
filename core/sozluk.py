@@ -63,7 +63,9 @@ EK_ANAHTAR = {
                 "halat gerilimi|asansor kablosu|ip ne kadar gerilir|"
                 "kutle ivme kuvvet|cismi hareket ettirmek",
                 "how much force is needed|tension in the cable|push an object"),
-    "agirlik": ("kac kilo kac newton eder|tartida ne gosterir|"
+    "agirlik": ("agirligi kac newton|agirligi nedir|"
+                "kac newton agirliginda|cismin agirligi|"
+                "kac kilo kac newton eder|tartida ne gosterir|"
                 "yercekimi ne kadar ceker|ayda agirligim",
                 "weight on scale|how heavy|gravity pull"),
     "surtunme": ("neden duruyor|zemin tutuyor mu|kayar mi|"
@@ -72,7 +74,8 @@ EK_ANAHTAR = {
     "hooke": ("yayi germek|yay ne kadar uzar|yayin uzamasi|yay sabiti|"
               "asinca uzayan yay|kuvvet uygulayinca uzama",
               "how much does the spring stretch|spring constant"),
-    "momentum": ("hareket miktari|carpismada korunan|kutle carpi hiz",
+    "momentum": ("cismin momentumu|momentumu nedir|momentumu kac|"
+                 "hareket miktari nedir|hareket miktari|carpismada korunan|kutle carpi hiz",
                  "momentum of a moving object"),
     "impuls": ("carpma etkisi|hava yastigi neden|darbe suresi|"
                "carpismada etki suresi|yumusak inis",
