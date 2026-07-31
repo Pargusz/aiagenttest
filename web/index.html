@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ParguszPhysics</title>
+<link rel="stylesheet" href="style.css?v=1.3">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚛️</text></svg>">
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ══════════════ KENAR ÇUBUĞU ══════════════ -->
+  <aside id="sidebar">
+    <div class="brand">
+      <div class="logo">⚛</div>
+      <div class="brand-text">
+        <div class="brand-name">ParguszPhysics</div>
+        <div class="brand-sub" data-i18n="tagline">Fizik · Hesaplama · MATLAB</div>
+      </div>
+    </div>
+
+    <button id="newChat" class="btn-new">
+      <span>＋</span> <span data-i18n="newChat">Yeni sohbet</span>
+    </button>
+
+    <div class="panel history-panel">
+      <div class="panel-head"><span data-i18n="history">Sohbetler</span></div>
+      <div id="sessionList" class="session-list"></div>
+    </div>
+
+    <!-- Sayilar sohbetin onune gecmemeli: varsayilan olarak katli durur,
+         merak eden acar. Arayuzun asil isi sohbet. -->
+    <details id="statusBox" class="status-box">
+      <summary class="status-summary">
+        <span id="statusDot" class="dot"></span>
+        <span id="statusLine">Durum</span>
+      </summary>
+      <div class="status-body">
+        <div class="panel">
+          <div class="panel-head">
+            <span data-i18n="learning">Öğrenme motoru</span>
+            <span id="engineDot" class="dot"></span>
+          </div>
+          <div class="stat-grid">
+            <div class="stat"><b id="sPapers">0</b><span data-i18n="papers">makale</span></div>
+            <div class="stat"><b id="sConcepts">0</b><span data-i18n="concepts">kavram</span></div>
+            <div class="stat"><b id="sLinks">0</b><span data-i18n="links">bağlantı</span></div>
+            <div class="stat"><b id="sTerms">0</b><span data-i18n="terms">terim</span></div>
+            <div class="stat"><b id="sInsights">0</b><span data-i18n="insights">bulgu</span></div>
+            <div class="stat"><b id="sDocs">0</b><span data-i18n="docs">belge</span></div>
+          </div>
+          <div class="engine-row">
+            <button id="toggleEngine" class="btn-ghost" data-i18n="stop">Durdur</button>
+            <button id="showLog" class="btn-ghost" data-i18n="log">Kayıt</button>
+          </div>
+          <div id="logBox" class="log-box hidden"></div>
+        </div>
+
+        <div class="panel" id="llmPanel">
+          <div class="panel-head">
+            <span data-i18n="llm">Dil modeli</span>
+            <span id="llmDot" class="dot"></span>
+          </div>
+          <div class="core-list"><div id="llmInfo">—</div></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head"><span data-i18n="core">Çekirdek bilgi</span></div>
+          <div class="core-list">
+            <div><b id="sTopics">0</b> <span data-i18n="topicsL">konu anlatımı</span></div>
+            <div><b id="sFormulas">0</b> <span data-i18n="formulasL">çözülebilir formül</span></div>
+            <div><b id="sConst">0</b> <span data-i18n="constL">fiziksel sabit</span></div>
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <div class="sidebar-foot">
+      <button id="typingToggle" class="toggle-btn" aria-pressed="true">
+        Yazma efekti: açık
+      </button>
+      <div class="lang-switch">
+        <button class="lang active" data-lang="tr">Türkçe</button>
+        <button class="lang" data-lang="en">English</button>
+      </div>
+      <div class="hint" data-i18n="langHint">Konuşma dili. Makaleler her dilden taranır.</div>
+    </div>
+  </aside>
+
+  <!-- ══════════════ SOHBET ══════════════ -->
+  <main id="main">
+    <header id="topbar">
+      <button id="menuBtn" class="icon-btn" aria-label="menu">☰</button>
+      <div class="topbar-title">ParguszPhysics</div>
+      <div id="thinkingBadge" class="thinking hidden"><i></i><i></i><i></i></div>
+    </header>
+
+    <div id="dropHint" class="drop-hint hidden"><div>📄 Bırakın — belgeyi çözümleyeyim</div></div>
+
+    <div id="chat">
+      <div id="welcome">
+        <div class="hero-logo">⚛</div>
+        <h1>ParguszPhysics</h1>
+        <p class="hero-sub" data-i18n="heroSub">
+          Fizik hesaplamaları, konu anlatımı, formül çözümü, MATLAB kodu ve
+          canlı literatür taraması.
+        </p>
+        <div id="suggestions" class="suggestions"></div>
+      </div>
+    </div>
+
+    <div id="composer">
+      <div class="composer-inner">
+        <input type="file" id="fileInput" multiple hidden
+               accept=".pdf,.txt,.md,.csv,.tex,.bib,.m,.py,.json,.png,.jpg,.jpeg,.gif,.webp">
+        <button id="attachBtn" class="attach-btn" title="Dosya ekle" aria-label="dosya ekle">
+          <svg viewBox="0 0 24 24" width="19" height="19"><path fill="currentColor"
+            d="M16.5 6v11.5a4 4 0 01-8 0V5a2.5 2.5 0 015 0v10.5a1 1 0 01-2 0V6H10v9.5a2.5 2.5 0 005 0V5a4 4 0 00-8 0v12.5a5.5 5.5 0 0011 0V6h-1.5z"/></svg>
+        </button>
+        <textarea id="input" rows="1" data-i18n-ph="placeholder"
+          placeholder="Bir fizik sorusu sorun, formül yazın veya hesaplama isteyin…"></textarea>
+        <button id="send" aria-label="gönder">
+          <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M3.4 20.4l17.45-7.48a1 1 0 000-1.84L3.4 3.6a.993.993 0 00-1.39.91L2 9.12c0 .5.37.93.87.99L17 12 2.87 13.88c-.5.07-.87.5-.87 1l.01 4.61c0 .71.73 1.2 1.39.91z"/></svg>
+        </button>
+      </div>
+      <div class="composer-foot">
+        <span data-i18n="foot">Enter ile gönder · Shift+Enter yeni satır</span>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="app.js?v=1.3"></script>
+</body>
+</html>

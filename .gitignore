@@ -1,0 +1,12 @@
+# Ogrenilen veri ve dil modeli GitHub'a gitmez:
+#   * veritabani 160 MB'tan buyuk ve surekli degisiyor
+#   * dil modeli 4,7 GB (GitHub siniri dosya basina 100 MB)
+# Ikisi de kendi bilgisayarinizda kalir; motor orada calisir.
+data/
+*.db
+*.db-wal
+*.db-shm
+*.gguf
+__pycache__/
+*.pyc
+.DS_Store

@@ -1,0 +1,1 @@
+"""ParguszPhysics cekirdek paketi."""

@@ -1,0 +1,48 @@
+# -*- coding: utf-8 -*-
+"""Gunluk dilde sorulan sorular dogru formule gidiyor mu?
+
+Kullanici formul adini bilmez; "topun havada ne kadar kaldigi" der.
+Bu olcum, formul tabaninin gunluk dil kapsamini sayiyla gosterir.
+"""
+SORULAR = [
+ ("topun havada ne kadar kaldigini nasil bulurum", "serbest_dusme egik_h egik_menzil"),
+ ("kondansatorun dolmasi ne kadar surer", "rc_zaman"),
+ ("kristalde x isini hangi acida yansir", "bragg"),
+ ("teleskopum ne kadar kucuk ayrinti secebilir", "rayleigh"),
+ ("gazi aniden sikistirinca sicakligi ne olur", "adyabatik"),
+ ("donen bir cismi durdurmak icin gereken enerji", "donme_enerji"),
+ ("bobinden gecen akim ne kadar surede kararli hale gelir", "rl_zaman"),
+ ("roketi dunyadan kurtarmak icin ne kadar hiz gerekir", "kacis_hiz"),
+ ("tahta parcasi suda neden yuzuyor", "arsimet"),
+ ("yildizin bize uzakligini nasil olcerim", "uzaklik_modulu kadir"),
+ ("arabanin fren mesafesi neye bagli", "kin_v2 kinetik"),
+ ("asansor kablosu ne kadar gerilim tasir", "newton2 agirlik"),
+ ("suyu kaynatmak icin ne kadar enerji gerekir", "isi gizli_isi"),
+ ("buzdolabi ne kadar verimli calisir", "sogutma_cop isi_pompasi"),
+ ("gitar teli hangi notayi calar", "tel_harmonik"),
+ ("iki hoparlor arasinda neden vinlama olur", "vurum"),
+ ("gozlugumun numarasi neye gore belirlenir", "mercek mercek_yapimci"),
+ ("gunes gozlugu isigi nasil azaltiyor", "malus"),
+ ("atom hangi renkte isik yayar", "rydberg bohr_E foton foton_lam"),
+ ("radyoaktif madde ne zaman zararsiz hale gelir", "yari_omur bozunma_sabiti aktivite"),
+ ("nukleer santral enerjiyi nereden aliyor", "kutle_enerji_mev kutle_kusuru nukleon_basina"),
+ ("uydunun dunyaya dusmemesi icin hizi ne olmali", "yorunge_hiz merkezcil"),
+ ("borudan gecen su debisi nasil hesaplanir", "sureklilik poiseuille"),
+ ("ucak kanadi nasil kaldiriyor", "kaldirma_kuvveti_kanat bernoulli"),
+ ("motorun verimi en fazla ne olabilir", "carnot otto_verim"),
+ ("elektrik faturasi neye gore artiyor", "elektrik_guc guc"),
+ ("trafo gerilimi nasil dusuruyor", "transformator"),
+ ("miknatis bobinde neden akim ureti", "faraday"),
+ ("metal isitilinca neden uzuyor", "termal_genlesme"),
+ ("cam neden isigi buker", "snell"),
+ ("uzak galaksiler neden kirmizi gorunuyor", "kirmizi_kayma hubble"),
+ ("isik hizina yaklasinca zaman neden yavaslar", "zaman_genlesme"),
+ ("elektronun yerini neden tam bilemiyoruz", "belirsizlik"),
+ ("gunes ne kadar enerji yayiyor", "stefan ters_kare_isik"),
+ ("sicak cisim neden kirmizi sonra beyaz gorunur", "wien stefan_wien_tepe"),
+ ("yayin uzamasi ne kadar kuvvet demek", "hooke"),
+ ("sarkacin periyodu neye bagli", "sarkac"),
+ ("dalgic derinlikte neden basinc hisseder", "hidrostatik"),
+ ("yariiletkenin direnci sicaklikla neden degisir", "yariiletken_tasiyici iletkenlik"),
+ ("plazmada elektronlar hangi frekansta titrer", "plazma_frekans"),
+]
