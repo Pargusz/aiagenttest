@@ -405,11 +405,19 @@ def touch_session(session, title=None):
 
 
 def list_sessions(limit=60):
+    """Kullaniciya gosterilecek sohbetler.
+
+    Alt cizgiyle baslayan oturumlar ICSELDIR (test takimi, olcumler,
+    otomatik denemeler). Olculdu: test kosusundan sonra kenar cubugunda
+    "_test_pr2 / merhaba", "_t_gok / gokyuzu neden mavi" gibi sekiz
+    sohbet beliriyordu. Kullanicinin listesi onun konusmalarina aittir.
+    """
     c = conn()
     rows = c.execute(
         "SELECT s.id, s.title, s.updated, "
         "  (SELECT COUNT(*) FROM chat WHERE chat.session = s.id) AS n "
         "FROM sessions s WHERE s.id IN (SELECT DISTINCT session FROM chat) "
+        "  AND s.id NOT LIKE '\_%' ESCAPE '\\' "
         "ORDER BY s.updated DESC LIMIT ?", (limit,)).fetchall()
     return [dict(r) for r in rows]
 

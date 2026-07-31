@@ -1266,6 +1266,12 @@ def run():
         return "temiz" if sohbet == 0 else "sohbet kalmis"
     check("silme: tumunu sil ogrenilen bilgiye dokunmuyor",
           _tumunu_sil_denemesi, "temiz")
+    # Test oturumlari kullanicinin sohbet listesinde gorunmemeli.
+    # Olculdu: test kosusundan sonra kenar cubuguna sekiz test sohbeti
+    # dusuyordu ("_test_pr2 / merhaba" gibi).
+    check("silme: ic oturumlar listede gorunmuyor",
+          lambda: [x for x in db.list_sessions(80)
+                   if x["id"].startswith("_")], [])
 
     # Gunluk hayattan sorular cekirdekte olmali. Olculdu: "gokyuzu neden
     # mavi" sorusuna "mavi kart" gecen bir vatandaslik hukuku makalesi
