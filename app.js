@@ -935,21 +935,74 @@ function baglantiEkrani(mesaj) {
 // Ayarı sonradan değiştirebilmek için: konsoldan ya da adres çubuğuna
 // #baglanti yazarak.
 window.parguszBaglanti = baglantiEkrani;
-if (location.hash === "#baglanti") baglantiEkrani("Bağlantı ayarları.");
 
-if (SUNUCU.gerekliMi()) {
-  baglantiEkrani();
-} else {
-  api("/api/surum").then(function (r) {
-    if (!r.ok) throw new Error(r.status === 403 ? "anahtar" : "durum");
-    return r.json();
-  }).catch(function () {
-    // Sunucuya ulasilamiyorsa ekrani HER durumda goster. Onceden
-    // yalnizca uzak kokende gosteriliyordu; arayuz yerel bir adresten
-    // sunulup motor baska yerdeyse sayfa sessizce bos kaliyordu.
-    baglantiEkrani("Sunucuya ulaşamadım. Motor açık mı, adres doğru mu? " +
-                   "(Ücretsiz tünel adresleri her açılışta değişir.)");
+// ── Otomatik bağlanma ──────────────────────────────────────────────────
+// Ücretsiz tünel adresi her açılışta değişir; kullanıcıyı her seferinde
+// adres girmeye zorlamak kabul edilemez. Çözüm iki parçalı:
+//
+//   ANAHTAR : bir kereye mahsus bağlantıdaki #anahtar=... ile gelir ve
+//             tarayıcıda saklanır. Depoda DURMAZ — depo herkese açık.
+//   ADRES   : sunucu her açılışta güncel adresi sunucu.json dosyasına
+//             yazıp GitHub'a gönderir; sayfa onu kendisi okur.
+//
+// Böylece kullanıcı ilk seferden sonra hiçbir şey girmez.
+
+// 1. Adres çubuğundaki anahtarı al ve gizle (geçmişte kalmasın)
+(function () {
+  var m = (location.hash || "").match(/anahtar=([^&]+)/);
+  if (m) {
+    SUNUCU.kur(SUNUCU.adres, decodeURIComponent(m[1]));
+    try {
+      history.replaceState(null, "", location.pathname + location.search);
+    } catch (e) { location.hash = ""; }
+  }
+})();
+
+// 2. Sunucunun yayımladığı güncel adresi oku
+function yayinlananAdres() {
+  return fetch("sunucu.json?t=" + Date.now(), { cache: "no-store" })
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (j) { return (j && j.adres) ? j.adres : null; })
+    .catch(function () { return null; });
+}
+
+// 3. Bir adresin gerçekten çalıştığını sına
+function adresCalisiyorMu() {
+  return api("/api/surum")
+    .then(function (r) { return r.ok; })
+    .catch(function () { return false; });
+}
+
+function otomatikBaglan() {
+  // Önce elimizdeki adresi dene
+  adresCalisiyorMu().then(function (tamam) {
+    if (tamam) return;
+    // Olmadıysa sunucunun yayımladığı adresi al ve onu dene
+    yayinlananAdres().then(function (adres) {
+      if (!adres) {
+        return baglantiEkrani(
+          "Sunucuya ulaşamadım. Motorun açık olduğundan emin olun.");
+      }
+      SUNUCU.kur(adres, SUNUCU.anahtar);
+      adresCalisiyorMu().then(function (oldu) {
+        if (oldu) {
+          location.reload();
+        } else if (!SUNUCU.anahtar) {
+          baglantiEkrani("Sunucuyu buldum ama erişim anahtarı gerekiyor. " +
+                         "Size verilen bağlantıyı kullanın ya da anahtarı " +
+                         "buraya girin.");
+        } else {
+          baglantiEkrani("Sunucu adresi güncel değil ya da motor kapalı.");
+        }
+      });
+    });
   });
+}
+
+if (location.hash === "#baglanti") {
+  baglantiEkrani("Bağlantı ayarları.");
+} else {
+  otomatikBaglan();
 }
 
 api("/api/surum").then(function (r) { return r.json(); })

@@ -61,13 +61,29 @@ tıklayın. Pencere şunları yazar:
 
 **Pencereyi açık bırakın.** Kapanırsa erişim de kapanır.
 
-### 3. Bağlanın
+### 3. Bağlanın — bir kereye mahsus
 
-Arkadaşınız sayfayı telefondan veya bilgisayardan açar; bir kez sunucu
-adresini ve anahtarı girer. Tarayıcı bunları hatırlar.
+Başlatıcının yazdığı **tek bağlantıyı** gönderin:
 
-Ayarı sonradan değiştirmek için sayfa adresinin sonuna `#baglanti`
-ekleyin.
+```
+https://pargusz.github.io/aiagenttest/#anahtar=ANAHTARINIZ
+```
+
+Karşı taraf bunu bir kez açar; anahtar tarayıcısına kaydedilir. Bundan
+sonra sade adres yeter:
+
+```
+https://pargusz.github.io/aiagenttest/
+```
+
+**Adres her açılışta değişse bile bir daha hiçbir şey girilmez.**
+Sunucu her başlatıldığında güncel tünel adresini `sunucu.json` dosyasına
+yazıp GitHub'a gönderir; arayüz açılışta o dosyayı okuyup kendi bağlanır.
+
+Anahtar bu dosyaya **yazılmaz** — depo herkese açıktır. Adres tek başına
+işe yaramaz.
+
+Ayarı elle değiştirmek için sayfa adresinin sonuna `#baglanti` ekleyin.
 
 ---
 

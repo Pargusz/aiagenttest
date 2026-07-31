@@ -97,19 +97,47 @@ done
 
 echo ""
 if [ -n "$ADRES" ]; then
+  # ── Adresi yayimla ───────────────────────────────────────────────────
+  # Ucretsiz tunelde adres her acilista degisir. Kullaniciyi her
+  # seferinde yeni adresi elle girmeye zorlamak yerine, guncel adresi
+  # depoya yazip gonderiyoruz; arayuz onu kendisi okuyor.
+  #
+  # DIKKAT: bu dosyaya ANAHTAR yazilmaz. Depo herkese aciktir; anahtar
+  # oraya konursa erisim denetimi anlamini yitirir.
+  printf '{"adres": "%s", "guncelleme": "%s"}\n' \
+    "$ADRES" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > sunucu.json
+
+  if git rev-parse --git-dir >/dev/null 2>&1; then
+    git add sunucu.json >/dev/null 2>&1
+    if git diff --cached --quiet sunucu.json 2>/dev/null; then
+      echo "  Adres degismemis, yayin guncel."
+    else
+      git commit -q -m "sunucu adresi guncellendi" >/dev/null 2>&1
+      if git push -q origin main >/dev/null 2>&1; then
+        echo "  Guncel adres GitHub'a yayimlandi."
+      else
+        echo "  ! Adres yayimlanamadi (GitHub'a erisilemedi)."
+        echo "    Arkadasiniz adresi elle girmek zorunda kalabilir."
+      fi
+    fi
+  fi
+
+  echo ""
   echo "  ────────────────────────────────────────────────────────────"
-  echo "  ARKADASINIZA VERECEKLERINIZ"
+  echo "  ARKADASINIZA VERECEGINIZ TEK BAGLANTI (bir kereye mahsus)"
   echo ""
-  echo "    1. Sayfa   : $ONYUZ/aiagenttest/"
-  echo "    2. Sunucu  : $ADRES"
-  echo "    3. Anahtar : $ANAHTAR"
+  echo "    $ONYUZ/aiagenttest/#anahtar=$ANAHTAR"
   echo ""
-  echo "  Sayfayi acinca sunucu adresini ve anahtari bir kez girer;"
-  echo "  tarayici hatirlar. Telefondan da ayni sekilde calisir."
+  echo "  Bu baglantiyi bir kez acar; anahtar tarayicisina kaydedilir."
+  echo "  Bundan sonra sadece su adresi kullanmasi yeter:"
+  echo ""
+  echo "    $ONYUZ/aiagenttest/"
+  echo ""
+  echo "  Adres her acilista degisse bile arayuz guncelini kendisi bulur;"
+  echo "  bir daha hicbir sey girmesi gerekmez."
   echo "  ────────────────────────────────────────────────────────────"
   echo ""
-  echo "  NOT: Ucretsiz tunelde adres her acilista DEGISIR. Sabit adres"
-  echo "  isterseniz Cloudflare hesabiyla adli tunel kurulur (yine ucretsiz)."
+  echo "  (Su anki sunucu adresi: $ADRES)"
 else
   echo "  ! Tunel adresi alinamadi. data/tunel.log dosyasina bakin."
 fi
