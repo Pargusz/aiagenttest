@@ -17,7 +17,7 @@ sunucusudur** ve GitHub Pages yalnızca statik dosya sunabilir.
 
 | Parça | Nerede çalışır | İçerik |
 |---|---|---|
-| **Ön yüz** (arayüz) | GitHub Pages | `docs/` — HTML, CSS, JS |
+| **Ön yüz** (arayüz) | GitHub Pages | kök — `index.html`, `app.js`, `style.css` |
 | **Motor** (beyin) | Sizin bilgisayarınız | `core/`, `run.py` + veritabanı |
 
 Veritabanı (öğrendiği 30.000+ yayın, kavramlar, bağlantılar) **sizin
@@ -32,8 +32,9 @@ aşar hem de sürekli değişir.
 
 Bu depoyu GitHub'a gönderdikten sonra:
 
-**Settings → Pages → Source: Deploy from a branch → Branch: `main` /
-`docs`** seçin ve kaydedin.
+Pages **kökten** yayınlanır (`main` / `root`). Arayüz dosyaları
+(`index.html`, `app.js`, `style.css`) bu yüzden deponun kökündedir;
+kaynakları `web/` klasöründe durur ve ikisi birlikte güncellenir.
 
 Birkaç dakika içinde arayüz şurada olur:
 

@@ -43,14 +43,25 @@ echo "  Erisim anahtari : $ANAHTAR"
 echo "  On yuz          : $ONYUZ/aiagenttest/"
 echo ""
 
-# ── cloudflared var mi? ────────────────────────────────────────────────
-if ! command -v cloudflared >/dev/null 2>&1; then
-  echo "  ! cloudflared kurulu degil. Bir kereye mahsus kurmak icin:"
+# ── cloudflared bul ────────────────────────────────────────────────────
+# Once proje icindeki kopya (brew gerektirmez), sonra sistemdeki.
+if [ -x "araclar/cloudflared" ]; then
+  CF="./araclar/cloudflared"
+elif command -v cloudflared >/dev/null 2>&1; then
+  CF="cloudflared"
+else
+  CF=""
+fi
+
+if [ -z "$CF" ]; then
+  echo "  ! cloudflared bulunamadi. Indirmek icin:"
   echo ""
-  echo "      brew install cloudflared"
+  echo "      mkdir -p araclar && cd araclar && \\"
+  echo "      curl -sL -o cf.tgz https://github.com/cloudflare/cloudflared/\\"
+  echo "releases/latest/download/cloudflared-darwin-arm64.tgz && \\"
+  echo "      tar -xzf cf.tgz && chmod +x cloudflared && rm cf.tgz"
   echo ""
-  echo "  Homebrew yoksa: https://brew.sh"
-  echo "  Kurduktan sonra bu dosyayi yeniden calistirin."
+  echo "  Sonra bu dosyayi yeniden calistirin."
   echo ""
   echo "  Simdilik yalnizca bu bilgisayardan erisilebilir:"
   echo "      http://127.0.0.1:$PORT"
@@ -72,7 +83,7 @@ done
 
 # ── Tuneli ac ──────────────────────────────────────────────────────────
 echo "  Tunel aciliyor…"
-cloudflared tunnel --url "http://127.0.0.1:$PORT" \
+"$CF" tunnel --url "http://127.0.0.1:$PORT" \
   --no-autoupdate > data/tunel.log 2>&1 &
 TUNEL_PID=$!
 

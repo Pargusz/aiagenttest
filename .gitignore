@@ -10,3 +10,6 @@ data/
 __pycache__/
 *.pyc
 .DS_Store
+
+# Indirilen arac (18 MB, GitHub'a gerek yok)
+araclar/
