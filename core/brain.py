@@ -1878,6 +1878,21 @@ def h_formul(msg, lang, ctx):
     except Exception:
         _cok = None
     if _cok:
+        # KENDI COZDUGUNDEN OGREN. Zincir bir problemi adim adim cozup
+        # her adimi dogruladiysa, izledigi yol bir COZUM SEMASIDIR.
+        # Ayni boyut imzasina sahip yeni bir problem geldiginde bu yol
+        # once denenir. Kullanicinin istegi buydu: "aralarinda baglanti
+        # kurarak daha once hic gormedigi sorulari da cozebilsin".
+        try:
+            from . import problemler as _prb2, zincir as _zn2
+            _yol = []
+            for _f in formulas.FORMULAS:
+                if _f["tr"] and _f["tr"] in _cok:
+                    _yol.append(_f["id"])
+            if len(_yol) >= 2:
+                _prb2.sema_kaydet(msg, _yol, _f.get("topic", ""), msg[:200])
+        except Exception:
+            pass
         return Response(_cok, kind="solution")
 
     knowns_raw = nlu.extract_known_values(msg)

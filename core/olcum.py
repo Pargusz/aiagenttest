@@ -540,6 +540,75 @@ def tuzak_bosluklari():
     return eksik
 
 
+# ── Problem korpusu ve ogrenilen semalar ───────────────────────────────────
+# Kullanicinin istegi: "cozulmus problemlerden beslenip hic gormedigi
+# sorulari da cozebilsin". Bunun olcusu iki sayidir:
+#   * korpusa giren problem sayisi (ne kadar malzeme gordu)
+#   * ogrenilen SEMA sayisi (kac farkli cozum yolunu tanidi)
+# Semalar sayilardan bagimsizdir; bu yuzden yeni bir soruda ise yararlar.
+
+def problem_durumu():
+    """(problem_sayisi, sema_sayisi, sema_kaniti) doner."""
+    from . import db
+    try:
+        c = db.conn()
+        p = c.execute("SELECT COUNT(*) FROM problems").fetchone()[0]
+        s = c.execute("SELECT COUNT(*) FROM semalar").fetchone()[0]
+        k = c.execute("SELECT COALESCE(SUM(kanit),0) FROM semalar"
+                      ).fetchone()[0]
+        return p, s, k
+    except Exception:
+        return 0, 0, 0
+
+
+# Ayni SEMAYA uyan ama daha once hic gorulmemis problemler. Sema
+# ogrenmenin ise yarayip yaramadigini olcer: sayilar ve kelimeler
+# farkli, fizik ayni.
+GORULMEMIS_SORULAR = [
+    ("15 m yuksekten birakilan 4 kg cismin yere carparken kinetik "
+     "enerjisi", "588"),
+    ("7 m yuksekten birakilan 3 kg tasin yere carpma kinetik enerjisi",
+     "205"),
+    ("24 V kaynaga seri bagli 6 ohm ve 6 ohm direncten gecen akim", "2 A"),
+    ("18 V kaynaga paralel bagli 6 ohm ve 3 ohm devreden gecen akim",
+     "9 A"),
+    ("5 m genlikli periyodu 4 s olan harmonik hareketin maksimum hizi",
+     "7.85"),
+    ("800 kg araba 15 m/s hizdan 3 saniyede duruyor fren kuvveti", "-4000"),
+    ("yaricapi 2 m periyodu 8 s dairesel hareketin cizgisel hizi", "1.57"),
+    ("proton 300 V ile hizlandirilirsa kazandigi enerji", "4.8"),
+]
+
+
+def gorulmemis_puani():
+    """Hic gorulmemis ama ayni fizikteki problemler. (dogru, toplam)"""
+    from . import brain
+    dogru = 0
+    for i, (soru, beklenen) in enumerate(GORULMEMIS_SORULAR):
+        try:
+            t = brain.respond(soru, session="_olcum_yeni%d" % i).text
+        except Exception:
+            t = ""
+        if beklenen.split(" ")[0].split(".")[0] in (t or ""):
+            dogru += 1
+    return dogru, len(GORULMEMIS_SORULAR)
+
+
+def gorulmemis_bosluklari():
+    from . import brain
+    eksik = []
+    for i, (soru, beklenen) in enumerate(GORULMEMIS_SORULAR):
+        try:
+            t = brain.respond(soru, session="_olcum_yeni%d" % i).text
+        except Exception:
+            t = ""
+        if beklenen.split(" ")[0].split(".")[0] not in (t or ""):
+            son = [x for x in (t or "").split("\n") if x.startswith("## ")]
+            eksik.append((soru[:48], beklenen,
+                          son[0][:26] if son else "(hesap yok)"))
+    return eksik
+
+
 def ad_erisim_puani():
     """Kac konu SADECE ADIYLA dogru ve dolu cevap aliyor? (dogru, toplam)"""
     from . import brain

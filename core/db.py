@@ -166,6 +166,49 @@ CREATE TABLE IF NOT EXISTS session_state (
 -- Makalelerden cikarilan yapilandirilmis bulgular.
 -- Terim sayimi tek basina "inceleme" degildir; burada cumleler turlerine
 -- ayrilip ilgili kavrama baglanir, boylece cevaplarda kullanilabilir.
+-- ── Cozumlu problemler ────────────────────────────────────────────────────
+-- Kullanicinin onceligi: "en onemli alan problem cozme". Makale ozeti bir
+-- arastirma sonucunu anlatir, ders kitabi konuyu ogretir; ama problem
+-- COZMEYI ancak cozulmus problemlere bakarak ogrenilebilir.
+--
+-- Burada her kayit bir problem metni ve (varsa) cozumudur. Bunlardan iki
+-- sey cikarilir:
+--   1. Dogrulanmis yeni bagintilar (SymPy + boyut denetiminden gecenler)
+--   2. COZUM SEMASI: hangi turden verilerle hangi buyukluk aranmis ve
+--      hangi bagintilar kullanilmis. Yeni bir problem geldiginde benzer
+--      semalar ipucu olarak kullanilir.
+CREATE TABLE IF NOT EXISTS problems (
+    id        INTEGER PRIMARY KEY,
+    kaynak    TEXT,          -- ocw | olimpiyat | kitap | yuklenen
+    ext_id    TEXT UNIQUE,
+    baslik    TEXT,
+    ders      TEXT,
+    url       TEXT,
+    metin     TEXT NOT NULL, -- problemin kendisi
+    cozum     TEXT,          -- varsa cozum metni
+    konu      TEXT,          -- tahmini fizik konusu
+    zorluk    TEXT,
+    at        REAL
+);
+CREATE INDEX IF NOT EXISTS idx_prob_konu ON problems(konu, kaynak);
+
+-- Cozum semalari: bir problemin imzasi -> kullanilan bagintilar.
+-- Imza, verilen buyuklukerin ve aranan buyuklugun BOYUTLARINDAN olusur;
+-- boylece "kutle + hiz -> enerji" gibi bir kalip, sayilardan bagimsiz
+-- olarak eslesir.
+CREATE TABLE IF NOT EXISTS semalar (
+    id        INTEGER PRIMARY KEY,
+    imza      TEXT NOT NULL,   -- "kg,m/s->J" gibi
+    konu      TEXT,
+    formuller TEXT NOT NULL,   -- virgulle ayrilmis formul id'leri
+    kanit     INTEGER DEFAULT 1,  -- kac problemde ise yaradi
+    hata      INTEGER DEFAULT 0,  -- kac problemde yanlis cikti
+    ornek     TEXT,
+    at        REAL,
+    UNIQUE(imza, formuller)
+);
+CREATE INDEX IF NOT EXISTS idx_sema_imza ON semalar(imza, kanit DESC);
+
 CREATE TABLE IF NOT EXISTS insights (
     id        INTEGER PRIMARY KEY,
     norm      TEXT,          -- ilgili kavram (normalize) ya da ''

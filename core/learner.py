@@ -395,6 +395,8 @@ class Learner(object):
             self._task_universite_depolari,  # Zenodo/OpenAIRE/HAL/OAPEN
             self._task_ders_kitabi,     # OpenStax ders kitaplari
             self._task_video_ders,      # MIT OCW ders videolari (transkript)
+            self._task_problem,         # cozumlu problem setleri
+            self._task_problem_ogren,   # problemlerden sema ve baginti
             self._task_consolidate,
             self._task_kendini_dogrula,
             self._task_genisle,        # okuduklarindan yeni yetenek uretir
@@ -1156,6 +1158,34 @@ class Learner(object):
         if eklenen:
             self.log("Video ders: %s — %d yeni ders anlatimi dinlendi"
                      % (konu, eklenen))
+
+    def _task_problem(self):
+        """Cozumlu problem setleri topla (MIT OCW, acik lisansli).
+
+        Kullanicinin onceligi problem cozme. Makale ozeti ve ders
+        anlatimi konuyu ogretir; problem COZMEYI cozulmus problemlere
+        bakarak ogrenilir.
+        """
+        from . import problemler
+        try:
+            yeni, dosya = problemler.topla(en_fazla=4)
+        except Exception as e:
+            self.log("Problem: toplanamadi (%s)" % str(e)[:60])
+            return
+        if yeni:
+            self.log("Problem: %d dosyadan %d problem alindi" % (dosya, yeni))
+
+    def _task_problem_ogren(self):
+        """Problemlerden COZUM SEMASI ve yeni baginti cikar."""
+        from . import problemler
+        try:
+            sema, bag = problemler.ogren(en_fazla=30)
+        except Exception as e:
+            self.log("Problem ogrenme: hata (%s)" % str(e)[:60])
+            return
+        if sema or bag:
+            self.log("Problem ogrenme: %d sema, %d yeni baginti"
+                     % (sema, bag))
 
     def _task_genisle(self):
         """Okunanlardan yeni YETENEK uret.

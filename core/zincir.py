@@ -298,12 +298,49 @@ def _aday_havuzu(soru):
     return havuz
 
 
+def kullanilan_formuller(soru, max_adim=MAX_ADIM):
+    """Bu problemi cozerken hangi bagintilar kullanilir? (id listesi)
+
+    Cozum SEMASI cikarmak icin: metni degil, YOLU dondurur.
+    """
+    metin = coz(soru, "tr", max_adim)
+    if not metin:
+        return []
+    idler = []
+    for f in formulas.FORMULAS:
+        ad = f["tr"]
+        if ad and ("**%s**" % ad) not in metin and ad not in metin:
+            continue
+        if ad and ad in metin and f["id"] not in idler:
+            idler.append(f["id"])
+    return idler
+
+
 def coz(soru, lang="tr", max_adim=MAX_ADIM):
     """Cok adimli problemi zincirleyerek coz. Metin ya da None."""
     tr = lang == "tr"
     adaylar = _aday_havuzu(soru)
     if not adaylar:
         return None
+
+    # GECMIS DENEYIM. Benzer imzali problemlerde ise yaramis baginti
+    # dizileri varsa onlari one aliyoruz. Bu, cevabi degistirmez —
+    # cevabi yine SymPy hesaplar ve fiziksel makullugu denetlenir —
+    # yalnizca DOGRU YOLU daha cabuk bulmayi saglar. Ogrencinin
+    # "benzer soruyu daha once cozmustum" demesiyle ayni sey.
+    try:
+        from . import problemler as _prb
+        oncelik = []
+        for idler, _kanit, _hata in _prb.sema_ipucu(soru):
+            oncelik.extend(idler)
+        if oncelik:
+            sirali, kalan = [], []
+            for skor, f in adaylar:
+                (sirali if f["id"] in oncelik else kalan).append((skor, f))
+            if sirali:
+                adaylar = sirali + kalan
+    except Exception:
+        pass
 
     bilinen, sen_degerler, sen_notlar = _baslangic_bilinenler(soru, adaylar)
     if len(bilinen) < 2:

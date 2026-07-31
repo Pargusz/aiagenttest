@@ -1335,6 +1335,46 @@ def run():
     check("yonerge: normal soru yonerge sanilmiyor",
           lambda: _ayr.yonerge_mi("boyut analizi nedir"), False)
 
+    # ── Problemlerden ogrenme ───────────────────────────────────────
+    # Kullanicinin onceligi: "cozulmus problemlerden beslenip hic
+    # gormedigi sorulari da cozebilsin". Mekanizma: cozum SEMASI
+    # (boyut imzasi -> baginti dizisi). Sema sayilardan bagimsizdir.
+    from . import problemler as _prb2
+    check("problem: bir problemin boyut imzasi cikariliyor",
+          lambda: bool(_prb2.imza("2 kg cisim 3 m/s hizla gidiyor")), True)
+    check("problem: ayni fizik, farkli sayi -> ayni imza",
+          lambda: (_prb2.imza("2 kg cisim 3 m/s")
+                   == _prb2.imza("9 kg cisim 40 m/s")), True)
+    check("problem: farkli fizik -> farkli imza",
+          lambda: (_prb2.imza("2 kg cisim 3 m/s")
+                   != _prb2.imza("12 V kaynak 4 ohm direnc")), True)
+    check("problem: cozumden soru ve cozum ayriliyor",
+          lambda: _prb2.soru_cozum_ayir(
+              "A block slides down a ramp. Find its speed.\n"
+              "Solution:\nUse energy conservation, v = 4 m/s.")[1]
+          is not None, True)
+    check("problem: sayisal cevap okunuyor",
+          lambda: _prb2.sayisal_cevap("... therefore v = 4.5 m/s")[0], 4.5)
+    check("problem: zincir kullandigi bagintilari bildiriyor",
+          lambda: len(_zin.kullanilan_formuller(
+              "10 m yuksekten birakilan 2 kg cismin kinetik enerjisi")) >= 2,
+          True)
+    # PDF metninden cikan "bagintilarin" cogu cop; cozum tabani elle
+    # dogrulanmis kalmali (olculdu: 56 adaydan 6'si gecti, o 6 da
+    # bozuktu — kod satiri, OCR hatasi, tek problemin sayisal cevabi).
+    check("problem: kod satiri baginti sayilmiyor",
+          lambda: _prb2.problem_bagintisi_mi(
+              "T = zeros(size(g)); %initialize T"), False)
+    check("problem: sayisal cevap baginti sayilmiyor",
+          lambda: _prb2.problem_bagintisi_mi("P = 12.3 bar"), False)
+    check("problem: gercek baginti kabul ediliyor",
+          lambda: _prb2.problem_bagintisi_mi("v = a*t + v0"), True)
+    check("problem: pdf baginti cikarimi kapali",
+          lambda: _prb2.PDF_BAGINTI_CIKAR, False)
+
+    check("problem: hic gorulmemis sorular cozuluyor",
+          lambda: _olcum.gorulmemis_puani()[0] >= 7, True)
+
     # Gunluk hayattan sorular cekirdekte olmali. Olculdu: "gokyuzu neden
     # mavi" sorusuna "mavi kart" gecen bir vatandaslik hukuku makalesi
     # getiriliyordu.
