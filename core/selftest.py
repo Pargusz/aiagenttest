@@ -1375,6 +1375,18 @@ def run():
     check("problem: hic gorulmemis sorular cozuluyor",
           lambda: _olcum.gorulmemis_puani()[0] >= 7, True)
 
+    # Bir problemin cevabi kac kez sorulursa sorulsun aynidir. Olculdu:
+    # ayni soru ucuncu kez sorulunca cevap "tekrar" sayilip sayisal
+    # cozum yerine "sunlardan devam edebiliriz" listesi donuyordu.
+    def _tekrar_sorulan():
+        t = ""
+        for _ in range(3):
+            t = brain.respond("12 V pil 3 ohm direncten gecen akim nedir",
+                              session="_t_tekrar_soru").text
+        return t
+    check("problem: ayni soru tekrar sorulunca da sayi veriyor",
+          _tekrar_sorulan, contains("4"))
+
     # ── Genis sayisal problem seti ──────────────────────────────────
     # Kullanicinin istegi: "her turlu sayisal problemi cozebilsin".
     check("sayisal: genis problem seti cozuluyor",
@@ -1402,6 +1414,58 @@ def run():
           lambda: _prb.hedef_tahmin(formulas.BY_ID["elektrik_guc"],
                                     "220 V ve 5 A icin elektriksel guc")
           != "V", True)
+
+    # ── Soruyu BUTUN olarak okuma ───────────────────────────────────
+    # Olculdu (canli sohbet): "klasik kinetik enerji formulunden cikarak
+    # Hamiltonyan operatorunun kinetik enerji kismini ispatlar misin"
+    # sorusundan yalnizca "kinetik enerji" cekilip Ek = mv²/2 karti
+    # donuyordu. Iki kavram + aralarindaki gecis isteniyordu.
+    from . import kopru as _kop
+    _KE_SORU = ("klasik fizik kinetik enerji formulunden cikarak "
+                "schrodingerin denklemindeki hamiltonyan operatorunun "
+                "kinetik enerji kismini ispatlar misin")
+    check("kopru: iliski sorusu taniniyor",
+          lambda: _kop.istek_mi(_KE_SORU), True)
+    check("kopru: 'ispatlar misin' turetim niyetine gidiyor",
+          lambda: nlu.classify("noether teoremini ispatlar misin")[0],
+          "turetim")
+    check("kopru: klasik-kuantum gecisi cevaplaniyor",
+          lambda: _kop.coz(_KE_SORU, "tr"), contains("−iħ", "∇²"))
+    check("kopru: cevapta klasik uc da var",
+          lambda: _kop.coz(_KE_SORU, "tr"), contains("p²/2m"))
+    check("kopru: tek kavramli 'turet' kopruye gitmiyor",
+          lambda: _kop.coz("noether teoremini turet", "tr"), None)
+    check("kopru: sayisal soru kopruye gitmiyor",
+          lambda: _kop.coz("20 m/s hizla giden 5 kg cismin kinetik "
+                           "enerjisi nedir", "tr"), None)
+    check("kopru: lagrange-hamilton gecisi yazili",
+          lambda: _kop.coz("lagrange ile hamilton arasindaki gecis nasil "
+                           "olur", "tr"), contains("Legendre", "∂L/∂q̇"))
+    check("kopru: newton-gorelilik gecisi yazili",
+          lambda: _kop.coz("newton mekanigi ile ozel gorelilik arasindaki "
+                           "iliski nedir", "tr"), contains("γ"))
+    # Bu soruda iliski kalibi yok ("neden ... gormuyoruz"); kopru degil,
+    # dogrudan konu aramasi cevaplamali. Olcut: dogru konuya gitmesi.
+    check("kopru: klasik limit sorusu dogru konuya gidiyor",
+          lambda: knowledge.search("kuantum etkilerini neden gunluk "
+                                   "hayatta gormuyoruz")[0][1]["key"],
+          "klasik_limit")
+    check("kopru: klasik limit anlatiminda Ehrenfest var",
+          lambda: knowledge.get("klasik_limit")["tr"], contains("Ehrenfest"))
+    check("kopru: iliski sorusu formul kartina dusmuyor",
+          lambda: _kop.konu_bicimli_mi("elektrik alan ile manyetik alan "
+                                       "arasindaki baglanti nedir"), True)
+    check("kopru: momentum operatoru de Broglie'den geliyor",
+          lambda: _kop.coz("momentum operatoru nereden geliyor", "tr"),
+          contains("de Broglie"))
+    check("cekirdek: kanonik kuantumlama konusu yuklu",
+          lambda: bool(knowledge.get("kanonik_kuantumlama")), True)
+    check("cekirdek: klasik limit konusu yuklu",
+          lambda: bool(knowledge.get("klasik_limit")), True)
+    check("cekirdek: legendre donusumu konusu yuklu",
+          lambda: bool(knowledge.get("lagrange_hamilton_gecis")), True)
+    check("kopru: olcum seti her iki uca da deginiyor",
+          lambda: _olcum.kopru_puani()[0] >= 10, True)
 
     # Gunluk hayattan sorular cekirdekte olmali. Olculdu: "gokyuzu neden
     # mavi" sorusuna "mavi kart" gecen bir vatandaslik hukuku makalesi

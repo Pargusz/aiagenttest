@@ -138,7 +138,15 @@ def h_selam(msg, lang, ctx):
     # Once dogal karsilik denenir: "merhaba, ben Polat" diyene katalog
     # okumak yerine insan gibi cevap vermek gerekir. Model yoksa asagidaki
     # kural tabanli metin kullanilir.
-    if dil.MODEL.kurulu_mu():
+    #
+    # AMA kuru bir "merhaba"ya kendimizi TANITIRIZ: kullanici kiminle
+    # konustugunu ve neler yapabildigimi bilmeli. Dogal sohbet, selamin
+    # yaninda baska bir sey de soylendiginde devreye girer ("merhaba,
+    # ben Polat", "selam nasilsin").
+    _kuru_selam = bool(re.match(
+        r"^\s*(merhaba|selam|slm|gunaydin|hey|hi|hello|"
+        r"iyi (gunler|aksamlar|geceler))[\s!.,]*$", nlu.norm(msg or "")))
+    if dil.MODEL.kurulu_mu() and not _kuru_selam:
         try:
             ad = (ctx.get("profil") or {}).get("ad")
             dogal = dil.MODEL.sohbet(msg, lang, ctx.get("history"), ad)
@@ -452,7 +460,30 @@ def h_neden(msg, lang, ctx):
                                  r"kaynaklan|yol aç|dolayı|sonucu|because|"
                                  r"since|due to|reason|causes|leads to|"
                                  r"arises from|follows from)\b", c, re.I)]
-        if nedensel:
+        if len(nedensel) >= 2:
+            bulundu = True
+            for c in nedensel[:4]:
+                lines.append("- " + c)
+            lines.append("")
+        elif hits[0][0] >= 40:
+            # Cekirdekte GUCLU eslesen bir anlatim var ama icinde "cunku"
+            # gecen cumle yok. Bag sozcugu aramak yerine anlatimin
+            # KENDISINI vermek dogru cevaptir. Olculdu: "kuantum
+            # etkilerini neden gunluk hayatta gormuyoruz" sorusuna
+            # Karsilik Gelme Ilkesi anlatimindan tek bir cumle
+            # cekiliyor, gerisi alakasiz makale alintisi oluyordu.
+            bulundu = True
+            lines.append("**" + (t["tr_title"] if lang == "tr"
+                                 else t["en_title"]) + "**")
+            lines.append("")
+            lines.append(govde.strip())
+            if t.get("eqs"):
+                lines.append(L(lang, "\n**Temel bağıntılar:**",
+                               "\n**Key relations:**"))
+                for e in t["eqs"]:
+                    lines.append("- `%s`" % e)
+            lines.append("")
+        elif nedensel:
             bulundu = True
             for c in nedensel[:4]:
                 lines.append("- " + c)
@@ -593,7 +624,23 @@ def _yabanci_alinti_yigini(metin, lang):
     """
     if lang != "tr":
         return False
-    alintilar = [s for s in metin.split("\n") if s.strip().startswith("- ")]
+    # Yalnizca DUZ YAZI madde isaretleri sayilir. Verilenler listesi
+    # ("- m = 3 kg", "- v₀ = 12 m/s") bir alinti degildir; sayilinca
+    # uretilmis problem sayfasi "yabanci yigin" sanilip dil modeline
+    # yeniden yazdiriliyordu ve dogrulanmis sayilar kayboluyordu
+    # (olculdu: "10 soru uret" istegi 10 yerine 0 yapilandirilmis soru).
+    alintilar = []
+    for s in metin.split("\n"):
+        s = s.strip()
+        if not s.startswith("- "):
+            continue
+        govde_s = s[2:]
+        if "=" in govde_s or govde_s.startswith("`"):
+            continue                      # baginti/deger satiri, cumle degil
+        kelimeler = [w for w in re.findall(r"[A-Za-zçğıöşüÇĞİÖŞÜ]+", govde_s)
+                     if len(w) >= 3]
+        if len(kelimeler) >= 5:
+            alintilar.append(s)
     if len(alintilar) < 2:
         return False
     govde = " ".join(alintilar)
@@ -2074,9 +2121,11 @@ def h_konu(msg, lang, ctx):
     used_any = False
 
     # 1) Cekirdek bilgi tabani
+    cekirdek_skor = 0
     hits = knowledge.search(query, limit=3)
     if hits and hits[0][0] >= 20:
         score, t = hits[0]
+        cekirdek_skor = score
         used_any = True
         lines.append("### " + (t["tr_title"] if lang == "tr" else t["en_title"]))
         lines.append("")
@@ -2109,8 +2158,14 @@ def h_konu(msg, lang, ctx):
                        "ağımdan derledim; çekirdek anlatımlarımdan biri değil._",
                        "\n\n_I assembled this page from papers I've read and my "
                        "concept graph; it is not one of my built-in topics._")
+            # "sentez" isareti: bu sayfa cekirdek anlatim DEGIL, okunan
+            # makalelerden derlendi. Dil modeli metni yeniden yazsa bile
+            # bu durustluk notu cevabin sonunda kalmali (olculdu: model
+            # rewrite'i notu siliyordu ve sayfa cekirdek bilgi gibi
+            # gorunuyordu).
             return Response(metin, kind="topic",
-                            extra={"konu_etiketi": m["ad"][:60]})
+                            extra={"konu_etiketi": m["ad"][:60],
+                                   "sentez": True})
 
     # 2) Ogrenilmis kavramlar (Wikipedia)
     concepts = retrieval.search_concepts(query, limit=3, lang=lang)
@@ -2268,7 +2323,13 @@ def h_konu(msg, lang, ctx):
                    % (query[:40], query[:40]),
                    "\n💡 Ask `%s example` for a worked problem, or `%s matlab code` "
                    "for a simulation." % (query[:40], query[:40])))
-    return Response("\n".join(lines), kind="topic")
+    # Cekirdek anlatim guclu eslesmisse bunu isaretle: dil modeli boyle bir
+    # cevabi "serbest" sayip yeniden yazmamali. Olculdu: "density of
+    # states" sorusu Istatistiksel Mekanik konusuyla eslesiyordu ama
+    # cevap yerine model "The context provided does not include
+    # information..." yaziyordu.
+    return Response("\n".join(lines), kind="topic",
+                    extra={"cekirdek_skor": cekirdek_skor})
 
 
 _PROBLEM_SETI = re.compile(
@@ -2998,7 +3059,24 @@ _DIL_DISI_NIYETLER = frozenset((
 ))
 
 
+def h_kopru(msg, lang, ctx):
+    """Iki kavram arasindaki iliskiyi soran sorular.
+
+    Olculdu: "klasik kinetik enerji formulunden cikarak Hamiltonyan
+    operatorunun kinetik enerji kismini ispatlar misin" sorusuna
+    yalnizca `Ek = mv²/2` karti donuyordu — cumlenin geri kalani hic
+    okunmuyordu. Soru BUTUN olarak okunmali; bkz. kopru.py.
+    """
+    from . import kopru as _kopru
+    metin = _kopru.coz(msg, lang)
+    if metin:
+        return Response(metin, kind="topic",
+                        extra={"konu_etiketi": nlu.strip_command_words(msg)[:60]})
+    return h_konu(msg, lang, ctx)
+
+
 HANDLERS = {
+    "kopru": h_kopru,
     "yol_haritasi": h_yol_haritasi,
     "yetenek": h_yetenek, "kendini_dogrula": h_kendini_dogrula,
     "karsilastir": h_karsilastir, "neden": h_neden, "nasil": h_nasil,
@@ -3328,6 +3406,21 @@ def _yon_cevabi(message, konu, onceki_metin, lang, ctx):
             if bg and not baglam.bos_mu(bg):
                 akici = dil.MODEL.yanitla(message, baglam=bg, lang=lang,
                                           gecmis=ctx.get("history"))
+                # Modelin "elimde bu bilgi yok" demesi, dogrulanmis
+                # anlatimi tekrar etmekten DAHA KOTUDUR. Olculdu:
+                # "density of states" sorusunda yapilandirilmis
+                # Istatistiksel Mekanik anlatimi yerine "The context
+                # provided does not include information about the density
+                # of states" donuyordu. Boyle bir cevap kabul edilmez.
+                _bilmiyorum = ("context provided does not",
+                               "does not include information",
+                               "i don't have", "i do not have",
+                               "no information", "bilgim yok",
+                               "bilgi bulunmuyor", "yer almiyor",
+                               "yer almıyor", "bulunmamaktadir",
+                               "bulunmamaktadır")
+                if akici and any(x in akici.lower() for x in _bilmiyorum):
+                    akici = ""
                 if akici and len(akici) > 40 and not _ayni_cevap(
                         onceki_metin, akici):
                     return akici
@@ -3619,6 +3712,26 @@ def respond(message, session="default", lang_override=None):
         except Exception:
             pass
 
+    # ── SORUYU BUTUN OLARAK OKU ────────────────────────────────────────
+    # Olculdu (canli kayit): "klasik kinetik enerji formulunden cikarak
+    # Hamiltonyan operatorundeki kinetik enerji formulunu ispatlar misin"
+    # sorusu, icinde "formulu" gectigi icin "formul" niyetine gidiyor ve
+    # cumleden yalnizca "kinetik enerji" cekilip Ek = mv²/2 karti
+    # basiliyordu. Soruda IKI kavram ve aralarindaki GECIS isteniyordu.
+    # Iliski sorusu tek bir formul karti ile cevaplanamaz.
+    if intent in ("formul", "konu", "turetim", "nasil", "neden", "ornek",
+                  "makale"):
+        try:
+            from . import kopru as _kopru
+            if _kopru.istek_mi(etkin) and _kopru.coz(etkin, lang):
+                intent = "kopru"
+            elif _kopru.konu_bicimli_mi(etkin):
+                # Tek kavram bulundu ama soru yine de ILISKI soruyor:
+                # cevap formul karti degil, konu anlatimi olmali.
+                intent = "kopru"
+        except Exception:
+            pass
+
     handler = HANDLERS.get(intent, h_konu)
     try:
         resp = handler(etkin, lang, ctx)
@@ -3696,11 +3809,22 @@ def respond(message, session="default", lang_override=None):
         zayif = (len(resp.text) < 260
                  or any(x in resp.text for x in _ITIRAF)
                  or _yabanci_alinti_yigini(resp.text, lang))
-        serbest = intent in ("konu", "genel") and conf < 60
+        # Cekirdekte GUCLU eslesen bir anlatim varsa cevap serbest degildir:
+        # dogrulanmis metni modele yeniden yazdirmak kayiptir.
+        serbest = (intent in ("konu", "genel") and conf < 60
+                   and resp.extra.get("cekirdek_skor", 0) < 40)
         # Uretilen cevap soruyla ortusmuyorsa (alakasiz konu getirilmisse)
         # kural tabanli yanit yerine baglamdan yanit uretilir.
+        # Alakasizlik denetimi metin ortusmesine bakar; uzun bir cekirdek
+        # anlatimda aranan terim ilk 400 karakterde gecmeyebilir. Olculdu:
+        # "ultraviolet catastrophe" sorusu dogru konuya (Kara Cisim, 57
+        # puan) gidiyordu ama basligin ilk paragrafinda terim gecmedigi
+        # icin "alakasiz" sayilip modele devrediliyordu. Cekirdek zaten
+        # anahtar kelime eslesmesiyle karar veriyor; guclu eslesmede bu
+        # sezgisel denetim devre disi.
         alakasiz = (intent in ("konu", "neden", "nasil", "genel")
-                    and not _relevant(message, resp.text[:400]))
+                    and resp.extra.get("cekirdek_skor", 0) < 40
+                    and not _relevant(message, resp.text[:1200]))
         # Konusmadan ogrenme: cevabin zayif kaldigi her soru bir bilgi
         # bosluktur ve ogrenme motoruna hedef olur. En degerli ogrenme
         # sinyali budur — bot ne sorulduguna gore gelisir.
@@ -3832,6 +3956,26 @@ def respond(message, session="default", lang_override=None):
     # makalenin gercek adi "Hareketli Cisimlerin Elektrodinamigi Uzerine".
     # Bu projenin kurali degismedi: model dili kurar, olgulari kaynak verir.
     _kisi_kaydi = _kisi_sorusu(message)
+    # Yon/devam cevabi yalnizca KONU anlatimlarinda anlamlidir. Sohbet
+    # niyetleri (yetenek, selam...) ve URETIM istekleri buraya girmemeli:
+    # olculdu, "10 soru uret" ikinci kez istendiginde uretilen sayfa bir
+    # oncekine benzedigi icin "tekrar" sayilip modele yeniden yazdiriliyor
+    # ve dogrulanmis 10 sorunun 9'u kayboluyordu. Ayni sekilde MATLAB
+    # yetenek anlatimi da model metnine donusuyordu.
+    #
+    # SAYISAL COZUM de asla ezilmemeli: ayni problemi ikinci kez soran
+    # ogrenciye sayi yerine "sunlardan devam edebiliriz" listesi
+    # donuyordu (olculdu: odev olcumu 18/18'den 12/18'e dusuyordu, cunku
+    # olcum oturumlarinda ayni soru daha once sorulmustu). Bir problemin
+    # cevabi kac kez sorulursa sorulsun aynidir.
+    _YON_DISI = _SOHBET_NIYETLERI | {"ornek", "matlab", "hesap", "denklem",
+                                     "problem_seti", "kopru", "formul",
+                                     "turetim", "turev", "integral",
+                                     "limit", "seri", "diferansiyel",
+                                     "matris", "vektor", "birim", "sabit"}
+    if intent in _YON_DISI:
+        _kisi_kaydi = None
+        _konu_adi = ""
     if _kisi_kaydi or (_konu_adi and
                        ((_yon_var and (onceki or _ayni_baslik)) or _tekrar)):
         _hedef_konu = _konu_adi or (
@@ -3839,6 +3983,18 @@ def respond(message, session="default", lang_override=None):
             else _kisi_kaydi["en_title"])
         _yon = _yon_cevabi(message, _hedef_konu, resp.text, lang, ctx)
         if _yon:
+            # Yon cevabi bir CEKIRDEK anlatimin yerine geciyorsa, hangi
+            # konudan geldigi yazili kalmali; ogrenci kaynagi gormeli
+            # (olculdu: "ultraviolet catastrophe" dogru konuya gidiyordu
+            # ama yon cevabinda konu adi kayboluyordu).
+            _cek = resp.extra.get("cekirdek_skor", 0)
+            if _cek >= 40:
+                try:
+                    _h = knowledge.search(etkin, limit=1)
+                    if _h:
+                        _yon += _konu_notu(_h[0][1], "", lang)
+                except Exception:
+                    pass
             resp.text = _yon
             resp.kind = "topic"
             resp.extra["devam"] = True
@@ -3846,6 +4002,18 @@ def respond(message, session="default", lang_override=None):
     # Kaynakca: bilginin nereden geldigi her zaman gorunsun.
     # Kaynakca yalnizca ICERIKLI cevaba eklenir. "Bu konuda elimde bilgi
     # yok" diyen bir cevabin altina kaynak listelemek yaniltici oluyordu.
+    # Sentez sayfasinin durustluk notu, dil modeli metni yeniden yazdiysa
+    # kaybolmus olabilir. Bilginin NEREDEN geldigi her zaman gorunmeli.
+    if resp.extra.get("sentez") and resp.extra.get("dil_modeli"):
+        if "çekirdek" not in resp.text and "built-in" not in resp.text:
+            resp.text += L(lang,
+                           "\n\n_Bu sayfayı okuduğum makalelerden ve kavram "
+                           "ağımdan derledim; çekirdek anlatımlarımdan biri "
+                           "değil._",
+                           "\n\n_I assembled this page from papers I've read "
+                           "and my concept graph; it is not one of my "
+                           "built-in topics._")
+
     _bos_cevap = (resp.extra.get("bosluk")
                   or any(x in resp.text[:200] for x in
                          ("elimde bilgi yok", "bilgim yok",

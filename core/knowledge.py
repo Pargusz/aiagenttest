@@ -241,8 +241,17 @@ attraction matter; the van der Waals equation corrects for both.
   ["At 300 K a nitrogen molecule (28 u) has v_rms = 517 m/s. That it exceeds the speed of "
    "sound (346 m/s) is no accident — sound is carried by molecular motion.",
    "One mole of ideal gas at 0 °C and 1 atm occupies V = nRT/P = 0.0224 m³ = 22.4 L."],
-  kw="ideal gaz|kinetik teori|maxwell boltzmann|esbolusum|ideal gas|kinetic theory|equipartition",
-  related="termodinamik_yasalari|istatistiksel_mekanik"),
+  kw="ideal gaz|kinetik teori|maxwell boltzmann|esbolusum|ideal gas|kinetic theory|equipartition|"
+     # DIKKAT: buraya "ortalama kinetik enerji" gibi iki kelimesi birden
+     # "kinetik enerji" olan bir anahtar KOYULMAMALI. Kismi eslesme
+     # yuzunden her "kinetik enerji" sorusu bu konuya puan yaziyor ve
+     # gorelilik/kuantum sorulari ideal gaza kayiyordu (olculdu: "ozel
+     # gorelilikte enerji ifadesinden klasik kinetik enerjiyi turet"
+     # sorusu 92 puanla ideal gaza gidiyordu).
+     "sicaklik molekullerin kinetik enerjisi|"
+     "sicaklik molekullerin hizi|esbolusum teoremi|rms hiz|"
+     "molekullerin ortalama enerjisi",
+  related="termodinamik_yasalari|istatistiksel_mekanik|enerji_korunumu"),
 
 T("maxwell_denklemleri", "Maxwell Denklemleri", "Maxwell's Equations", """
 Elektromanyetizmanin tamamini ozetleyen dort denklem:
@@ -1553,10 +1562,11 @@ def _ileri_konulari_kat():
     from .yanbilim import YAN_BILIM_KONULARI
     from .gunluk import GUNLUK_KONULAR
     from .mufredat import MUFREDAT_KONULARI
+    from .gecisler import GECIS_KONULARI
     var = {t["key"] for t in TOPICS}
     for t in (KURAM_KONULARI + DENEY_KONULARI + ILERI_KONULAR
               + BILIMCILER + YAN_BILIM_KONULARI + GUNLUK_KONULAR
-              + MUFREDAT_KONULARI):
+              + MUFREDAT_KONULARI + GECIS_KONULARI):
         if t["key"] not in var:
             TOPICS.append(t)
             var.add(t["key"])

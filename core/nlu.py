@@ -52,6 +52,42 @@ def detect_lang(text):
         return "tr"
     if en_hits > tr_hits:
         return "en"
+    # Berabere: kisa terim sorularinda ("ultraviolet catastrophe",
+    # "density of states") ne Turkce harf ne de listelenmis kelime var ve
+    # soru sessizce Turkce sayiliyordu; cevap da Turkce donuyordu
+    # (olculdu). Karari cekirdek bilgi tabanina sorariz: bu kelimeler
+    # anlatimlarin INGILIZCE metninde mi geciyor, TURKCE metninde mi?
+    return _cekirdekten_dil(t)
+
+
+_DIL_SOZLUK = {"en": None, "tr": None}
+
+
+def _dil_sozlugu():
+    """Cekirdek anlatimlardan dile OZGU kelime kumeleri."""
+    if _DIL_SOZLUK["en"] is None:
+        try:
+            from . import knowledge
+            en, tr = set(), set()
+            for k in knowledge.TOPICS:
+                en |= set(re.findall(r"[a-z]{4,}", (k.get("en") or "").lower()))
+                tr |= set(re.findall(r"[a-z]{4,}",
+                                     norm(k.get("tr") or "").lower()))
+            _DIL_SOZLUK["en"] = en - tr
+            _DIL_SOZLUK["tr"] = tr - en
+        except Exception:
+            _DIL_SOZLUK["en"], _DIL_SOZLUK["tr"] = set(), set()
+    return _DIL_SOZLUK["en"], _DIL_SOZLUK["tr"]
+
+
+def _cekirdekten_dil(t):
+    en_sozluk, tr_sozluk = _dil_sozlugu()
+    if not en_sozluk:
+        return "tr"
+    kelimeler = set(re.findall(r"[a-z]{4,}", t))
+    e, r = len(kelimeler & en_sozluk), len(kelimeler & tr_sozluk)
+    if e > r:
+        return "en"
     return "tr"
 
 
@@ -242,9 +278,14 @@ PATTERNS = [
     ]),
     ("turetim", 92, [
         # "adim adim", "turet", "nasil cozulur" — sonucu degil YOLU istiyor
+        # Turkce ekler: "ispatlar misin", "ispatlayabilir misin", "kanitlar
+        # misin". Duz \bispatla\b siniri bunlari tutmuyordu ve soru
+        # "formul" niyetine dusup tek kart cevap aliyordu (olculdu:
+        # "... hamiltonyan operatorunu ispatlar misin" -> Ek = mv²/2).
         r"\b(adim adim|adimlarla|nasil (cozulur|cozerim|turetilir|elde edilir)|"
-        r"turet(imi|ilisi)?|nasil turetilir|cikarimi|ispatla|kanitla|"
-        r"step by step|derive|derivation)\b",
+        r"turet(imi|ilisi)?|nasil turetilir|cikarimi|ispatla\w*|ispat ed\w*|"
+        r"ispat et\w*|kanitla\w*|goster\w* ki|"
+        r"step by step|derive|derivation|prove that|show that)\b",
     ]),
     ("formul", 88, [
         r"\b(formul(u|un|unu|u nedir)?|denklemi nedir|bagintisi|equation for|"

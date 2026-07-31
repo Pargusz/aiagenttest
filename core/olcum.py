@@ -561,6 +561,88 @@ def problem_durumu():
         return 0, 0, 0
 
 
+# ── Soruyu BUTUN olarak okuma olcumu ──────────────────────────────────────
+# Olculdu (canli sohbet): "klasik kinetik enerji formulunden cikarak
+# Hamiltonyan operatorunun kinetik enerji kismini ispatlar misin" sorusuna
+# cumleden yalnizca "kinetik enerji" cekilip `Ek = mv²/2` karti donuyordu.
+# Soruda IKI kavram ve aralarindaki GECIS isteniyordu.
+#
+# Bu olcum, cevabin sorunun HER IKI ucuna da deginip degmedigini sinar.
+# Her satir: (soru, [A ucundan izler], [B ucundan izler]). Cevapta her iki
+# listeden de en az bir iz bulunmalidir. Tek uca deginen cevap — ne kadar
+# dogru olursa olsun — soruyu parca okumus demektir ve basarisiz sayilir.
+KOPRU_SORULARI = [
+    ("klasik fizik kinetik enerji formulunden cikarak schrodingerin "
+     "denklemindeki hamiltonyan operatorunun kinetik enerji kismini "
+     "ispatlar misin",
+     ["p²/2m", "mv²", "½mv", "klasik"],
+     ["p̂", "−iħ", "-iħ", "∇²", "operat"]),
+    ("klasik fizikteki kinetik enerji ile kuantumdaki kinetik enerji "
+     "operatoru arasindaki gecisi acikla",
+     ["p²/2m", "mv²", "klasik"],
+     ["p̂", "−iħ", "∇²", "kuantumlama"]),
+    ("klasik mekanikten kuantum mekanigine nasil gecilir",
+     ["klasik"], ["kuantumlama", "p̂", "−iħ", "∇²"]),
+    ("momentum operatoru nereden geliyor",
+     ["de Broglie", "duzlem dalga", "düzlem dalga", "ψ"],
+     ["p̂", "−iħ", "-iħ"]),
+    ("hamiltonyen operatorunun kinetik enerji kismi nasil elde edilir",
+     ["p²/2m", "klasik", "Hamilton"], ["∇²", "p̂", "−iħ"]),
+    ("kuantum etkilerini neden gunluk hayatta gormuyoruz",
+     ["de Broglie", "λ", "kucuk", "küçük"],
+     ["Ehrenfest", "klasik", "limit"]),
+    ("newton mekanigi ile ozel gorelilik arasindaki iliski nedir",
+     ["mv", "Newton", "klasik"], ["γ", "mc²", "goreli", "göreli"]),
+    ("klasik momentum ile goreli momentum arasindaki iliski nedir",
+     ["mv"], ["γ", "goreli", "göreli"]),
+    ("lagrange ile hamilton formalizmi arasindaki gecis nasil olur",
+     ["L", "Lagrange", "q̇"], ["Legendre", "∂L/∂q̇", "Hamilton"]),
+    ("eslenik momentum nedir hamiltonyen nasil elde edilir",
+     ["∂L/∂q̇", "eslenik", "eşlenik", "Lagrange"],
+     ["Legendre", "Hamilton"]),
+    ("elektrik alan ile manyetik alan arasindaki baglanti nedir",
+     ["elektrik", "E"], ["manyetik", "B", "Maxwell"]),
+    ("schrodinger denklemi nereden geliyor",
+     ["de Broglie", "klasik", "p²/2m"],
+     ["Schrödinger", "Schrodinger", "Ĥ", "∇²"]),
+    ("ozel gorelilikte enerji ifadesinden klasik kinetik enerjiyi turet",
+     ["γmc²", "γ", "goreli", "göreli"], ["mv²", "½mv", "klasik"]),
+    ("poisson parantezi ile komutator arasindaki iliski nedir",
+     ["Poisson", "{A,B}", "{q,p}"], ["iħ", "komut", "[Â", "[q̂"]),
+]
+
+
+def kopru_puani():
+    """Kac kopru sorusu HER IKI uca da degiyor? (dogru, toplam)"""
+    from . import brain
+    dogru = 0
+    for i, (soru, a, b) in enumerate(KOPRU_SORULARI):
+        try:
+            t = brain.respond(soru, session="_olcum_kopru%d" % i).text or ""
+        except Exception:
+            t = ""
+        if any(x in t for x in a) and any(x in t for x in b):
+            dogru += 1
+    return dogru, len(KOPRU_SORULARI)
+
+
+def kopru_bosluklari():
+    from . import brain
+    eksik = []
+    for i, (soru, a, b) in enumerate(KOPRU_SORULARI):
+        try:
+            t = brain.respond(soru, session="_olcum_kopru%d" % i).text or ""
+        except Exception:
+            t = ""
+        va, vb = any(x in t for x in a), any(x in t for x in b)
+        if not (va and vb):
+            bas = [x for x in t.split("\n") if x.startswith("#")]
+            eksik.append((soru[:46],
+                          "A" if not va else "B",
+                          bas[0][:34] if bas else "(bos)"))
+    return eksik
+
+
 # Ayni SEMAYA uyan ama daha once hic gorulmemis problemler. Sema
 # ogrenmenin ise yarayip yaramadigini olcer: sayilar ve kelimeler
 # farkli, fizik ayni.

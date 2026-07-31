@@ -121,6 +121,12 @@ uret üret uretir üretir uretim üretim uretme üretme soru sorular sorusu
 ornek örnek ornegi örneği ozet özet cizim çizim ciz çiz goster göster
 cam cama camdan camin camı su suya sudan suyun hava havaya havadan
 buz buza buzdan cisim cisme cismin tel telden telin
+gecis geçiş gecisi geçişi gecise gecisini geçişini gecilir geçilir
+gecer geçer gecen geçen ispat ispatla ispatlar ispatlamak kanit kanıt
+kanitla kanıtla turet türet turetim türetim turetilir türetilir
+iliski ilişki iliskisi ilişkisi baglanti bağlantı baglantisi bağlantısı
+arasinda arasında arasindaki arasındaki operator operatör operatoru
+operatörü hamiltonyen hamiltonyan lagranjiyen kuantumlama
 """.split())
 
 
