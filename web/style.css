@@ -80,6 +80,17 @@ html, body {
   font-size: 11px; text-transform: uppercase; letter-spacing: .7px;
   color: var(--text-faint); font-weight: 600; margin-bottom: 10px;
 }
+/* "Tumunu sil": basligin sagina, sessiz dursun. Yikici bir islem
+   oldugu icin dikkat cekmesi degil, arandiginda bulunmasi gerekir. */
+.clear-all {
+  background: none; border: 0; cursor: pointer; padding: 2px 4px;
+  font: inherit; font-size: 10px; letter-spacing: .4px;
+  text-transform: uppercase; color: var(--text-faint);
+  opacity: .6; transition: opacity .15s, color .15s;
+}
+.clear-all:hover { opacity: 1; color: var(--danger, #ff6b6b); }
+.clear-all:disabled { opacity: .4; cursor: default; }
+
 .dot {
   width: 8px; height: 8px; border-radius: 50%;
   background: var(--text-faint); flex: 0 0 8px;

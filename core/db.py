@@ -414,6 +414,38 @@ def list_sessions(limit=60):
     return [dict(r) for r in rows]
 
 
+def delete_all_sessions(immediate=False):
+    """TUM sohbet gecmisini sil — ogrenilen bilgiye dokunmadan.
+
+    Silinen: chat (mesajlar), sessions (sohbet listesi), session_state
+    (sohbet basina hatirlanan konu/kisi).
+
+    Silinmeyen: papers, concepts, insights, terms, relations,
+    formulas_learned, learned_eq, derived, aliases, gaps, explored,
+    concept_links. Yani sistem sohbetlerden ne ogrendiyse KALIR;
+    yalnizca gorunen konusma dokumu gider.
+
+    Doner: silinen mesaj ve sohbet sayisi.
+    """
+    c = conn()
+    try:
+        mesaj = c.execute("SELECT COUNT(*) FROM chat").fetchone()[0]
+        sohbet = c.execute("SELECT COUNT(*) FROM sessions").fetchone()[0]
+    except Exception:
+        mesaj = sohbet = 0
+    stmts = [("DELETE FROM chat", ()),
+             ("DELETE FROM session_state", ()),
+             ("DELETE FROM sessions", ())]
+    if immediate:
+        for sql, args in stmts:
+            c.execute(sql, args)
+        c.commit()
+    else:
+        for sql, args in stmts:
+            queue_write(sql, args)
+    return {"mesaj": mesaj, "sohbet": sohbet}
+
+
 def delete_session(session, immediate=False):
     """Sohbeti sil.
 

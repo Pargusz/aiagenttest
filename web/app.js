@@ -72,6 +72,11 @@ var I18N = {
     you: "Sen", bot: "ParguszPhysics", copy: "kopyala", copied: "kopyalandı",
     typing: "Yazma efekti", on: "açık", off: "kapalı",
     history: "Sohbetler", noHistory: "Henüz sohbet yok",
+    clearAll: "Tümünü sil",
+    clearAllAsk: "Tüm sohbet geçmişi silinsin mi?\n\n" +
+      "Yalnızca konuşma dökümü gider. Sistemin bu sohbetlerden " +
+      "öğrendiği bilgiler (makaleler, kavramlar, formüller) yerinde kalır.",
+    clearAllDone: "sohbet silindi",
     untitled: "Adsız sohbet", del: "Sil",
     attach: "Dosya ekle", reading: "Belge okunuyor…",
     insights: "bulgu", docs: "belge",
@@ -94,6 +99,11 @@ var I18N = {
     you: "You", bot: "ParguszPhysics", copy: "copy", copied: "copied",
     typing: "Typing effect", on: "on", off: "off",
     history: "Chats", noHistory: "No chats yet",
+    clearAll: "Delete all",
+    clearAllAsk: "Delete the entire chat history?\n\n" +
+      "Only the transcript is removed. What the system learned from " +
+      "these chats stays.",
+    clearAllDone: "chats deleted",
     untitled: "Untitled chat", del: "Delete",
     attach: "Attach a file", reading: "Reading document…",
     insights: "insights", docs: "docs",
@@ -714,6 +724,34 @@ function openSession(id) {
   $("sidebar").classList.remove("open");
 }
 
+// Tum sohbet gecmisini sil. YALNIZCA konusma dokumu gider; sistemin
+// bu sohbetlerden ogrendikleri (makale, kavram, formul, bulgu) kalir.
+// Geri alinamayan bir islem oldugu icin once onay soruluyor.
+function clearAllSessions() {
+  if (!window.confirm(t("clearAllAsk"))) return;
+  var btn = $("clearAll");
+  if (btn) { btn.disabled = true; btn.textContent = "…"; }
+  api("/api/tum-sohbetleri-sil", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({})
+  }).then(function (r) { return r.json(); })
+  .then(function (d) {
+    SESSION = "s" + Date.now();
+    localStorage.setItem("pp_session", SESSION);
+    chat.innerHTML = "";
+    showWelcome();
+    loadSessions();
+    var n = (d && d.silinen && d.silinen.sohbet) || 0;
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = n + " " + t("clearAllDone");
+      setTimeout(function () { btn.textContent = t("clearAll"); }, 2500);
+    }
+  }).catch(function () {
+    if (btn) { btn.disabled = false; btn.textContent = t("clearAll"); }
+  });
+}
+
 function deleteSession(id) {
   api("/api/oturum-sil", {
     method: "POST", headers: { "Content-Type": "application/json" },
@@ -787,6 +825,11 @@ $("typingToggle").addEventListener("click", function () {
 // kenar çubuğundaki listede durur ve tıklayınca geri açılır.
 $("newChat").addEventListener("click", function () {
   stopTyping();
+// "Tümünü sil" düğmesi
+(function () {
+  var b = document.getElementById("clearAll");
+  if (b) b.addEventListener("click", clearAllSessions);
+})();
   SESSION = "s" + Date.now();
   localStorage.setItem("pp_session", SESSION);
   showWelcome();

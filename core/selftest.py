@@ -1243,6 +1243,30 @@ def run():
     check("erisim: CORS yalnizca izinli adrese acilir",
           lambda: _cors_denemesi(), True)
 
+    # "Tumunu sil" YALNIZCA sohbet dokumunu silmeli; ogrenilen bilgi
+    # (makale, kavram, bulgu, formul) kalmali.
+    def _tumunu_sil_denemesi():
+        import time as _t
+        oturum = "_t_silme%d" % int(_t.time() * 1000)
+        db.add_chat(oturum, "user", "deneme mesaji") if hasattr(
+            db, "add_chat") else None
+        onceki = {}
+        with db.conn() as c:
+            for tablo in ("papers", "concepts", "insights", "terms",
+                          "formulas_learned", "gaps", "explored"):
+                onceki[tablo] = c.execute(
+                    "SELECT COUNT(*) FROM %s" % tablo).fetchone()[0]
+        db.delete_all_sessions(immediate=True)
+        with db.conn() as c:
+            sohbet = c.execute("SELECT COUNT(*) FROM chat").fetchone()[0]
+            for tablo, n in onceki.items():
+                if c.execute("SELECT COUNT(*) FROM %s" % tablo
+                             ).fetchone()[0] < n:
+                    return "%s tablosu kucuruldu" % tablo
+        return "temiz" if sohbet == 0 else "sohbet kalmis"
+    check("silme: tumunu sil ogrenilen bilgiye dokunmuyor",
+          _tumunu_sil_denemesi, "temiz")
+
     # Gunluk hayattan sorular cekirdekte olmali. Olculdu: "gokyuzu neden
     # mavi" sorusuna "mavi kart" gecen bir vatandaslik hukuku makalesi
     # getiriliyordu.

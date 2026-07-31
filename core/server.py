@@ -322,6 +322,14 @@ class Handler(BaseHTTPRequestHandler):
             return self._json({"ok": True, "oturumlar": db.list_sessions(80)})
 
         # Geriye donuk uyumluluk: eski arayuz bu ucu "sohbeti sil" icin kullaniyordu
+        if path == "/api/tum-sohbetleri-sil":
+            # Yalnizca gorunen sohbet dokumu silinir; ogrenilen bilgi
+            # (makaleler, kavramlar, bulgular, formuller) yerinde kalir.
+            sayim = db.delete_all_sessions()
+            brain._SESSION_MEM.clear()
+            return self._json({"ok": True, "silinen": sayim,
+                               "oturumlar": []})
+
         if path == "/api/temizle":
             session = data.get("oturum") or "default"
             db.delete_session(session)
