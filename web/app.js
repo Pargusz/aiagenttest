@@ -912,7 +912,7 @@ chat.addEventListener("click", function () {
 // ─────────────────────────────────────────── bağlantı ayarı
 // Arayüz GitHub Pages'ten açıldığında motorun adresi bilinmez; bir kez
 // sorulur ve tarayıcıda saklanır. Bağlantı koparsa aynı ekran döner.
-function baglantiEkrani(mesaj) {
+function baglantiEkrani(mesaj, onerilenAdres) {
   if (document.getElementById("pp-baglanti")) return;
   var d = document.createElement("div");
   d.id = "pp-baglanti";
@@ -947,7 +947,10 @@ function baglantiEkrani(mesaj) {
   document.body.appendChild(d);
   var adres = document.getElementById("pp-adres");
   var anahtar = document.getElementById("pp-anahtar");
-  adres.value = SUNUCU.adres;
+  // Kutuda ESKI adresin durmasi kullaniciyi yaniltiyordu: sunucu
+  // calisiyor olsa bile "Load failed" aliyordu. Yayimlanan adres
+  // biliniyorsa onu yaziyoruz.
+  adres.value = onerilenAdres || SUNUCU.adres;
   anahtar.value = SUNUCU.anahtar;
   var durum = document.getElementById("pp-durum");
 
@@ -1016,27 +1019,64 @@ function adresCalisiyorMu() {
     .catch(function () { return false; });
 }
 
+// Tünel her yeniden başladığında adres DEĞİŞİR. Yayımlanan adresin
+// GitHub Pages önbelleğine düşmesi bir iki dakika sürebiliyor; o arada
+// sayfa açılırsa eski adres okunuyor ve kullanıcı elle düzeltmek zorunda
+// kalıyordu (ölçüldü: motor, tünel ve anahtar çalışırken bile bağlantı
+// ekranında eski adres duruyordu). Bu yüzden birkaç kez, artan aralıkla
+// yeniden bakıyoruz.
+function adresAra(kalan, oncekiAdres) {
+  return yayinlananAdres().then(function (adres) {
+    if (adres && adres !== oncekiAdres) {
+      SUNUCU.kur(adres, SUNUCU.anahtar);
+      return adresCalisiyorMu().then(function (oldu) {
+        if (oldu) return adres;
+        return kalan > 0
+          ? bekle(3000).then(function () { return adresAra(kalan - 1, adres); })
+          : null;
+      });
+    }
+    if (kalan > 0) {
+      return bekle(3000).then(function () {
+        return adresAra(kalan - 1, oncekiAdres);
+      });
+    }
+    return null;
+  });
+}
+
+function bekle(ms) {
+  return new Promise(function (c) { setTimeout(c, ms); });
+}
+
 function otomatikBaglan() {
   // Önce elimizdeki adresi dene
   adresCalisiyorMu().then(function (tamam) {
     if (tamam) return;
     // Olmadıysa sunucunun yayımladığı adresi al ve onu dene
-    yayinlananAdres().then(function (adres) {
-      if (!adres) {
+    yayinlananAdres().then(function (ilk) {
+      if (!ilk) {
         return baglantiEkrani(
           "Sunucuya ulaşamadım. Motorun açık olduğundan emin olun.");
       }
-      SUNUCU.kur(adres, SUNUCU.anahtar);
+      SUNUCU.kur(ilk, SUNUCU.anahtar);
       adresCalisiyorMu().then(function (oldu) {
-        if (oldu) {
-          location.reload();
-        } else if (!SUNUCU.anahtar) {
-          baglantiEkrani("Sunucuyu buldum ama erişim anahtarı gerekiyor. " +
-                         "Size verilen bağlantıyı kullanın ya da anahtarı " +
-                         "buraya girin.");
-        } else {
-          baglantiEkrani("Sunucu adresi güncel değil ya da motor kapalı.");
+        if (oldu) return location.reload();
+        if (!SUNUCU.anahtar) {
+          return baglantiEkrani(
+            "Sunucuyu buldum ama erişim anahtarı gerekiyor. " +
+            "Size verilen bağlantıyı kullanın ya da anahtarı buraya girin.");
         }
+        // Adres eski olabilir: yayımlanan adres güncellenene kadar bekle
+        baglantiEkrani("Sunucu adresini arıyorum…", ilk);
+        adresAra(3, ilk).then(function (bulundu) {
+          if (bulundu) return location.reload();
+          var d = document.getElementById("pp-durum");
+          if (d) {
+            d.textContent = "Yayımlanan adres hâlâ yanıt vermiyor. " +
+              "Motorun açık olduğundan emin olup Bağlan'a basın.";
+          }
+        });
       });
     });
   });
