@@ -404,7 +404,7 @@ def touch_session(session, title=None):
     c.commit()
 
 
-def list_sessions(limit=60):
+def list_sessions(limit=60, ic_dahil=False):
     """Kullaniciya gosterilecek sohbetler.
 
     Alt cizgiyle baslayan oturumlar ICSELDIR (test takimi, olcumler,
@@ -413,11 +413,12 @@ def list_sessions(limit=60):
     sohbet beliriyordu. Kullanicinin listesi onun konusmalarina aittir.
     """
     c = conn()
+    suzgec = "" if ic_dahil else " AND s.id NOT LIKE '\_%' ESCAPE '\\' "
     rows = c.execute(
         "SELECT s.id, s.title, s.updated, "
         "  (SELECT COUNT(*) FROM chat WHERE chat.session = s.id) AS n "
         "FROM sessions s WHERE s.id IN (SELECT DISTINCT session FROM chat) "
-        "  AND s.id NOT LIKE '\_%' ESCAPE '\\' "
+        + suzgec +
         "ORDER BY s.updated DESC LIMIT ?", (limit,)).fetchall()
     return [dict(r) for r in rows]
 

@@ -375,20 +375,25 @@ def run():
                                           {"last_subject": "entropi"}), "entropi")
 
     # ------------------------------------------------------ sohbet oturumlari
+    # Test oturumlari alt cizgiyle basliyor; kullanici listesinde
+    # gorunmezler ama DEPOLAMA calismali. ic_dahil=True ile bakiyoruz.
     check("oturum: kaydediliyor ve listeleniyor",
-          lambda: any(r["id"] == "_test_baglam" for r in db.list_sessions(80)), True)
+          lambda: any(r["id"] == "_test_baglam"
+                      for r in db.list_sessions(80, ic_dahil=True)), True)
     check("oturum: baslik ilk mesajdan aliniyor",
-          lambda: next((r["title"] for r in db.list_sessions(80)
+          lambda: next((r["title"] for r in db.list_sessions(80, ic_dahil=True)
                         if r["id"] == "_test_baglam"), ""), contains("entropi"))
 
     def sil_ve_kontrol():
         db.delete_session("_test_silinecek", immediate=True)
         brain.respond("merhaba", session="_test_silinecek")
         db.flush_writes()
-        vardi = any(r["id"] == "_test_silinecek" for r in db.list_sessions(80))
+        vardi = any(r["id"] == "_test_silinecek"
+                    for r in db.list_sessions(80, ic_dahil=True))
         db.delete_session("_test_silinecek")
         db.flush_writes()
-        kaldi = any(r["id"] == "_test_silinecek" for r in db.list_sessions(80))
+        kaldi = any(r["id"] == "_test_silinecek"
+                    for r in db.list_sessions(80, ic_dahil=True))
         return vardi and not kaldi
     check("oturum: silme calisiyor", sil_ve_kontrol, True)
 
