@@ -322,6 +322,18 @@ def _baslangic_bilinenler(soru, adaylar):
         # -> vo = 0). Aksi hâlde etiket eslemesi o degiskeni doldurup
         # gercek degeri yanlis yere koyuyordu (olculdu: Doppler'de
         # kaynagin 30 m/s hizi gozlemci hizina yaziliyordu).
+        # "0.8c" gibi ISIK HIZI KATLARI. Olculdu: "0.8c hizla giden
+        # saatte 1 saniye gecerse" sorusunda `v` degiskenine 1 (saniye)
+        # yaziliyordu; dogru deger 2,398×10⁸ m/s. Bu deger metnin KENDI
+        # sozunden gelir, birim tahmininden degil — ustune yazar.
+        try:
+            for sym, deger in (problem.isik_hizi_degerleri(soru) or {}).items():
+                for _sk, _f in adaylar:
+                    if sym in _f["vars"]:
+                        bilinen[sym] = (float(deger), _f["vars"][sym][2])
+                        break
+        except Exception:
+            pass
         try:
             _ima, _ = problem.malzeme_degerleri(soru)
             _semboller = {s for _sk, _f in adaylar for s in _f["vars"]}
@@ -779,6 +791,14 @@ def coz(soru, lang="tr", max_adim=MAX_ADIM):
             except Exception:
                 _sorulan2 = None
             if _sorulan2:
+                # Sorulan sembol hâlâ bilinenler arasindaysa serbest
+                # birak: fallback'e gelindiyse zincir zaten cozememis
+                # demektir ve o deger baska bir buyuklukten tahminle
+                # gelmistir. Olculdu: cift yarikta `dy` (sorulan sacak
+                # araligi) 1e-4 ile doluydu — o aslinda yarik araligi
+                # `d`nin degeri; serbest birakilinca sonuc 0,012 m
+                # dogru cikiyor.
+                bilinen.pop(_sorulan2, None)
                 _var = {(h, f["id"]) for h, f in _liste}
                 for _s2, f2 in adaylar:
                     if _sorulan2 in f2["vars"] and \
