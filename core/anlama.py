@@ -116,6 +116,7 @@ _SORU_TIPLERI = [
 # Duzeltilmemesi gereken gunluk kelimeler. Bunlar dagarcikta olmadigi icin
 # "yanlis yazilmis" sanilip fizik terimlerine cevriliyordu: "misin" -> "isin".
 KORUNAN = set("""
+yardim yardım yardimci yardımcı
 misin mısın musun müsün miyim mıyım muyum müyüm midir mıdır mudur mudur
 mısınız misiniz musunuz musunuz degil değil değildir degildir olur olmaz
 lutfen lütfen tamam peki sanki hani yani zaten ancak fakat ayrica ayrıca
