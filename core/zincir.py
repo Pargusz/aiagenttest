@@ -317,9 +317,22 @@ def _baslangic_bilinenler(soru, adaylar):
         except Exception:
             pass
         try:
+            # SORULAN buyukluk eslesmeye KATILMAZ. Olculdu: Doppler'de
+            # "…icin DUYULAN frekans nedir" etiketi 1000 Hz'i `f`ye
+            # (duyulan frekans — yani sorulan buyukluge) bagliyordu;
+            # oysa 1000 Hz kaynagin frekansidir (`f0`). Sorulan sembolu
+            # disarida birakinca eleme dogru sonucu veriyor.
+            _sorulan = None
+            try:
+                _sorulan = problem.hedef_tahmin(adaylar[0][1], soru)
+            except Exception:
+                pass
+            _dolu = set(bilinen)
+            if _sorulan:
+                _dolu.add(_sorulan)
             for sym, veri in _etikete_gore_esle(
                     adaylar[0][1], _cevre_etiketleri(soru),
-                    dolu=set(bilinen)).items():
+                    dolu=_dolu).items():
                 bilinen.setdefault(sym, veri)
         except Exception:
             pass

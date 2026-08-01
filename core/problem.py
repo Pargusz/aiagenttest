@@ -272,12 +272,39 @@ def hedef_tahmin(f, soru, lang="tr"):
                 m = re.search(_yumusak_kalip(a), n)
                 if m:
                     yer = m.start() if yer is None else min(yer, m.start())
+                    continue
+                # Tam ad gecmiyorsa AYIRT EDICI kelimesinin yeri
+                # kullanilir. Olculdu: `f` degiskeninin adi "algilanan
+                # duyulan frekans"; cumlede tam hâli gecmedigi icin yer
+                # bulunamiyor, yakinlik odulu hic verilmiyordu ve hedef
+                # yanlis seciliyordu.
+                for kelime in a.split():
+                    if len(kelime) < 4 or kelime in _GENEL_AD:
+                        continue
+                    mk = re.search(r"(?<!\w)%s\w{0,3}(?!\w)"
+                                   % re.escape(kelime), n)
+                    if mk:
+                        yer = (mk.start() if yer is None
+                               else min(yer, mk.start()))
+                        break
             # Soru kelimesine yakinlik, puana eklenir (en fazla +8)
             if yer is not None:
                 uzaklik = abs(soru_yeri - yer)
-                yeni_adaylar.append((puan + max(0, 8 - uzaklik // 12), sym))
+                yeni_adaylar.append((puan + max(0, 8 - uzaklik // 12), sym,
+                                     uzaklik))
             else:
-                yeni_adaylar.append((puan, sym))
+                yeni_adaylar.append((puan, sym, 10 ** 6))
+        # SORU KELIMESINE EN YAKIN ADAY BELIRLEYICIDIR. Olculdu:
+        # "340 m/s SES HIZINDA ... duyulan frekans NEDIR" sorusunda
+        # `v` (ses hizi, adi birebir geciyor) ile `f` (duyulan frekans)
+        # puanda BERABERE kaliyor (11-11) ve siralama alfabetik olarak
+        # `v`yi seciyordu. Oysa "nedir"in hemen yanindaki buyukluk
+        # sorulan buyuklüktur; ses hizi VERILMIStir.
+        if yeni_adaylar:
+            en_yakin = min(x[2] for x in yeni_adaylar)
+            yeni_adaylar = [
+                (p + (10 if u == en_yakin and u < 10 ** 6 else 0), s)
+                for p, s, u in yeni_adaylar]
         adaylar = yeni_adaylar
 
     # En UZUN eslesme kazanir: "esdeger direnc", "direnc"ten daha ozeldir.
