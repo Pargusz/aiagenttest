@@ -1586,6 +1586,9 @@ def run():
           lambda: _olcum.genelleme_yeni_puani()[0] >= 4, True)
     check("genelleme: ayni fizik baska ifadeyle de bulunuyor",
           lambda: _olcum.genelleme_varyant_puani()[0] >= 6, True)
+    # 20 zor kuramsal turetim: ilk olcum 2/20 idi.
+    check("kuramsal: turetim sorulari gerilemiyor",
+          lambda: _olcum.kuramsal_puani()[0] >= 15, True)
 
     check("zor: zor problem seti tam cozuluyor",
           lambda: _olcum.zor_puani()[0] >= 20, True)

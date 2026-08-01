@@ -778,6 +778,153 @@ def zor_bosluklari():
 
 
 
+# ── KURAMSAL TURETIM OLCUMU ───────────────────────────────────────────────
+# Kullanicinin verdigi 20 zor kuramsal soru (ispat/turetme). Sayisal
+# problem DEGILLER; olcut de farkli: cevabin konuyu ANMASI yetmez,
+# turetimin kilit adimlarini icermesi gerekir. Her satirda iki iz grubu
+# var — baslangic noktasi ve turetimin sonucu — ikisi de bulunmalidir.
+#
+# Ilk olcum 2/20 idi. Icerik yazildikca ve yonlendirme duzeldikce yukseldi.
+KURAMSAL_SORULAR = [
+ ("Klasik fizik kinetik enerji formülünden başlayarak Schrödinger denklemindeki "
+  "Hamiltonyen operatörünün kinetik enerji terimini matematiksel olarak türetir "
+  "misin? Geçişte neden momentumun operatöre dönüştüğünü ve neden ikinci türev "
+  "çıktığını ayrıntılı olarak açıkla.",
+  ["p²/2m", "mv²", "½mv"], ["−iħ", "-iħ", "∇²", "p̂"]),
+
+ ("Klasik mekanikte Newton'un ikinci yasasından başlayarak Lagrange denklemlerini, "
+  "ardından Euler-Lagrange denklemini matematiksel olarak ispatla. Daha sonra bu "
+  "formülün Hamilton formalizmine nasıl dönüştüğünü tüm ara adımlarla göster.",
+  ["L = T", "Euler-Lagrange", "∂L/∂q"], ["Legendre", "H = Σ p", "∂H/∂p"]),
+
+ ("Hamiltonyen formalizminden başlayarak zaman-bağımlı Schrödinger denklemini "
+  "yalnızca matematiksel varsayımlar kullanarak türet. Planck sabitinin neden "
+  "ortaya çıktığını ve dalga fonksiyonunun neden kompleks olmak zorunda olduğunu "
+  "açıkla.",
+  ["Ĥ", "Hamilton"], ["iħ ∂", "iħ∂", "iħ ∂ψ/∂t", "kompleks"]),
+
+ ("Klasik momentum tanımı p=mv ile de Broglie'nin p=ℏk ilişkisi arasındaki "
+  "bağlantıyı matematiksel olarak ispatla. Ardından bu bağıntının Schrödinger "
+  "denklemine nasıl dönüştüğünü adım adım göster.",
+  ["de Broglie", "p = ħk", "ħk"], ["λ = h", "e^(i(kx", "ψ"]),
+
+ ("Dalga fonksiyonunun Born olasılık yorumuna neden ihtiyaç duyulduğunu "
+  "matematiksel olarak açıkla. |ψ|² 'nin neden olasılık yoğunluğu olduğunu "
+  "normlama koşulu üzerinden ispatla.",
+  ["Born", "|ψ|²"], ["normla", "∫", "= 1"]),
+
+ ("Schrödinger denkleminden başlayarak olasılık akımı denklemini türet. "
+  "Süreklilik denkleminin nasıl elde edildiğini ve bunun yük korunumu ile "
+  "benzerliğini ayrıntılı şekilde açıkla.",
+  ["olasılık akım", "j ="], ["süreklilik", "∂ρ/∂t", "∇·j"]),
+
+ ("Komütatör tanımından başlayarak [x, p̂]=iℏ bağıntısını matematiksel olarak "
+  "ispatla. Daha sonra bu bağıntıdan Heisenberg Belirsizlik İlkesini "
+  "Cauchy-Schwarz eşitsizliği kullanarak türet.",
+  ["[x", "komütat", "iħ"], ["Cauchy", "belirsizlik", "ħ/2"]),
+
+ ("Fourier dönüşümünü kullanarak konum uzayındaki dalga fonksiyonu ile momentum "
+  "uzayındaki dalga fonksiyonu arasındaki dönüşümü matematiksel olarak ispatla. "
+  "Bu dönüşümün fiziksel anlamını ayrıntılı açıkla.",
+  ["Fourier"], ["φ(p)", "momentum uzay", "e^(-ipx"]),
+
+ ("Kuantum mekaniğinde Hermit operatör kavramını matematiksel olarak tanımla. "
+  "Gözlenebilir büyüklüklerin neden Hermit operatörlerle temsil edilmek zorunda "
+  "olduğunu özdeğerlerin reel olması üzerinden ispatla.",
+  ["Hermit"], ["özdeğer", "reel", "gerçel"]),
+
+ ("Schrödinger denkleminden başlayarak serbest parçacık çözümünü elde et. Daha "
+  "sonra bu çözümden grup hızı ve faz hızını hesapla. Grup hızının klasik parçacık "
+  "hızına neden eşit olduğunu matematiksel olarak göster.",
+  ["serbest parçacık", "e^(ikx"], ["grup hızı", "dω/dk", "faz hızı"]),
+
+ ("Varyasyon hesabını kullanarak Euler-Lagrange denklemini sıfırdan türet. Daha "
+  "sonra bu yöntemin Fermat'ın En Az Zaman İlkesi ile ilişkisini matematiksel "
+  "olarak açıkla.",
+  ["varyasyon", "δS", "δ∫"], ["Euler-Lagrange", "Fermat"]),
+
+ ("Dirac gösterimini (|ψ⟩, ⟨ψ|) sıfırdan tanıt. İç çarpım, dış çarpım ve operatör "
+  "kavramlarının matris gösterimine nasıl dönüştüğünü örneklerle matematiksel "
+  "olarak göster.",
+  ["ket", "|ψ⟩", "Dirac"], ["iç çarpım", "⟨ψ|", "matris"]),
+
+ ("Klasik harmonik osilatör denklemini çöz. Daha sonra aynı sistemi kuantum "
+  "mekaniğinde çözerek yaratma (a†) ve yok etme (a) operatörlerini türet. Enerji "
+  "seviyelerinin neden ayrık olduğunu matematiksel olarak ispatla.",
+  ["harmonik osilatör", "ω"], ["yaratma", "a†", "n + 1/2", "ayrık"]),
+
+ ("Noether Teoremini varyasyon hesabından başlayarak matematiksel olarak ispatla. "
+  "Zaman simetrisinin enerji korunumu, uzay simetrisinin momentum korunumu ve "
+  "dönme simetrisinin açısal momentum korunumu ile ilişkisini ayrıntılı olarak "
+  "göster.",
+  ["Noether", "simetri"], ["enerji korunum", "momentum korunum", "açısal momentum"]),
+
+ ("Schrödinger denklemini relativistik hale getirmeye çalışırken neden başarısız "
+  "olunduğunu matematiksel olarak açıkla. Daha sonra Klein-Gordon ve Dirac "
+  "denklemlerinin hangi matematiksel ihtiyaçlardan doğduğunu ayrıntılı olarak "
+  "türet.",
+  ["Klein-Gordon", "relativistik"], ["Dirac denklem", "negatif", "birinci mertebe"]),
+
+ ("Elektromanyetik alan altında Schrödinger denklemindeki minimal bağlaşım "
+  "dönüşümünü p→p−qA matematiksel olarak türet. Bunun gauge dönüşümleriyle "
+  "ilişkisini ayrıntılı açıkla.",
+  ["minimal", "p − qA", "p-qA", "qA"], ["gauge", "ayar"]),
+
+ ("Feynman Yol İntegrali formülasyonunu klasik En Az Etki İlkesi'nden başlayarak "
+  "sezgisel ve matematiksel olarak türet. Yol integrali ile Schrödinger "
+  "denkleminin neden eşdeğer olduğunu açıkla.",
+  ["yol integral", "Feynman"], ["e^(iS/ħ)", "etki", "S/ħ"]),
+
+ ("Spin kavramının klasik açısal momentumdan neden türetilemeyeceğini matematiksel "
+  "olarak göster. Pauli matrislerini kullanarak spin-1/2 operatörlerinin SU(2) "
+  "cebrini sağladığını ispatla.",
+  ["spin"], ["Pauli", "SU(2)", "σ"]),
+
+ ("Kanonik kuantizasyon yöntemini klasik Poisson parantezlerinden başlayarak "
+  "türet. Poisson parantezlerinin neden komütatörlere dönüştüğünü matematiksel "
+  "olarak açıkla ve örneklerle göster.",
+  ["Poisson"], ["komütat", "iħ", "{A,B}"]),
+
+ ("Schrödinger denkleminin çözümünden başlayarak WKB yaklaşımını türet. "
+  "Yaklaşımın hangi varsayımlar altında geçerli olduğunu ve klasik sınır (ℏ→0) "
+  "ile bağlantısını ayrıntılı olarak açıkla.",
+  ["WKB"], ["e^(iS/ħ)", "ħ→0", "Hamilton-Jacobi", "klasik limit"]),
+]
+
+
+def kuramsal_puani():
+    """Kac kuramsal turetim, iki uca da degerek cevaplaniyor?"""
+    from . import brain
+    dogru = 0
+    for i, (soru, a, b) in enumerate(KURAMSAL_SORULAR):
+        try:
+            t = brain.respond(soru, session="_olcum_kuram%d" % i).text or ""
+        except Exception:
+            t = ""
+        if any(x.lower() in t.lower() for x in a) and \
+                any(x.lower() in t.lower() for x in b):
+            dogru += 1
+    return dogru, len(KURAMSAL_SORULAR)
+
+
+def kuramsal_bosluklari():
+    from . import brain
+    eksik = []
+    for i, (soru, a, b) in enumerate(KURAMSAL_SORULAR):
+        try:
+            t = brain.respond(soru, session="_olcum_kuram%d" % i).text or ""
+        except Exception:
+            t = ""
+        va = any(x.lower() in t.lower() for x in a)
+        vb = any(x.lower() in t.lower() for x in b)
+        if va and vb:
+            continue
+        bas = [x for x in t.split("\n") if x.startswith("#")]
+        eksik.append((soru[:46], "A" if not va else "B",
+                      bas[0][:36] if bas else "(bos)"))
+    return eksik
+
+
 # ── GENELLEME OLCUMU ──────────────────────────────────────────────────────
 # Kullanicinin sorusu: "hic eklemedigimiz bu seviyede zor bir soruyu
 # dogru bilebilecek mi?" Cevap tahminle degil SAYIYLA verilmeli.
