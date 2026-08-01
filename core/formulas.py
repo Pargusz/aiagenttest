@@ -306,8 +306,12 @@ FORMULAS = [
        "T": ("sicaklik", "temperature", "K"),
        "V2": ("son hacim", "final volume", "m^3"),
        "V1": ("ilk hacim", "initial volume", "m^3")},
+      # Olculdu: bu soru IDEAL GAZ YASASI'na gidiyordu; "mol" ve "ideal
+      # gaz" kelimeleri agir basiyordu. Izotermal ISE ozgu ifadeler eklendi.
       "izotermal is|izotermal genlesme is|sabit sicaklikta genlesme|"
-      "izotermal surecte yapilan is",
+      "izotermal surecte yapilan is|izotermal genlesirse yaptigi is|"
+      "izotermal genlesme yapilan is|hacmi iki katina izotermal|"
+      "sabit sicaklikta yapilan is|izotermal is nedir",
       "isothermal work|isothermal expansion work"),
     F("boltzmann_S", "termodinamik", "Boltzmann entropisi", "Boltzmann entropy",
       "S = kB*log(W)",
@@ -597,7 +601,13 @@ FORMULAS = [
        "v": ("ses hizi", "sound speed", "m/s"),
        "vo": ("gozlemci hizi", "observer speed", "m/s"),
        "vs": ("kaynak hizi", "source speed", "m/s")},
-      "doppler|frekans kaymasi", "doppler effect"),
+      # Olculdu: "340 m/s ses hizinda 30 m/s ile YAKLASAN 1000 Hz kaynak
+      # icin duyulan frekans" sorusu PERIYOT-FREKANS bagintisina gidiyordu.
+      # Gunluk ifadeler ("yaklasan kaynak", "duyulan frekans") eklendi.
+      "doppler|frekans kaymasi|yaklasan kaynak|uzaklasan kaynak|"
+      "duyulan frekans|algilanan frekans|siren frekansi|"
+      "kaynak yaklasirken frekans|hareketli kaynak frekans",
+      "doppler effect|approaching source|observed frequency|siren"),
     # Yay-kutle sisteminde maksimum hiz: enerji korunumundan gelir
     # (½kx² = ½mv²), kitaplarda ayri baginti olarak verilir.
     # Basit harmonik hareketin KINEMATIGI eksikti. Olculdu: "30 m

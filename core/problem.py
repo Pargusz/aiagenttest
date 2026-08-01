@@ -397,7 +397,10 @@ MALZEME = [
      "not_tr": "Proton için `m = 1,673×10⁻²⁷ kg`, `q = 1,60×10⁻¹⁹ C`.",
      "not_en": "Proton: m = 1.673e-27 kg, q = 1.60e-19 C."},
     {"kw": r"\bdunya(dan|nin|ya|da)?\b|\bearth\b",
-     "degerler": {"M": 5.972e24, "R": 6.371e6},
+     # Hem `R` hem `r`: kacis hizi bagintisi `r`, kutle cekimi `R`
+     # kullaniyor. Olculdu: yalniz `R` verilince "dunyadan kacis hizi"
+     # sorusunda formul bulunuyor ama `r` bilinmedigi icin sayi cikmiyordu.
+     "degerler": {"M": 5.972e24, "R": 6.371e6, "r": 6.371e6},
      "not_tr": "Dünya için `M = 5,97×10²⁴ kg`, `R = 6,37×10⁶ m` alındı.",
      "not_en": "Earth: M = 5.97e24 kg, R = 6.37e6 m."},
     {"kw": r"\bsu(yu|yun|ya|da)?\b|\bwater\b",
