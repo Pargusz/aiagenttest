@@ -143,6 +143,108 @@ def _atama_uygun_mu(f, sym, deger, etiketliler, tum_adlar):
     return True
 
 
+def _ortusme_puani(ad, etiket):
+    """Degisken ADI ile sayinin ETIKETI kac anlamli kelimede ortusuyor?"""
+    if not ad or not etiket:
+        return 0
+    onemsiz = {"ile", "olan", "bir", "icin", "gore", "kadar", "the", "of",
+               "and", "for", "with", "a", "an"}
+    a = {w for w in nlu.norm(ad).split() if len(w) > 2 and w not in onemsiz}
+    b = {w for w in nlu.norm(etiket).split() if len(w) > 2 and w not in onemsiz}
+    if not a or not b:
+        return 0
+    ortak = 0
+    for x in a:
+        for y in b:
+            # Turkce cekim eki icin kok karsilastirmasi
+            if x == y or (len(x) >= 4 and len(y) >= 4
+                          and (x.startswith(y[:4]) or y.startswith(x[:4]))):
+                ortak += 1
+                break
+    return ortak
+
+
+def _cevre_etiketleri(soru):
+    """Her sayinin IKI YANINDAKI kelimeler: [(deger, birim, cevre), ...].
+
+    `_etiketli_sayilar` yalnizca sayinin SOLUNU okur. Turkce'de tanim
+    sagda da olabilir: "340 m/s SES HIZINDA 30 m/s ile yaklasan..."
+    Olculdu: bu cumlede 340'in etiketi bos cikiyor, "ses hizinda" ise
+    30'a yaziliyordu; sonuc olarak ses hizi 30 m/s sanildi.
+
+    Burada sayinin solundaki ve sagindaki kelimeler birlikte alinir;
+    sinir, komsu sayilardir.
+    """
+    try:
+        degerler = nlu.extract_number_unit(soru) or []
+    except Exception:
+        return []
+    metin = soru or ""
+    out = []
+    for i, (deger, birim, bas, son) in enumerate(degerler):
+        sol_sinir = degerler[i - 1][3] if i > 0 else 0
+        sag_sinir = degerler[i + 1][2] if i + 1 < len(degerler) else len(metin)
+        sol = metin[sol_sinir:bas].split()[-3:]
+        sag = metin[son:sag_sinir].split()[:3]
+        out.append((float(deger), birim, " ".join(sol + sag)))
+    return out
+
+
+def _etikete_gore_esle(f, etiketliler):
+    """AYNI BIRIMLI birden fazla deger varsa etikete gore dagit.
+
+    Olculdu: "340 m/s ses hizinda 30 m/s ile yaklasan 1000 Hz kaynak icin
+    duyulan frekans" sorusunda Doppler bagintisinin `v` (ses hizi),
+    `vo` (gozlemci hizi) ve `vs` (kaynak hizi) degiskenlerinin ucu de
+    m/s. Mevcut kural bir VETO kuraliydi ("bu deger bu degiskene
+    verilebilir mi?") ve iki deger de vetoyu gectigi icin ilk gelen
+    kazaniyordu: 340 ile 30 karisiyor, sonuc yanlis cikiyordu.
+
+    Burada TERCIH kurali var: her (deger, degisken) cifti etiket
+    ortusmesiyle puanlanir ve en yuksek puanli ciftten baslanarak
+    dagitilir. "ses hizinda" etiketi `ses hizi` degiskenini birebir
+    adlandirir; 340 oraya gider, 30'a baska bir degisken kalir.
+    """
+    if not etiketliler:
+        return {}
+    # Ayni birimi paylasan degisken var mi?
+    birim_sym = {}
+    for sym, (_tr, _en, u) in f["vars"].items():
+        birim_sym.setdefault((u or "").strip(), []).append(sym)
+    ciftler = []
+    for deger, birim, etiket in etiketliler:
+        for u, symler in birim_sym.items():
+            if len(symler) < 2:
+                continue          # tek aday varsa zaten karisiklik yok
+            if not _birim_ayni(birim, u):
+                continue
+            for sym in symler:
+                ad = ((f["vars"][sym][0] or "") + " "
+                      + (f["vars"][sym][1] or ""))
+                puan = _ortusme_puani(ad, etiket)
+                if puan > 0:
+                    ciftler.append((puan, deger, birim, sym))
+    if not ciftler:
+        return {}
+    ciftler.sort(key=lambda x: -x[0])
+    atanan, kullanilan_sym, kullanilan_deger = {}, set(), set()
+    for puan, deger, birim, sym in ciftler:
+        if sym in kullanilan_sym or deger in kullanilan_deger:
+            continue
+        si = float(deger)
+        if birim:
+            try:
+                cevrim = units.to_si(float(deger), birim)
+                if cevrim and cevrim[0] is not None:
+                    si = float(cevrim[0])
+            except Exception:
+                pass
+        atanan[sym] = (si, f["vars"][sym][2])
+        kullanilan_sym.add(sym)
+        kullanilan_deger.add(deger)
+    return atanan
+
+
 def _baslangic_bilinenler(soru, adaylar):
     """Sorudaki degerleri oku: (sembol -> (deger_SI, birim))."""
     bilinen = {}
@@ -173,6 +275,34 @@ def _baslangic_bilinenler(soru, adaylar):
         for sym2 in f2["vars"]:
             tum_adlar.append((f2["vars"][sym2][0] or "") + " "
                              + (f2["vars"][sym2][1] or ""))
+    # EN IYI formulde ayni birimli birden fazla degisken varsa, degerleri
+    # once ETIKETE gore dagit. Bu, asagidaki genel okumadan ONCE gelmeli:
+    # genel okuma sirayla atadigi icin ilk gelen degeri kapiyor.
+    if adaylar:
+        # SENARYONUN ima ettigi degerler once gelir ("gozlemci durgun"
+        # -> vo = 0). Aksi hâlde etiket eslemesi o degiskeni doldurup
+        # gercek degeri yanlis yere koyuyordu (olculdu: Doppler'de
+        # kaynagin 30 m/s hizi gozlemci hizina yaziliyordu).
+        try:
+            _ima, _ = problem.malzeme_degerleri(soru)
+            _semboller = {s for _sk, _f in adaylar for s in _f["vars"]}
+            for sym, deger in (_ima or {}).items():
+                if sym in _semboller and sym not in bilinen:
+                    birim = ""
+                    for _sk, _f in adaylar:
+                        if sym in _f["vars"]:
+                            birim = _f["vars"][sym][2]
+                            break
+                    bilinen[sym] = (float(deger), birim)
+        except Exception:
+            pass
+        try:
+            for sym, veri in _etikete_gore_esle(
+                    adaylar[0][1], _cevre_etiketleri(soru)).items():
+                bilinen.setdefault(sym, veri)
+        except Exception:
+            pass
+
     for _skor, f in adaylar:
         try:
             okunan = nlu.formul_degerleri(f, soru) or {}

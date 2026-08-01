@@ -388,6 +388,18 @@ MALZEME = [
      "degerler": {"k": 0.4},
      "not_tr": "Dolu küre için `k = 2/5` (`I = ⅖mR²`).",
      "not_en": "Solid sphere: k = 2/5."},
+    # Doppler: "yaklasan/uzaklasan kaynak" denmis ve gozlemcinin
+    # hareketinden soz edilmemisse gozlemci DURGUNDUR. Olculdu: "340 m/s
+    # ses hizinda 30 m/s ile yaklasan kaynak" sorusunda 30 m/s gozlemci
+    # hizina atanip kaynak hizi bos kaliyordu; cevap 1088 cikiyordu
+    # (dogrusu 1096,8).
+    {"kw": r"\b(yaklasan|uzaklasan|yaklasirken|uzaklasirken|yaklasiyor|"
+           r"uzaklasiyor|approaching|receding|moving toward|moving away)\b"
+           r"(?!.*\b(gozlemci|dinleyici|observer|listener)\s+\d)",
+     "degerler": {"vo": 0.0},
+     "not_tr": "Gözlemcinin hareketinden söz edilmediği için durgun "
+               "kabul edildi: `v₀ = 0`.",
+     "not_en": "The observer is taken to be at rest: vo = 0."},
     {"kw": r"\belektron(un|u|a)?\b|\belectron\b",
      "degerler": {"m": 9.1093837015e-31, "q": 1.602176634e-19},
      "not_tr": "Elektron için `m = 9,11×10⁻³¹ kg`, `q = 1,60×10⁻¹⁹ C`.",

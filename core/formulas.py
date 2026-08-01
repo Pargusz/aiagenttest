@@ -596,7 +596,9 @@ FORMULAS = [
       "kirinim|tek yarik", "diffraction|single slit"),
     F("doppler", "dalga", "Doppler olayi (ses)", "Doppler effect (sound)",
       "f = f0*(v + vo)/(v - vs)",
-      {"f": ("algilanan frekans", "observed frequency", "Hz"),
+      # "duyulan" adi da yazili: hedef tespiti "duyulan frekans nedir"
+      # sorusunda `f`yi bulamiyor, ses hizini (v) hedef saniyordu.
+      {"f": ("algilanan duyulan frekans", "observed heard frequency", "Hz"),
        "f0": ("kaynak frekansi", "source frequency", "Hz"),
        "v": ("ses hizi", "sound speed", "m/s"),
        "vo": ("gozlemci hizi", "observer speed", "m/s"),
