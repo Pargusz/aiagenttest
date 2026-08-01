@@ -1889,6 +1889,25 @@ def _indeks():
     return _ARAMA_INDEKS
 
 
+# ── DENENDI VE GERI ALINDI: degisken adlarina ayirt edicilik (IDF) ────────
+# Amac dogruydu: elle anahtar yazmak yerine sistem KENDI degisken
+# adlarindan ogrensin. Duz +4 puan yerine, bir adin kac formulde gectigine
+# gore agirlik verildi (nadir ad yuksek, "kuvvet"/"enerji" gibi yaygin ad
+# dusuk puan).
+#
+# OLCULDU: net kayip. "0.4 T manyetik alanda 5 A akim tasiyan 2 m telin
+# kuvveti" sorusu yine telin ALANINA gitti (189 vs 173), ama "3 kg cisim
+# 5 m/s2 ivmeyle 4 saniye giderse aldigi yol" sorusu BOZULDU: "kutle" ve
+# "ivme" agirlik kazaninca Newton'un 2. yasasi, x = ½at² bagintisinin
+# onune gecti. Taze sayisal 4/6 -> 3/6.
+#
+# NEDENI: arama HEDEFTEN habersizdir. Degisken adi eslesmesi, formulun
+# sorulan buyuklugu ICERIP ICERMEDIGINI bilmeden puan ekler; bu yuzden
+# "verilenleri iceren" formul, "sorulani veren" formulun onune gecebilir.
+# Dogru tasarim hedef-farkinda olmali: once sorulan buyukluk belirlenmeli,
+# sonra o buyuklugu ICEREN formuller arasinda degisken eslesmesine
+# bakilmali. Bu, aramanin iki asamaya bolunmesini gerektirir.
+
 def search(query, limit=6):
     """Formul ara. (skor, formul) listesi doner."""
     q = _norm(query)
