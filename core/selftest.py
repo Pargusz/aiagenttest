@@ -1592,6 +1592,26 @@ def run():
     check("genelleme: ayni fizik baska ifadeyle de bulunuyor",
           lambda: _olcum.genelleme_varyant_puani()[0] >= 5, True)
     # 20 zor kuramsal turetim: ilk olcum 2/20 idi.
+
+    # ── TAZE SINAV: bagimsiz degerlendirme ──────────────────────────
+    # Diger olcumler duzelte duzelte ilerletildi; sistem bir bakima
+    # KENDI SINAVINA CALISTI. Bu set hic dokunulmamis sorulardan olusur
+    # ve gercek seviyeyi gosterir. Ilk olcum: sayisal 3/6, kuramsal 1/4,
+    # tuzak 2/4 — kendi test takimi 464/0 iken.
+    #
+    # Esikler BUGUNKU TABANA konuldu. Amac iki yonlu: gerilemeyi
+    # yakalamak ve ilerlemeyi gorunur kilmak. Bu sayilar yukselmeden
+    # "sistem gelisti" denmemelidir.
+    check("taze: gorulmemis sayisal problemler gerilemiyor",
+          lambda: _olcum.taze_sayisal_puani()[0] >= 3, True)
+    check("taze: gorulmemis turetimler gerilemiyor",
+          lambda: _olcum.taze_kuramsal_puani()[0] >= 1, True)
+    # EN ONEMLISI: imkansiz girdiye dogru tepki. Yanlis cevap, eksik
+    # cevaptan zararlidir. Su an 2/4 — "isik hizinin 2 kati" ve
+    # "mutlak sifirin altinda" girdilerinde sistem HATA yapiyor.
+    check("taze: imkansiz girdiye dogru tepki gerilemiyor",
+          lambda: _olcum.taze_tuzak_puani()[0] >= 2, True)
+
     check("kuramsal: turetim sorulari gerilemiyor",
           lambda: _olcum.kuramsal_puani()[0] >= 14, True)
 

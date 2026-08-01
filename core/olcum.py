@@ -925,6 +925,148 @@ def kuramsal_bosluklari():
     return eksik
 
 
+# ── TAZE SINAV: BAGIMSIZ DEGERLENDIRME ────────────────────────────────────
+# Kullanicinin istegi: "hafizasinda olmayan sorularla test et".
+#
+# NEDEN AYRI BIR SET? Diger olcumler duzelte duzelte ilerletildi; sistem
+# bir bakima KENDI SINAVINA CALISTI. Ilk taze olcumde fark aciktir:
+#   kendi test takimi 464/0  ama  taze sayisal 2/6, kuramsal 1/4, tuzak 2/4
+# Bu set o farki gorunur tutar. Buradaki sayilar yukselmeden "gelisti"
+# denmemelidir.
+#
+# C grubu en onemlisidir: EKSIK cevap kotudur, YANLIS cevap daha kotudur.
+# Fiziksel olarak imkansiz girdiye (v > c, T < -273,15 °C) sanki
+# gecerliymis gibi cevap vermek, hic cevap vermemekten zararlidir.
+
+TAZE_SAYISAL = [
+ ("1200 kg araba 20 m/s hizla giderken 25 m'de duruyor fren kuvveti nedir",
+  9600.0, "a = v²/2s = 8 m/s²; F = 9600 N"),
+ ("0.02 kg mermi 400 m/s ile 2 kg tahta bloga saplanirsa ortak hizlari nedir",
+  3.96, "p korunumu: 0.02·400 = 2.02·v"),
+ ("20 cm odak uzakligindaki mercekten 30 cm uzaktaki cismin goruntu uzakligi",
+  0.6, "1/v = 1/f - 1/u -> 60 cm = 0.6 m"),
+ ("0.4 T manyetik alanda 5 A akim tasiyan 2 m telin uzerindeki kuvvet",
+  4.0, "F = B·I·L = 4 N"),
+ ("100 N/m yay sabitli yay 0.2 m sikistirilirsa depolanan enerji",
+  2.0, "E = ½kx² = 2 J"),
+ ("3 kg cisim 5 m/s2 ivmeyle 4 saniye giderse aldigi yol nedir",
+  40.0, "x = ½at² = 40 m"),
+]
+
+TAZE_KURAMSAL = [
+ ("Zamandan bagimsiz Schrodinger denklemini, zamana bagli denklemden "
+  "degiskenlere ayirma yontemiyle turet.",
+  ["degiskenlere ayir", "değişkenlere ayır", "ayrılabilir"],
+  ["Eψ", "ayirma sabiti", "ayırma sabiti"]),
+ ("Superpozisyon ilkesinin Schrodinger denkleminin dogrusalligindan "
+  "ciktigini matematiksel olarak goster.",
+  ["doğrusal", "lineer"], ["süperpozisyon", "c₁ψ₁", "toplamı da çözüm"]),
+ ("Iki cisim probleminin indirgenmis kutle ile tek cisim problemine "
+  "donustugunu goster.",
+  ["indirgenmiş kütle", "μ ="], ["m₁m₂", "m1*m2", "göreli koordinat"]),
+ ("Zamana bagli perturbasyon kuramindan gecis olasiligini turet.",
+  ["pertürbasyon", "perturbasyon"], ["geçiş olasılığı", "birinci mertebe"]),
+]
+
+# (soru, kabul edilebilir iz, neyin beklendigi)
+TAZE_TUZAK = [
+ ("surtunmesiz buz uzerinde kayan 5 kg cisme etkiyen surtunme kuvveti nedir",
+  ["0", "sıfır"], "surtunme sifir olmali"),
+ ("isik hizinin 2 kati hizla giden bir cismin kinetik enerjisi nedir",
+  ["mümkün değil", "olamaz", "aşamaz", "asamaz", "ışık hızını"],
+  "hicbir cisim c'yi asamaz denmeli"),
+ ("-5 kg kutleli cismin agirligi nedir",
+  ["negatif", "olamaz", "geçersiz", "gecersiz"],
+  "negatif kutle fiziksel degil"),
+ ("mutlak sifirin altinda -350 santigrat derecede gazin basinci nedir",
+  ["mutlak sıfır", "-273", "altına", "olamaz"],
+  "-273,15 altinda sicaklik olmaz"),
+]
+
+
+def _taze_sayi_var(metin, hedef, tol=0.02):
+    duz = (metin or "").replace("×10^", "e").replace("·10^", "e")
+    duz = duz.replace("10^", "1e").replace(",", "")
+    for p in re.findall(r"-?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?", duz):
+        try:
+            if abs(float(p) - hedef) <= abs(hedef) * tol:
+                return True
+        except Exception:
+            continue
+    return False
+
+
+def taze_sayisal_puani():
+    """Hic gorulmemis SAYISAL problemlerin kaci dogru? (dogru, toplam)"""
+    from . import brain
+    dogru = 0
+    for i, (soru, bek, _n) in enumerate(TAZE_SAYISAL):
+        try:
+            t = brain.respond(soru, session="_taze_s%d" % i).text or ""
+        except Exception:
+            t = ""
+        if _taze_sayi_var(t, bek):
+            dogru += 1
+    return dogru, len(TAZE_SAYISAL)
+
+
+def taze_kuramsal_puani():
+    """Hic gorulmemis TURETIM sorularinin kaci cozuluyor?"""
+    from . import brain
+    dogru = 0
+    for i, (soru, a, b) in enumerate(TAZE_KURAMSAL):
+        try:
+            t = brain.respond(soru, session="_taze_k%d" % i).text or ""
+        except Exception:
+            t = ""
+        if any(x.lower() in t.lower() for x in a) and \
+                any(x.lower() in t.lower() for x in b):
+            dogru += 1
+    return dogru, len(TAZE_KURAMSAL)
+
+
+def taze_tuzak_puani():
+    """Fiziksel olarak IMKANSIZ girdiye dogru tepki veriliyor mu?
+
+    Bu olcum yanlis cevabi yakalar. Sistem "isik hizinin 2 kati" gibi
+    bir girdide Ek = mv²/2 karti basiyorsa HATA yapmis demektir.
+    """
+    from . import brain
+    dogru = 0
+    for i, (soru, izler, _n) in enumerate(TAZE_TUZAK):
+        try:
+            t = brain.respond(soru, session="_taze_t%d" % i).text or ""
+        except Exception:
+            t = ""
+        if any(x.lower() in t.lower() for x in izler):
+            dogru += 1
+    return dogru, len(TAZE_TUZAK)
+
+
+def taze_bosluklari():
+    """Taze sinavda hangi sorular kaciriliyor?"""
+    from . import brain
+    eksik = []
+    for soru, bek, _n in TAZE_SAYISAL:
+        try:
+            t = brain.respond(soru, session="_taze_r").text or ""
+        except Exception:
+            t = ""
+        if not _taze_sayi_var(t, bek):
+            bas = [x for x in t.split("\n") if x.startswith("#")]
+            eksik.append(("sayisal", soru[:44], str(bek),
+                          bas[0][:32] if bas else "(hesap yok)"))
+    for soru, izler, neden in TAZE_TUZAK:
+        try:
+            t = brain.respond(soru, session="_taze_r").text or ""
+        except Exception:
+            t = ""
+        if not any(x.lower() in t.lower() for x in izler):
+            eksik.append(("TUZAK", soru[:44], neden, t[:32].replace("\n", " ")))
+    return eksik
+
+
+
 # ── GENELLEME OLCUMU ──────────────────────────────────────────────────────
 # Kullanicinin sorusu: "hic eklemedigimiz bu seviyede zor bir soruyu
 # dogru bilebilecek mi?" Cevap tahminle degil SAYIYLA verilmeli.
