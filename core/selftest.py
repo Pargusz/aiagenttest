@@ -1520,6 +1520,41 @@ def run():
     check("ogrenme: kendi urettigi zor sorular iki uca deginiyor",
           lambda: _olcum.kendi_sinavi(adet=4)[0] >= 3, True)
 
+    # ── Baginti ogrenme: dogrulama kapilari ─────────────────────────
+    # Daha once duz metinden baginti cikarmayi IKI kez kapattik cunku
+    # olcut "SymPy ayristirabiliyor mu" idi ve `T = 15` bunu geciyordu.
+    # Yeni olcut BOYUT TUTARLILIGI. Asagidaki testler, kapilarin hem
+    # copu eledigini hem de gercek fizigi tanidigini sabitler.
+    from . import formulogren as _fo
+    check("baginti: sag taraf sayi ise reddedilir",
+          lambda: _fo.dogrula("T = 15", kanit=5)[0], None)
+    check("baginti: bilinmeyen simge reddedilir",
+          lambda: _fo.dogrula("mol = 0", kanit=5)[0], None)
+    check("baginti: bos kod kirintisi reddedilir",
+          lambda: _fo.dogrula("int = Q", kanit=5)[0], None)
+    check("baginti: boyut tutmayan reddedilir",
+          lambda: _fo.yorumla("x = v*t + 5")[0], None)
+    check("baginti: bilinen baginti yeniden ogrenilmez",
+          lambda: _fo.dogrula("E = m*c**2", kanit=5)[1],
+          "zaten bilinen baginti")
+    check("baginti: bilinen baginti (momentum) taniniyor",
+          lambda: _fo._yeni_mi("p = m*v"), False)
+    check("baginti: kaynaksiz baginti servis edilmez",
+          lambda: _fo.dogrula("v = F*t/m + v0", kanit=0)[0], None)
+    # BUTUN bagintiya bakma: tek basina belirsiz olan denklem, baglam ve
+    # onceki bilgiyle cozulur (kullanicinin uyarisi: "tablonun belli bir
+    # kismi yerine tamamina baksin").
+    check("baginti: belirsiz denklem baglamsiz reddedilir",
+          lambda: _fo.yorumla("E = h*f")[0], None)
+    check("baginti: belirsiz denklem baglamla cozuluyor",
+          lambda: (_fo.yorumla(
+              "E = h*f",
+              baglam="The photon energy is proportional to its frequency "
+                     "through the Planck constant.")[0] or {}).get("h", ("", ""))[1],
+          "Planck sabiti")
+    check("baginti: birliktelik tablosu kuruluyor",
+          lambda: len(_fo.birliktelik_tablosu()) > 50, True)
+
     # Gunluk hayattan sorular cekirdekte olmali. Olculdu: "gokyuzu neden
     # mavi" sorusuna "mavi kart" gecen bir vatandaslik hukuku makalesi
     # getiriliyordu.

@@ -390,6 +390,18 @@ def _tarayici_ac(url):
 
 def serve(host=None, port=None, open_browser=True, start_learning=True):
     db.init()
+    # Daha once OGRENILMIS ve dogrulanmis bagintilari canli tabana kat.
+    # Bunlar olmadan sistem her yeniden baslatmada ogrendiklerini
+    # kullanamiyor, yalnizca veritabaninda tutuyordu.
+    try:
+        from . import genisleme, formulogren
+        _n1 = genisleme.formulleri_bagla()
+        _n2 = formulogren.bagla()
+        if _n1 or _n2:
+            print("  Ogrenilmis baginti yuklendi: %d turetilmis, %d ogrenilmis"
+                  % (_n1, _n2))
+    except Exception as e:
+        print("  UYARI: ogrenilmis bagintilar yuklenemedi: %s" % e)
     host = host or config.HOST
     port = port or config.PORT
 

@@ -1153,6 +1153,18 @@ def h_durum(msg, lang, ctx):
             lines.append("| — kendi sinavi (zor soru) | %s |" % _ksinav)
         except Exception:
             pass
+        # Kendi ogrendigi BAGINTILAR: boyut denetimi, yorum tekligi ve
+        # sayisal sinavdan gecenler. Reddedilen sayisi da gosterilir;
+        # ogrenmenin ne kadar SECICI oldugu gorunsun.
+        try:
+            from . import formulogren as _fo
+            _fok, _fred, _faday = _fo.durum()
+            lines.append("| **Kendi ogrendigi baginti** | **%s** |"
+                         % "{:,}".format(int(_fok)))
+            lines.append("| — dogrulamada elenen | %s |"
+                         % "{:,}".format(int(_fred)))
+        except Exception:
+            pass
         lines.append("| Motor | %s |" % ("**calisiyor** ✅" if running else "durdu ⏸"))
         _d = dil.MODEL.durum()
         if _d["model"]:
@@ -4106,6 +4118,20 @@ def respond(message, session="default", lang_override=None):
     _kt = _kisi_konusu(message) or _kisi_konusu(resp.text[:400])
     if _kt:
         _hatirla["son_kisi"] = _kt["en_title"]
+
+    # ── KENDI COZUMUNDEN OGREN ─────────────────────────────────────────
+    # Bir problemi iki formulu zincirleyerek cozduysek, o zincir yeni bir
+    # bagintinin adayidir. Rastgele formul cifti denemek yerine GERCEKTEN
+    # birlikte ise yaramis ciftleri isaretliyoruz; ogrenme motoru bunlari
+    # birlestirip dogrulama kapilarindan geciriyor (bkz. formulogren.py).
+    if intent == "formul" and resp.kind == "solution":
+        try:
+            from . import formulogren as _fo, zincir as _zn
+            _idler = _zn.kullanilan_formuller(etkin)
+            if len(_idler) >= 2:
+                _fo.zincir_kaydet(_idler)
+        except Exception:
+            pass
 
     # ── KENDI ZAYIFLIGINI FARK ET ──────────────────────────────────────
     # Soru iki kavram adlandirdi ama cevap yalnizca birine degdiyse bu bir

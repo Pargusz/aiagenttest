@@ -402,6 +402,8 @@ class Learner(object):
             self._task_genisle,        # okuduklarindan yeni yetenek uretir
             self._task_kopru_ogren,    # kavramlar arasi gecisi kendi cikarir
             self._task_zor_sinav,      # kendi urettigi zor sorularla sinanir
+            self._task_formul_ogren,   # korpustan ve kendi cozumlerinden
+                                       # baginti ogrenir, dogrulayarak
         ]
         idx = int(db.get_state("task_index", 0) or 0)
         ard_arda_hata = 0
@@ -1324,6 +1326,50 @@ class Learner(object):
             self.log("Zor soru sinavi: %d/%d soruda iki uca da degildi"
                      % (dogru, toplam))
         return dogru
+
+    def _task_formul_ogren(self):
+        """Baginti ogren: korpustan VE kendi cozumlerinden.
+
+        Kullanicinin istegi: *"bu öğrenmeyi formüllerde de dahil olacak
+        şekilde ... neredeyse sıfır hata ile"*.
+
+        Sifir hataya yaklasmanin yolu daha cok madencilik degil, daha sert
+        DOGRULAMA: her aday boyut denetimi, yorum tekligi, yenilik ve
+        sayisal sinavdan gecmek zorunda. Gecemeyen sessizce atilir.
+        """
+        from . import formulogren
+        # 1) Korpustan aday topla ve dogrula
+        try:
+            formulogren.aday_topla(limit=600)
+            kabul, red = formulogren.ogren(en_fazla=30)
+            for f in kabul:
+                self.log("Baginti ogrenildi (korpus): %s" % f["eq"])
+            if red:
+                self.log("Baginti elendi: %d aday dogrulamayi gecemedi" % red)
+        except Exception as e:
+            self.log("Formul ogrenme UYARI (korpus): %s" % e)
+        # 2) Kendi cozumlerinden birlesim uret
+        try:
+            kabul2, denendi = formulogren.cevaptan_ogren(en_fazla=8)
+            for f in kabul2:
+                self.log("Baginti ogrenildi (kendi cozumumden): %s" % f["eq"])
+            if denendi and not kabul2:
+                self.log("Kendi cozumlerimden yeni baginti cikmadi "
+                         "(%d bilesim denendi)" % denendi)
+        except Exception as e:
+            self.log("Formul ogrenme UYARI (cozum): %s" % e)
+        # 3) Ogrenilenleri yeniden denetle ve canli tabana kat
+        try:
+            dusen = formulogren.denetle()
+            if dusen:
+                self.log("Yeniden denetim: %d baginti servisten cikarildi"
+                         % dusen)
+            n = formulogren.bagla()
+            ok, red2, aday = formulogren.durum()
+            self.log("Baginti durumu: %d dogrulanmis (%d yeni baglandi), "
+                     "%d reddedilmis, %d aday bekliyor" % (ok, n, red2, aday))
+        except Exception as e:
+            self.log("Formul ogrenme UYARI (denetim): %s" % e)
 
     def _bulgulari_isle(self, c, row, present, norm_text):
         """Bir makalenin ozetini cumle cumle inceleyip bulgulari kaydet."""
