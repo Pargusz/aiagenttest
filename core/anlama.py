@@ -19,6 +19,33 @@ from .learner import normalize, STOP
 # ── Es anlamlilar / TR-EN kopruleri ─────────────────────────────────────────
 # Solda kullanicinin yazabilecegi bicimler, sagda sistemin bildigi karsilik.
 ESANLAM = {
+    # ── Kuramsal terimler ──────────────────────────────────────────────
+    # Olculdu (genelleme sinavi, A grubu 2/6): cekirdekte YAZILI olan
+    # turetimlere, ayni fizigin baska adiyla sorulunca ulasilamiyordu.
+    # "yukseltme ve alcaltma islemcileri" ile "merdiven operatoru" ayni
+    # seydir; sistem bunu bilmiyordu ve merdiven turetimi hic
+    # bulunamiyordu. Icerik vardi, kapi kapaliydi.
+    "yukseltme islemcisi": "merdiven operatoru",
+    "alcaltma islemcisi": "merdiven operatoru",
+    "yukseltme ve alcaltma islemcileri": "merdiven operatoru",
+    "yukseltme operatoru": "merdiven operatoru",
+    "alcaltma operatoru": "merdiven operatoru",
+    "ladder operator": "merdiven operatoru",
+    "yaratma ve yok etme": "merdiven operatoru",
+    "kendine es": "hermit", "kendine es operator": "hermit operator",
+    "self adjoint": "hermit", "esli operator": "hermit operator",
+    "zarf hizi": "grup hizi", "paket hizi": "grup hizi",
+    "envelope velocity": "grup hizi",
+    "olasilik akim yogunlugu": "olasilik akimi",
+    "probability current": "olasilik akimi",
+    "en az varsayimli baglasim": "minimal baglasim",
+    "minimal coupling": "minimal baglasim",
+    "ayar donusumu": "gauge donusumu",
+    "geometrik faz": "berry fazi",
+    "ozdeger denklemi": "ozdeger",
+    "islemci": "operator", "isleyici": "operator",
+    "bagintili durum": "bagli durum",
+    "gecis hizi": "gecis olasiligi",
     # termodinamik
     "isi sigasi": "ozgul isi", "isil kapasite": "ozgul isi",
     "specific heat": "ozgul isi", "heat capacity": "ozgul isi",

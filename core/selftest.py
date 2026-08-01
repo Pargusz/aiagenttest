@@ -1584,6 +1584,8 @@ def run():
           lambda: _tmot.coz("Bloch teoremini ispatla"), None)
     check("genelleme: yazilmamis turetimler cozuluyor",
           lambda: _olcum.genelleme_yeni_puani()[0] >= 4, True)
+    check("genelleme: ayni fizik baska ifadeyle de bulunuyor",
+          lambda: _olcum.genelleme_varyant_puani()[0] >= 6, True)
 
     check("zor: zor problem seti tam cozuluyor",
           lambda: _olcum.zor_puani()[0] >= 20, True)

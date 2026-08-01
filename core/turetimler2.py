@@ -184,7 +184,9 @@ w(k) makes the packet spread with time.
          "parçacığın gerçek hızı."],
   ex_en=["For an electron at 1e6 m/s the phase velocity is half that; the "
          "group velocity equals 1e6 m/s."],
-  kw="grup hizi faz hizi|serbest parcacik cozumu|dispersiyon bagintisi|"
+  kw="dalga paketinin zarfi|paketin zarfi hangi hizla|zarfi hangi hizla|"
+     "paketin ilerleme hizi|dalga paketi hangi hizla ilerler|"
+     "grup hizi faz hizi|serbest parcacik cozumu|dispersiyon bagintisi|"
      "grup hizi klasik hiza esit|dalga paketi hizi|faz hizi neden yarisi|"
      "group velocity phase velocity|free particle solution|wave packet",
   related="kanonik_kuantumlama|klasik_limit|fourier_momentum"),
@@ -310,7 +312,9 @@ Discreteness comes from a ladder bounded below.
          "titreşimler IR spektroskopisiyle görülür."],
   ex_en=["A molecular vibration with w = 1e14 rad/s has spacing hbar w "
          "= 0.066 eV, in the infrared."],
-  kw="merdiven operatorleri|yaratma yok etme operatoru|"
+  kw="titresen sistemin enerjisi|enerji neden surekli olamaz|"
+     "titresim enerjisi neden ayrik|salinim enerjisi ayrik|"
+     "merdiven operatorleri|yaratma yok etme operatoru|"
      "kuantum harmonik osilator turet|enerji seviyeleri neden ayrik|"
      "a dagger operator|sifir nokta enerjisi|osilator cebirsel cozum|"
      "ladder operators|creation annihilation|quantum harmonic oscillator",
@@ -452,7 +456,10 @@ U(1) phase freedom.
          "Δθ = 2π — girişim deseni tam bir periyot kayar."],
   ex_en=["In the Aharonov-Bohm ring the phase shift is q Phi/hbar; one flux "
          "quantum shifts the pattern by a full period."],
-  kw="minimal baglasim|minimal coupling|p eksi qA|"
+  kw="manyetik alani denkleme sokmak|manyetik alani nasil sokariz|"
+     "yuklu parcacigin denklemine alan|alani denkleme katmak|"
+     "en az varsayimli yol alan|faz serbestligi alan|"
+     "minimal baglasim|minimal coupling|p eksi qA|"
      "gauge donusumu schrodinger|ayar degismezligi|kovaryant turev|"
      "elektromanyetik alanda schrodinger|aharonov bohm faz|"
      "gauge invariance|covariant derivative|electromagnetic coupling",
