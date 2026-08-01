@@ -326,6 +326,15 @@ def _baslangic_bilinenler(soru, adaylar):
         # saatte 1 saniye gecerse" sorusunda `v` degiskenine 1 (saniye)
         # yaziliyordu; dogru deger 2,398×10⁸ m/s. Bu deger metnin KENDI
         # sozunden gelir, birim tahmininden degil — ustune yazar.
+        # "n=2 den n=1 e" duzey numaralari
+        try:
+            for sym, deger in (problem.gecis_duzeyleri(soru) or {}).items():
+                for _sk, _f in adaylar:
+                    if sym in _f["vars"]:
+                        bilinen[sym] = (float(deger), _f["vars"][sym][2])
+                        break
+        except Exception:
+            pass
         try:
             for sym, deger in (problem.isik_hizi_degerleri(soru) or {}).items():
                 for _sk, _f in adaylar:

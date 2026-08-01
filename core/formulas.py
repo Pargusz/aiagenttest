@@ -310,9 +310,18 @@ FORMULAS = [
     F("bohr_gecis", "kuantum",
       "Bohr modelinde gecis enerjisi",
       "Transition energy in the Bohr model",
-      "E = Ry*Z**2*(1/n2**2 - 1/n1**2)",
-      {"E": ("yayilan foton enerjisi", "emitted photon energy", "J"),
-       "Ry": ("Rydberg enerjisi", "Rydberg energy", "J"),
+      # Ry cekirdekte NEGATIF saklanIyor (baglanma enerjisi, -13,6 eV).
+      # Bu yuzden terimler n1-n2 sirasinda yazildi; yayilan foton
+      # enerjisi POZITIF cikiyor (olculdu: ters sirada -1,63e-18).
+      # Ry'nin isareti cekirdekte ve sabit tablosunda farkli olabiliyor
+      # (baglanma enerjisi -13,6 eV ya da Rydberg +13,6 eV). Yayilan
+      # foton enerjisi HER HALUKARDA pozitiftir; mutlak deger bunu
+      # sabitler (olculdu: iki yolda da -1,63e-18 cikiyordu).
+      # Ry sabit tablosundan eV cinsinden geliyor ve sonuc "10.2 J"
+      # gibi BIRIMI YANLIS bir cevap uretiyordu (olculdu). Rydberg
+      # enerjisi dogrudan JOULE olarak yaziliyor: 13,6057 eV.
+      "E = 2.1798723e-18*Z**2*(1/n2**2 - 1/n1**2)",
+      {"E": ("yayilan fotonun enerjisi", "emitted photon energy", "J"),
        "Z": ("atom numarasi", "atomic number", ""),
        "n1": ("ust duzey", "upper level", ""),
        "n2": ("alt duzey", "lower level", "")},
@@ -322,7 +331,10 @@ FORMULAS = [
       # DUZEY GECISINI adlandirmali.
       "gecerken yayilan fotonun enerjisi|duzeyler arasi gecis enerjisi|"
       "n den n e gecis enerjisi|hidrojen gecis enerjisi|"
-      "enerji duzeyi gecisi",
+      # Uzun "…yayilan fotonun enerjisi" turevleri GERI ALINDI: kismi
+      # eslesme yuzunden "gunes ne kadar enerji yayiyor" sorusunu
+      # Stefan-Boltzmann'dan caliyorlardi (yonlendirme 40 -> 39).
+      "enerji duzeyi gecisi|n2 den n1 e gecis",
       "transition energy bohr|emitted photon energy level"),
     F("cift_yarik_sacak", "dalga", "Cift yarikta sacak araligi",
       "Fringe spacing in a double slit",

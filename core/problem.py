@@ -565,6 +565,28 @@ _FARK_DE_YE = re.compile(
     r"(?:ye|ya|'ye|'ya)\b", re.I)
 
 
+_KUANTUM_GECIS = re.compile(
+    r"\bn\s*=\s*(\d+)\s*(?:den|dan|'den|'dan)\s+n\s*=\s*(\d+)", re.I)
+
+
+def gecis_duzeyleri(soru):
+    """'n=2 den n=1 e' -> {n1: 2, n2: 1}. Yoksa bos.
+
+    Olculdu: "hidrojen atomunda n=2 den n=1 e gecerken yayilan fotonun
+    enerjisi" sorusunda duzey numaralari hic okunmuyordu; `n1` ve `n2`
+    bilinmedigi icin gecis enerjisi hesaplanamiyordu. Ilk sayi UST
+    duzey (nereden), ikincisi ALT duzeydir (nereye).
+    """
+    m = _KUANTUM_GECIS.search(soru or "")
+    if not m:
+        return {}
+    try:
+        ust, alt = int(m.group(1)), int(m.group(2))
+    except ValueError:
+        return {}
+    return {"n1": float(ust), "n2": float(alt)}
+
+
 def fark_degerleri(soru):
     """'X dereceden Y dereceye' -> {dT: Y-X}. Yoksa bos."""
     m = _FARK.search(soru or "")
