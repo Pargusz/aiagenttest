@@ -1140,6 +1140,19 @@ def h_durum(msg, lang, ctx):
                      % _sure_metni(lg.runtime(), "tr"))
         lines.append("| Kendi buldugu kavram | %s |" % "{:,}".format(int(kesif)))
         lines.append("| Kendi urettigi sorgu | %s |" % "{:,}".format(int(sorgu)))
+        # Kendi kendine ogrendigi KAVRAMLAR ARASI BAGLAR. Elle konu
+        # yazmadan, korpustan cikarilip iki bagimsiz kaynakla dogrulanan
+        # gecisler. Kullanicinin gormek istedigi ilerleme bu.
+        try:
+            from . import kopruogren as _koo
+            _kb, _khedef, _ksinav = _koo.durum()
+            lines.append("| **Kendi cikardigi bag** | **%s** |"
+                         % "{:,}".format(int(_kb)))
+            lines.append("| — ogrenmeye calistigi bag | %s |"
+                         % "{:,}".format(int(_khedef)))
+            lines.append("| — kendi sinavi (zor soru) | %s |" % _ksinav)
+        except Exception:
+            pass
         lines.append("| Motor | %s |" % ("**calisiyor** ✅" if running else "durdu ⏸"))
         _d = dil.MODEL.durum()
         if _d["model"]:
@@ -3068,11 +3081,33 @@ def h_kopru(msg, lang, ctx):
     okunmuyordu. Soru BUTUN olarak okunmali; bkz. kopru.py.
     """
     from . import kopru as _kopru
-    metin = _kopru.coz(msg, lang)
-    if metin:
-        return Response(metin, kind="topic",
-                        extra={"konu_etiketi": nlu.strip_command_words(msg)[:60]})
-    return h_konu(msg, lang, ctx)
+    metin = ctx.get("kopru_metin") or _kopru.coz(msg, lang)
+    if not metin:
+        return h_konu(msg, lang, ctx)
+
+    # OGRENILMIS kopru (korpustan cikarilmis) govdesi ham alintilardan
+    # olusur ve cogu Ingilizcedir. Bunu oldugu gibi basmak Turkce soran
+    # ogrenciye bir cevap degil, malzeme yigini vermektir; dil katmani da
+    # bunu "yabanci alinti yigini" sayip metni tamamen atiyor ve kendi
+    # bilgisinden yaziyordu (olculdu: cevap dogruydu ama kaynaklar
+    # iklimlendirme makaleleriydi).
+    #
+    # Dogrusu bu projenin kurali: MODEL DILI KURAR, OLGULARI KAYNAK VERIR.
+    # Modele YALNIZCA dogrulanmis kopru metnini baglam olarak veriyoruz.
+    ogrenilmis = ("bağımsız kaynaktan kendim" in metin
+                  or "independent sources" in metin)
+    if ogrenilmis and dil.MODEL.kurulu_mu():
+        try:
+            akici = dil.MODEL.yanitla(msg, baglam=metin, lang=lang)
+            if akici and len(akici) > 80:
+                # Durustluk notu her hâlukârda kalir.
+                not_ = [s for s in metin.split("\n") if s.startswith("_")]
+                metin = akici + ("\n\n" + not_[-1] if not_ else "")
+        except Exception:
+            pass
+    return Response(metin, kind="topic",
+                    extra={"konu_etiketi": nlu.strip_command_words(msg)[:60],
+                           "dil_modeli": True if ogrenilmis else None})
 
 
 HANDLERS = {
@@ -3723,7 +3758,12 @@ def respond(message, session="default", lang_override=None):
                   "makale"):
         try:
             from . import kopru as _kopru
-            if _kopru.istek_mi(etkin) and _kopru.coz(etkin, lang):
+            # Sonuc bir kez hesaplanir ve isleyiciye tasinir: iki kez
+            # cagirmak hem bosuna is hem de ogrenme hedefi sayacini
+            # iki katina cikariyordu.
+            _km = _kopru.coz(etkin, lang) if _kopru.istek_mi(etkin) else None
+            if _km:
+                ctx["kopru_metin"] = _km
                 intent = "kopru"
             elif _kopru.konu_bicimli_mi(etkin):
                 # Tek kavram bulundu ama soru yine de ILISKI soruyor:
@@ -4066,6 +4106,19 @@ def respond(message, session="default", lang_override=None):
     _kt = _kisi_konusu(message) or _kisi_konusu(resp.text[:400])
     if _kt:
         _hatirla["son_kisi"] = _kt["en_title"]
+
+    # ── KENDI ZAYIFLIGINI FARK ET ──────────────────────────────────────
+    # Soru iki kavram adlandirdi ama cevap yalnizca birine degdiyse bu bir
+    # KOPRU BOSLUGUDUR. Kullanicinin sikayet etmesini beklemeden kaydedilir;
+    # ogrenme motoru bir sonraki turunda o cifti korpusta arayip baglantiyi
+    # ogrenmeye calisir (bkz. kopruogren.py). Kullanicinin istegi buydu:
+    # "benzer ve yine zor olan soruları kendi kendine öğrensin".
+    if intent in ("konu", "kopru", "neden", "nasil", "formul", "turetim"):
+        try:
+            from . import kopruogren as _koo
+            _koo.kapsam_denetle(etkin, resp.text, lang)
+        except Exception:
+            pass
 
     _save_turn(session, message, resp.text, intent, subject=konu,
                extra=_hatirla or None)

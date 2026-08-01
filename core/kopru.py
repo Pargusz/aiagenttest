@@ -274,9 +274,24 @@ def coz(metin, lang="tr"):
                                          else t["en_title"]) for t in ek)
         return govde
 
-    # 3) Yazili bir gecis yoksa: iki kavrami yan yana koy, baglari goster.
     if len(ayri) < 2:
         return None
+
+    # 2b) Elle yazili gecis yok — peki KENDI OGRENDIGI bir kopru var mi?
+    #     Sistem, korpustan cikardigi ve iki bagimsiz kaynakla dogruladigi
+    #     baglantilari `koprular` tablosunda tutar (bkz. kopruogren.py).
+    #     Boylece her yeni veri partisi cevaplanabilir soru sayisini
+    #     kendiliginden artirir; elle konu yazmak gerekmez.
+    try:
+        from . import kopruogren as _ko
+        _ogrenilmis = _ko.kopru_bul(ayri[0][1]["key"], ayri[1][1]["key"], lang)
+        if _ogrenilmis:
+            return _ogrenilmis
+    except Exception:
+        pass
+
+    # 3) Yazili gecis de ogrenilmis kopru de yoksa: iki kavrami yan yana
+    #    koy, aralarindaki baglari goster.
     a, b = ayri[0][1], ayri[1][1]
     basl = ("## %s ile %s arasındaki ilişki" if lang == "tr"
             else "## How %s and %s are related")
@@ -291,6 +306,17 @@ def coz(metin, lang="tr"):
             for e in t["eqs"][:4]:
                 out.append("- `%s`" % e)
         out.append("")
+
+    # Buraya dusmek sunu demektir: iki kavramin ADINI biliyorum ama
+    # ARALARINDAKI GECISI bilmiyorum. Cevap iki uca da deger, yine de
+    # asil sorulan sey — bag — eksiktir. Bunu bir OGRENME HEDEFI olarak
+    # kaydediyoruz; ogrenme motoru bir sonraki turunda bu cifti korpusta
+    # arayip baglantiyi cikarmaya calisir (bkz. kopruogren.py).
+    try:
+        from . import kopruogren as _ko
+        _ko.bosluk_kaydet(a["key"], b["key"], metin)
+    except Exception:
+        pass
 
     out.append("### Bağlantı" if lang == "tr" else "### The connection")
     out.append("")

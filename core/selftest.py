@@ -46,6 +46,23 @@ def contains(*subs):
     return f
 
 
+def _ogrenme_hedefi_kaydedildi_mi():
+    """Baglayamadigi bir cift OGRENME HEDEFI olarak kaydediliyor mu?
+
+    Sistemin kendi zayifligini kendi fark etmesi bu dongunun ilk adimi:
+    iki kavramin adini biliyor ama arasindaki gecisi bilmiyorsa, bunu
+    ogrenme motoruna hedef olarak birakmali.
+    """
+    from . import db, kopru, kopruogren
+    kopruogren._kur()
+    c = db.conn()
+    once = c.execute("SELECT COUNT(*) FROM kopru_bosluk").fetchone()[0]
+    # Cekirdekte yazili gecisi olmayan iki konu
+    kopru.coz("faz gecisi ile katihal fizigi arasindaki iliski nedir", "tr")
+    sonra = c.execute("SELECT COUNT(*) FROM kopru_bosluk").fetchone()[0]
+    return sonra >= once
+
+
 def _cors_denemesi():
     """CORS basliklari yalnizca izinli adrese verilmeli.
 
@@ -1466,6 +1483,42 @@ def run():
           lambda: bool(knowledge.get("lagrange_hamilton_gecis")), True)
     check("kopru: olcum seti her iki uca da deginiyor",
           lambda: _olcum.kopru_puani()[0] >= 10, True)
+
+    # ── Kendi kendine kopru ogrenme ─────────────────────────────────
+    # Elle konu yazmadan, korpustan bag cikarma. Kabul olcutu KANIT:
+    # iki bagimsiz kaynak ve kavramlari gercekten birbirine baglayan
+    # cumleler. Gevsek bir olcut sistemi kandiriyordu (olculdu: "SI
+    # DERIVED unit of impulse" cumlesi momentum-Newton koprusu sanildi).
+    from . import kopruogren as _koo
+    check("ogrenme: sozluk cumlesi kopru sayilmiyor",
+          lambda: _koo._baglayici_cumle(
+              "SI derived unit of impulse The newton-second is the unit "
+              "of impulse in the International System of Units.",
+              ["impulse", "momentum conservation"],
+              ["newton second", "newton yasalari"]), False)
+    check("ogrenme: gercek bag cumlesi taniniyor",
+          lambda: _koo._baglayici_cumle(
+              "The first law of thermodynamics is a formulation of the "
+              "law of conservation of energy in thermodynamic processes.",
+              ["conservation of energy", "energy conservation"],
+              ["thermodynamics", "laws of thermodynamics"]), True)
+    check("ogrenme: ciplak 'derived' bag sayilmiyor",
+          lambda: bool(_koo._GECIS_IZI.search("SI derived unit")), False)
+    check("ogrenme: 'derived from' bag sayiliyor",
+          lambda: bool(_koo._GECIS_IZI.search("derived from Newton's law")),
+          True)
+    check("ogrenme: duz yazidan denklem cikarimi kapali",
+          lambda: _koo.PROZ_DENKLEM_CIKAR, False)
+    check("ogrenme: kanitsiz kopru servis edilmiyor",
+          lambda: _koo.kopru_bul("__yok_a__", "__yok_b__"), None)
+    check("ogrenme: arama terimleri ingilizce baslikla kuruluyor",
+          lambda: _koo._arama_terimleri(
+              knowledge.get("termodinamik_yasalari"), 1)[0],
+          "Laws of Thermodynamics")
+    check("ogrenme: cevaplanamayan bag hedef olarak kaydediliyor",
+          _ogrenme_hedefi_kaydedildi_mi, True)
+    check("ogrenme: kendi urettigi zor sorular iki uca deginiyor",
+          lambda: _olcum.kendi_sinavi(adet=4)[0] >= 3, True)
 
     # Gunluk hayattan sorular cekirdekte olmali. Olculdu: "gokyuzu neden
     # mavi" sorusuna "mavi kart" gecen bir vatandaslik hukuku makalesi

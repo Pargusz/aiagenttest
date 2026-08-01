@@ -612,6 +612,26 @@ KOPRU_SORULARI = [
 ]
 
 
+# ── Kendi kendine ogrenme olcumu ──────────────────────────────────────────
+# Kullanicinin istegi: *"sürekli bizim bir şeyi geliştirmemiz gerekmesin ...
+# benzer ve yine zor olan soruları kendi kendine öğrensin"*.
+#
+# Bu olcum, sistemin ELLE YAZILMADAN kac bagi kendi cikardigini ve kendi
+# urettigi zor sorularin kacinda iki uca birden degdigini gosterir. Sayilar
+# korpus buyudukce artmali; azalirsa bir gerileme var demektir.
+
+def ogrenme_durumu():
+    """(ogrenilmis_kopru, acik_hedef, son_sinav) doner."""
+    from . import kopruogren
+    return kopruogren.durum()
+
+
+def kendi_sinavi(adet=6):
+    """Sistemin kendi uretip kendi cevapladigi zor sorular. (dogru, toplam)"""
+    from . import kopruogren
+    return kopruogren.sinav(adet=adet, kaydet=False)
+
+
 def kopru_puani():
     """Kac kopru sorusu HER IKI uca da degiyor? (dogru, toplam)"""
     from . import brain

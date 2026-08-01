@@ -400,6 +400,8 @@ class Learner(object):
             self._task_consolidate,
             self._task_kendini_dogrula,
             self._task_genisle,        # okuduklarindan yeni yetenek uretir
+            self._task_kopru_ogren,    # kavramlar arasi gecisi kendi cikarir
+            self._task_zor_sinav,      # kendi urettigi zor sorularla sinanir
         ]
         idx = int(db.get_state("task_index", 0) or 0)
         ard_arda_hata = 0
@@ -1224,6 +1226,104 @@ class Learner(object):
         except Exception as e:
             self.log("Genisleme UYARI: formul uretilemedi: %s" % e)
         db.set_state("genisleme_son", time.time())
+
+    def _task_kopru_ogren(self):
+        """Iki kavram arasindaki GECISI korpustan kendi cikar.
+
+        Kullanicinin istegi: *"benzer ve yine zor olan soruları kendi
+        kendine öğrensin ... sürekli yeni veriler geliyor, otomatik olarak
+        onlarla kendini geliştirip cevaplar üretebilmeli"*.
+
+        Once kullanicinin takildigi kavram ciftleri, sonra cekirdekte
+        birbirine bagli ama arasindaki gecis yazili olmayan ciftler
+        denenir. Kabul icin iki bagimsiz kaynak ve kavramlari GERCEKTEN
+        birbirine baglayan iki cumle sart; yetersiz kanit sessizce
+        atilir. Yeni makaleler geldikce ayni cift tekrar denenebilir.
+        """
+        from . import kopruogren
+        adaylar = kopruogren.adaylar(limit=3)
+        if not adaylar:
+            self.log("Kopru: denenecek kavram cifti kalmadi.")
+            return
+        ogrenilen = 0
+        for a, b in adaylar:
+            if self.stop_flag.is_set():
+                break
+            try:
+                durum, kanit = kopruogren.ogren(a, b)
+            except Exception as e:
+                self.log("Kopru HATA (%s + %s): %s" % (a, b, e))
+                continue
+            if durum == "ogrenildi":
+                ogrenilen += 1
+                self.log("Kopru ogrenildi: %s + %s (%d bagimsiz kaynak)"
+                         % (a, b, kanit))
+                continue
+            self.log("Kopru atlandi: %s + %s — %s (kanit %d)"
+                     % (a, b, durum, kanit))
+            # KANIT YOKSA KORPUSU BESLE. Bu, dongunun kapandigi yer:
+            # cevaplayamadigi bir bag icin hedefli yayin cekiyor, boylece
+            # bir sonraki denemede elinde malzeme oluyor. Olculdu: "kara
+            # delik + termodinamik" cifti icin korpusta tek bir baglayici
+            # cumle yoktu; sistem uydurmak yerine o konuda veri istedi.
+            if durum != "yetersiz kanit":
+                continue
+            try:
+                from . import kopruogren as _ko, knowledge as _kn
+                ta, tb = _kn.get(a), _kn.get(b)
+                if not ta or not tb:
+                    continue
+                q = "%s %s" % (_ko._arama_terimleri(ta, 1)[0],
+                               _ko._arama_terimleri(tb, 1)[0])
+                # Tek kaynaga bagli kalmiyoruz: OpenAlex hiz sinirindaysa
+                # arXiv'e, o da olmazsa Wikipedia'ya duseriz. Aksi halde
+                # bir kaynagin sogumasi tum ogrenmeyi durduruyordu.
+                papers, hata = [], None
+                for getir in (
+                        lambda: sources.openalex_fetch(query=q, per_page=40),
+                        lambda: sources.arxiv_fetch(query=q, max_results=40),
+                        lambda: sources.doaj_fetch(query=q, per_page=40)):
+                    try:
+                        papers = getir() or []
+                    except Exception as e2:
+                        hata = e2
+                        continue
+                    if papers:
+                        break
+                if not papers:
+                    raise hata or RuntimeError("kaynak bos dondu")
+                n = self._ingest(papers)
+                self.log("Kopru icin veri cekildi: '%s' -> %d yeni kayit"
+                         % (q, n))
+            except Exception as e:
+                self.log("Kopru veri cekimi basarisiz (%s + %s): %s"
+                         % (a, b, e))
+        k, bo, sinav = kopruogren.durum()
+        db.bump_state("kopru_ogrenildi", ogrenilen)
+        self.log("Kopru durumu: %d ogrenilmis, %d acik bosluk, sinav %s"
+                 % (k, bo, sinav))
+        return ogrenilen
+
+    def _task_zor_sinav(self):
+        """Kendi urettigi ZOR sorularla kendini sina.
+
+        Sistem bilgi grafigindeki bagli kavram ciftlerinden "X ile Y
+        arasindaki iliski nedir" turu sorular uretir, cevaplar ve cevabin
+        IKI UCA da degip degmedigine bakar. Degemedigi her soru bir kopru
+        boslugu olarak kaydedilir; bir sonraki ogrenme turunda hedeftir.
+        Ilerleme boylece sayiyla izlenir ve kullaniciya sormaya gerek
+        kalmaz.
+        """
+        from . import kopruogren
+        son = db.get_state("zor_sinav_son") or 0
+        if time.time() - son < 6 * 3600:
+            return
+        dogru, toplam = kopruogren.sinav(adet=6)
+        db.set_state("zor_sinav_son", time.time())
+        if toplam:
+            self.log("Zor soru sinavi: %d/%d soruda iki uca da degildi"
+                     % (dogru, toplam))
+        return dogru
 
     def _bulgulari_isle(self, c, row, present, norm_text):
         """Bir makalenin ozetini cumle cumle inceleyip bulgulari kaydet."""
