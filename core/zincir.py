@@ -157,8 +157,16 @@ def _ortusme_puani(ad, etiket):
     for x in a:
         for y in b:
             # Turkce cekim eki icin kok karsilastirmasi
+            # KISA KOKLER. Olculdu: "tel uzunlugu" degiskeni ile
+            # "…2 m TELIN" etiketi eslesmiyordu, cunku kok
+            # karsilastirmasi ilk DORT harfe bakiyor ve "tel" uc
+            # harfli. Turkce'de kisa kok yaygindir (tel, yay, is,
+            # gaz, hiz). Biri otekinin oneki ise ve kisa olan en az
+            # uc harfliyse eslesme sayilir.
+            _kisa, _uzun = (x, y) if len(x) <= len(y) else (y, x)
             if x == y or (len(x) >= 4 and len(y) >= 4
-                          and (x.startswith(y[:4]) or y.startswith(x[:4]))):
+                          and (x.startswith(y[:4]) or y.startswith(x[:4]))) \
+                    or (len(_kisa) >= 3 and _uzun.startswith(_kisa)):
                 ortak += 1
                 break
     return ortak
@@ -398,6 +406,14 @@ def _baslangic_bilinenler(soru, adaylar):
                 continue
             # Fiziksel SABITIN uzerine soru degeri yazilmaz.
             if _sabit_sembol_mu(sym, adaylar):
+                continue
+            # BIRIM TUTMALI. Olculdu: "…5 A akim tasiyan 2 m telin
+            # uzerindeki KUVVET" sorusunda `F` (newton) degiskenine
+            # 5 (amper) yaziliyordu; sorulan buyukluk dolu kaldigi icin
+            # zincir hedefi `I` sanip -2,236 A gibi anlamsiz bir cevap
+            # uretiyordu. Birimi tutmayan deger o degiskene ait degildir.
+            _hb = f["vars"][sym][2]
+            if birim and _hb and not _birim_ayni(birim, _hb):
                 continue
             if (f["id"] != en_iyi_id
                     and not _atama_uygun_mu(f, sym, deger, etiketliler,
