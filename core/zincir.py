@@ -544,6 +544,31 @@ def _olcek_makul(soru, hedef_f, hedef, deger):
     return True
 
 
+# ── DENENDI VE GERI ALINDI: hedef-farkinda aday havuzu ────────────────────
+# formulas.hedefe_gore_ara() iki ayri yerde denendi ve ikisi de
+# tutmadi. Kayit, ayni yola tekrar girilmesin diye:
+#
+# 1) HAVUZUN SIRALAMASINA uygulandi. Hedeflenen kazanim GELDI —
+#    "0,4 T manyetik alanda 5 A akim tasiyan 2 m telin uzerindeki
+#    KUVVET" sorusunda havuz `tel_kuvvet` ile basladi (onceden `tel_B`).
+#    AMA sayisal olcum 39/39 -> 37/39 dustu. Sebep: `_aday_havuzu`
+#    yalnizca en iyi eslesmeyi degil ONUN KONUSUNU da belirliyor
+#    (ana_konu = vurus[0] konusu) ve havuzun geri kalani buna gore
+#    suzuluyor. Siralama degisince konu degisti, ara adimi uretecek
+#    bagintilar havuz disinda kaldi, cok adimli cozumler kirildi.
+#
+# 2) HEDEF LISTESININ siralamasina uygulandi (havuz aynen birakilarak).
+#    Bu sefer gerileme YOK ama kazanc da yok: F = B·I·L sorusu hâlâ
+#    cozulemiyor, cunku sorun hedef sirasinda degil HAVUZUN KENDISINDE —
+#    `tel_B` daha yuksek puan aliyor ve `tel_kuvvet` ana konuyu
+#    belirleyemiyor.
+#
+# GERCEK COZUM: aday havuzunun ana konu secimi tek bir formule
+# baglanmamali. Havuz, sorulan buyuklugu iceren formullerin konularini
+# da kapsamali; yani "ana konu" tekil degil, kucuk bir konu KUMESI
+# olmali. Bu, _aday_havuzu'nun yeniden yazilmasini gerektirir ve
+# 471 testlik takim uzerinde dikkatli olculmelidir.
+
 def _aday_havuzu(soru):
     """Zincirin kullanabilecegi bagintilar — KONUDA KALARAK.
 
