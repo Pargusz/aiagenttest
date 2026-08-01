@@ -3084,6 +3084,31 @@ _DIL_DISI_NIYETLER = frozenset((
 ))
 
 
+def _kuramsal_soru_mu(metin):
+    """Soru SAYISAL bir problem mi, yoksa kuramsal bir ispat mi?
+
+    Ilk olcut "rakam var mi" idi ve fazla katiydi: fizik gosteriminde
+    rakam boldur — "spin-1/2", "SU(2)", "n=2 den n=1 e", "ℏ→0",
+    "p=mv". Bu yuzden spin, WKB ve merdiven operatoru sorulari sayisal
+    cozucuye gidiyordu (olculdu). Dogru olcut BIRIMLI DEGER varligidir:
+    "5 kg", "300 K" gibi bir olcum verilmisse problem sayisaldir.
+    """
+    try:
+        from . import units as _u
+        for deger, birim, _b, _sn in (nlu.extract_number_unit(metin) or []):
+            # Birim GERCEK bir fiziksel birim olmali. "SU(2)" icindeki
+            # 2, "spin-1/2" icindeki 2 birim degildir (olculdu: bu
+            # sorular sayisal problem sanilyordu).
+            try:
+                if _u.to_si(1.0, birim)[0] is not None:
+                    return False
+            except Exception:
+                continue
+        return True
+    except Exception:
+        return True
+
+
 def h_kopru(msg, lang, ctx):
     """Iki kavram arasindaki iliskiyi soran sorular.
 
@@ -3600,7 +3625,7 @@ def respond(message, session="default", lang_override=None):
         try:
             _kh0 = knowledge.search(etkin, limit=1)
             _cek_turetim = bool(_kh0 and _kh0[0][0] >= 90
-                                and not re.search(r"\d", etkin))
+                                and _kuramsal_soru_mu(etkin))
         except Exception:
             pass
         if not _cek_turetim and _pset.ispat_istegi_mi(etkin):
@@ -3799,7 +3824,7 @@ def respond(message, session="default", lang_override=None):
             if re.search(r"\b(ispatla\w*|ispat\s+ed\w*|kanitla\w*|"
                          r"turet\w*|goster\w*\s+ki|matematiksel olarak|"
                          r"adim adim goster|prove|derive)\b",
-                         nlu.norm(etkin)) and not re.search(r"\d", etkin):
+                         nlu.norm(etkin)) and _kuramsal_soru_mu(etkin):
                 _kh = knowledge.search(etkin, limit=1)
                 # Turetim isleyicisini ancak COK guclu bir eslesme ezer;
                 # boylece "F = ma'dan a'yi turet" gibi mesru formul

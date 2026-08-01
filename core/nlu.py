@@ -144,7 +144,8 @@ PATTERNS = [
         r"\b(ne ogretebilirsin|neler ogretebilirsin|bana ogret|"
         r"ogret(ir|ebilir|ebilir m[iı]s[iı]n)|ogretebilir misin|"
         r"what can you teach|teach me|can you teach)\b",
-        r"\bsifirdan\b",
+        # "sifirdan TURET/ISPATLA" bir ogrenme plani istegi degildir.
+        r"\bsifirdan\b(?!\s*(turet|ispatla|kanitla|coz|hesapla))",
         # "matlab ogrenmek zor mu" bir kod istegi degil: zorluk/sure sorulari
         # da plan tarafina gitmeli.
         r"\b(ogrenmek|ogrenmesi)\s+(zor|kolay|ne kadar surer|zor mu)\b",
@@ -168,7 +169,11 @@ PATTERNS = [
         # "adim adim turet" bir isim tanitmasi DEGILDIR (olculdu: sistem
         # kullanicinin adini "Adim" sanip kaydediyordu). Ayrica ad olarak
         # gecen kelime bir fizik terimi olmamali.
-        r"\b(ad[iı]m\s+(?!ad[iı]m\b)(?!turet)(?!coz)\w+|ismim\s+\w+|"
+        # "adim adim GOSTER/ANLAT/HESAPLA" bir ISIM tanitmasi degildir.
+        # Olculdu: "...adim adim goster" ile biten bir ISPAT sorusu
+        # kendini_tanit niyetine gidiyor ve fizik cevabi hic verilmiyordu.
+        r"\b(ad[iı]m\s+(?!ad[iı]m\b)(?!turet)(?!coz)(?!goster)(?!anlat)"
+        r"(?!hesapla)(?!yaz)(?!ilerle)\w+|ismim\s+\w+|"
         r"bana\s+\w+\s+(de|diyebilirsin)|my name is|call me)\b",
         # Kendini tanitan duzey ifadeleri: bunlar birer soru degildir, bu yuzden
         # konu aramasina dusup alakasiz bir madde donmemeli.
