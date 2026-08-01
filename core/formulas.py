@@ -227,6 +227,30 @@ FORMULAS = [
       {"Q": ("isi", "heat", "J"), "m": ("kutle", "mass", "kg"),
        "L": ("gizli isi", "latent heat", "J/kg")},
       "gizli isi|erime isisi|buharlasma isisi", "latent heat|fusion|vaporization"),
+    # HAL DEGISIMI + ISITMA tek denklemde. Olculdu: "0 derecede 0,5 kg
+    # buzu eritip 20 dereceye getirmek icin gereken isi" sorusunda iki
+    # ayri sureci (erime ve isitma) TOPLAMAK gerekiyor; zincir iki ayri
+    # `Q` degerini toplayamiyor, yalnizca birini veriyordu (167000 ya da
+    # 41860; dogrusu 208860).
+    F("kalorimetre_toplam", "termodinamik",
+      "Hal degisimi ve isitma icin toplam isi",
+      "Total heat for melting then heating",
+      "Q = m*L + m*c*dT",
+      {"Q": ("toplam isi", "total heat", "J"),
+       "m": ("kutle", "mass", "kg"),
+       "L": ("gizli isi", "latent heat", "J/kg"),
+       "c": ("ozgul isi", "specific heat", "J/(kg·K)"),
+       "dT": ("sicaklik degisimi", "temperature change", "K")},
+      # DIKKAT: anahtarlar ERITME fiilini SART kosmali. Ilk hâlinde
+      # "isitmak icin gereken isi" gecen duz isitma sorusu da buraya
+      # geliyordu ("2 kg suyu 20 dereceden 80 dereceye isitmak") ve
+      # gizli isi terimi bosuna ekleniyordu (sayisal 39/39 -> 38/39).
+      # "eritmek ve isitmak icin gereken isi" anahtari da SILINDI: kismi
+      # eslesme yuzunden duz isitma sorusuna puan yaziyordu. Her anahtar
+      # ERITME fiilini icermeli.
+      "eritip isitmak|eritip getirmek|buzu eritip|eritip sicakliga|"
+      "once eritip sonra isitmak|eritip sonra isitmak",
+      "melt then heat|total heat melting and heating"),
     F("termo1", "termodinamik", "Termodinamigin 1. yasasi", "First law of thermodynamics",
       "dU = Q - W",
       {"dU": ("ic enerji degisimi", "internal energy change", "J"),

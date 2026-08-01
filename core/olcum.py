@@ -690,7 +690,11 @@ ZOR_PROBLEMLER = [
      "0.5*334000 + 0.5*4186*20 = 167000+41860=208860 J"),
 
     # 16. Kacis hizi (Dunya)
-    ("dunyadan kacis hizi nedir", "11.2", "sqrt(2GM/R)=11.2 km/s"),
+    # DIKKAT: beklenen deger SI biriminde yazilmali. Ilk hâli "11.2"
+    # (km/s) idi; sistem dogru cevabi 11190 m/s olarak veriyordu ve
+    # olcum bunu YANLIS sayiyordu — olcum hatasi, sistem hatasi degil.
+    ("dunyadan kacis hizi nedir", "11190",
+     "sqrt(2GM/R) = 1.119e4 m/s = 11.2 km/s"),
 
     # 17. Bohr: n=2 -> n=1 gecis enerjisi
     ("hidrojen atomunda n=2 den n=1 e gecerken yayilan fotonun enerjisi "

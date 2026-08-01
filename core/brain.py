@@ -3745,6 +3745,17 @@ def respond(message, session="default", lang_override=None):
             if _guclu and ((len(_degerler) >= 2 and _fv[0][0] >= 45)
                            or (len(_degerler) >= 1 and _fv[0][0] >= 70)):
                 intent = "formul"
+            elif not _degerler and _guclu and _fv[0][0] >= 60:
+                # SORUDA RAKAM YOK ama degerler BILINIYOR olabilir:
+                # "dunyadan kacis hizi nedir" sorusunda M ve R malzeme
+                # tablosundan geliyor ve cozum cikiyor. Olculdu: soru
+                # rakam icermedigi icin cozucuye hic ugramiyor, formul
+                # karti basiliyordu; oysa cevap 1,119×10⁴ m/s.
+                try:
+                    if problem.coz(etkin, lang):
+                        intent = "formul"
+                except Exception:
+                    pass
             elif _degerler and _guclu:
                 # Zayif eslesmede bile SAYISAL bir cozum cikiyorsa
                 # ogrencinin istedigi odur. Olculdu: "100 m yuksekten
