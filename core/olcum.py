@@ -777,6 +777,86 @@ def zor_bosluklari():
     return eksik
 
 
+
+# ── GENELLEME OLCUMU ──────────────────────────────────────────────────────
+# Kullanicinin sorusu: "hic eklemedigimiz bu seviyede zor bir soruyu
+# dogru bilebilecek mi?" Cevap tahminle degil SAYIYLA verilmeli.
+#
+# Iki grup:
+#   A) VARYANT — yazilmis bir turetimin farkli ifade edilmis hâli.
+#      Aramanin ve dil katmaninin saglamligini olcer.
+#   B) YENI — sete hic konmamis, cekirdekte yazili OLMAYAN turetimler.
+#      Gercek genellemeyi olcer. Burada yuksek puan ancak TURETIM
+#      MOTORU hesaplayabiliyorsa gelir (bkz. turetimmotor.py).
+#
+# Ilk olcum: A 2/6, B 0/6. Motor kurulduktan sonra B'de viryal teoremi
+# HESAPLANARAK cozuldu.
+
+GENELLEME_VARYANT = [
+ ("Bir gozlenebilirin operatorunun neden kendine es olmasi gerektigini, "
+  "olcum sonuclarinin gercel olmasi sartindan yola cikarak goster.",
+  ["Hermit", "kendine es"], ["gercel", "reel", "a = a*"]),
+ ("Bir dalga paketinin zarfinin hangi hizla ilerledigini hesapla ve bunun "
+  "parcacigin klasik hiziyla ayni oldugunu kanitla.",
+  ["grup", "dω/dk", "zarf"], ["p/m", "klasik", "dE/dp"]),
+ ("Yuklu bir parcacigin denklemine manyetik alani sokmanin en az varsayimli "
+  "yolunu ve bunun faz serbestligiyle iliskisini acikla.",
+  ["qA", "minimal"], ["gauge", "ayar", "faz"]),
+ ("Titresen bir sistemin enerjisinin neden surekli olamayacagini, yukseltme "
+  "ve alcaltma islemcileri kurarak goster.",
+  ["â†", "yaratma", "merdiven"], ["ħω(n", "n + ½", "ayrık", "ayrik"]),
+ ("Bir parcacigin bulunma olasiliginin zamanla korundugunu, bir akim "
+  "tanimlayarak ispatla.",
+  ["akım", "j ="], ["süreklilik", "∇·j", "korun"]),
+ ("Iki islemci ayni anda keskin olcelemiyorsa aralarindaki bagintinin ne "
+  "oldugunu ve bundan cikan alt siniri turet.",
+  ["komütat", "[Â", "[x"], ["ħ/2", "Cauchy", "ΔA"]),
+]
+
+GENELLEME_YENI = [
+ ("Ehrenfest teoremini ispatla: beklenen degerlerin klasik hareket "
+  "denklemlerine uydugunu matematiksel olarak goster.",
+  ["Ehrenfest"], ["d⟨x̂⟩/dt", "d⟨p̂⟩/dt", "⟨p̂⟩/m"]),
+ ("Viryal teoremini kuantum mekaniginde ispatla: duragan durumda "
+  "2⟨T⟩ = ⟨x dV/dx⟩ oldugunu goster.",
+  ["Viryal", "x̂p̂"], ["2⟨T̂⟩", "dV/dx"]),
+ ("Acisal momentum bilesenlerinin komutator cebrini hesaplayarak turet.",
+  ["L̂x", "acisal momentum"], ["iħ L̂z", "iħL̂z"]),
+ ("L kare ile Lz nin ayni anda olculebilir olup olmadigini komutator "
+  "hesaplayarak goster.",
+  ["L̂²"], ["= 0", "ayni anda", "aynı anda"]),
+ ("Periyodik potansiyelde Bloch teoremini ispatla: dalga fonksiyonunun "
+  "neden e^(ikr)·u(r) biciminde olmak zorunda oldugunu goster.",
+  ["Bloch"], ["e^(ik", "periyodik", "u(r)"]),
+ ("Fermi altin kuralini zamana bagli perturbasyon kuramindan turet.",
+  ["Fermi", "altın kural"], ["geçiş hızı", "durum yoğunluğu", "2π/ħ"]),
+]
+
+
+def _genelleme_puan(liste, etiket):
+    from . import brain
+    tam = 0
+    for i, (soru, a, b) in enumerate(liste):
+        try:
+            t = brain.respond(soru, session="_gen_%s%d" % (etiket, i)).text or ""
+        except Exception:
+            t = ""
+        if any(x.lower() in t.lower() for x in a) and \
+                any(x.lower() in t.lower() for x in b):
+            tam += 1
+    return tam, len(liste)
+
+
+def genelleme_varyant_puani():
+    """Yazilmis turetimin BASKA IFADESI kac soruda tutuyor?"""
+    return _genelleme_puan(GENELLEME_VARYANT, "v")
+
+
+def genelleme_yeni_puani():
+    """HIC YAZILMAMIS turetimlerin kaci cozuluyor? (gercek genelleme)"""
+    return _genelleme_puan(GENELLEME_YENI, "y")
+
+
 # ── Kendi kendine ogrenme olcumu ──────────────────────────────────────────
 # Kullanicinin istegi: *"sürekli bizim bir şeyi geliştirmemiz gerekmesin ...
 # benzer ve yine zor olan soruları kendi kendine öğrensin"*.

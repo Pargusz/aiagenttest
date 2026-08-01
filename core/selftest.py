@@ -1560,6 +1560,31 @@ def run():
     # 2/20 idi. Sistem cozucu, etikete gore deger dagitimi, sabit
     # korumasi, birim oneki okuma ve eksik bagintilarla 20/20'ye cikti.
     # Esik TAM PUANDIR: buradan asagisi gerilemedir.
+
+    # ── Turetim motoru: sonuc HESAPLANIR, okunmaz ───────────────────
+    # Olculdu: hic yazilmamis alti turetimden sifiri cevaplanabiliyordu.
+    # Motor komutatorleri SymPy ile hesapliyor; asagidaki testler
+    # sonuclarin dogru CIKTIGINI sabitler.
+    from . import turetimmotor as _tmot
+    check("motor: [x,p] = iħ hesaplaniyor",
+          lambda: str(_tmot.komutator_katsayisi(_tmot.op_x, _tmot.op_p)),
+          "I*hbar")
+    check("motor: Ehrenfest konum bacagi",
+          lambda: _tmot.turet_ehrenfest("tr"), contains("d⟨x̂⟩/dt = ⟨p̂⟩/m"))
+    check("motor: Ehrenfest momentum bacagi",
+          lambda: _tmot.turet_ehrenfest("tr"), contains("−⟨dV/dx⟩"))
+    check("motor: viryal teoremi hesaplaniyor",
+          lambda: _tmot.turet_viryal("tr"), contains("2⟨T̂⟩ = ⟨x·dV/dx⟩"))
+    check("motor: acisal momentum cebri hesaplaniyor",
+          lambda: _tmot.turet_acisal_momentum("tr"),
+          contains("[L̂x, L̂y] = iħ L̂z"))
+    check("motor: [L²,Lz] = 0 hesaplaniyor",
+          lambda: _tmot.turet_L2_Lz("tr"), contains("[L̂², L̂z] = 0"))
+    check("motor: kapsam disi soruyu tanimiyor",
+          lambda: _tmot.coz("Bloch teoremini ispatla"), None)
+    check("genelleme: yazilmamis turetimler cozuluyor",
+          lambda: _olcum.genelleme_yeni_puani()[0] >= 4, True)
+
     check("zor: zor problem seti tam cozuluyor",
           lambda: _olcum.zor_puani()[0] >= 20, True)
     check("zor: yeni bagintilar yuklu",

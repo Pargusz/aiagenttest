@@ -246,6 +246,125 @@ def turet_viryal(lang="tr"):
     return "\n".join(s)
 
 
+# ── Uc boyut: acisal momentum cebri ───────────────────────────────────────
+# Ayni yontem, tek degisiklik: dalga fonksiyonu uc degiskenli.
+
+y, z = sp.symbols("y z", real=True)
+_psi3 = sp.Function("psi")
+
+
+def _f3():
+    return _psi3(x, y, z)
+
+
+def op_px(f):
+    return -sp.I * hbar * sp.diff(f, x)
+
+
+def op_py(f):
+    return -sp.I * hbar * sp.diff(f, y)
+
+
+def op_pz(f):
+    return -sp.I * hbar * sp.diff(f, z)
+
+
+def op_Lx(f):
+    """L̂x = ŷp̂z − ẑp̂y"""
+    return y * op_pz(f) - z * op_py(f)
+
+
+def op_Ly(f):
+    """L̂y = ẑp̂x − x̂p̂z"""
+    return z * op_px(f) - x * op_pz(f)
+
+
+def op_Lz(f):
+    """L̂z = x̂p̂y − ŷp̂x"""
+    return x * op_py(f) - y * op_px(f)
+
+
+def turet_acisal_momentum(lang="tr"):
+    """[L̂x, L̂y] = iħL̂z — hesaplayarak.
+
+    Acisal momentum cebri elle yazilmadi; uc boyutlu diferansiyel
+    operatorler ψ(x,y,z) uzerine etkitilip fark alindi.
+    """
+    tr = lang == "tr"
+    f = _f3()
+    kom = sp.simplify(sp.expand(op_Lx(op_Ly(f)) - op_Ly(op_Lx(f))))
+    hedef = sp.simplify(sp.expand(sp.I * hbar * op_Lz(f)))
+    uyuyor = sp.simplify(sp.expand(kom - hedef)) == 0
+
+    s = ["### " + ("Türetim: Açısal Momentum Cebri" if tr
+                   else "Derivation: the angular momentum algebra"), ""]
+    s.append("**" + ("Tanımlar" if tr else "Definitions") + "**")
+    s.append("")
+    s.append("- `L̂x = ŷp̂z − ẑp̂y`,  `L̂y = ẑp̂x − x̂p̂z`,  `L̂z = x̂p̂y − ŷp̂x`")
+    s.append("- `p̂ᵢψ = −iħ ∂ψ/∂xᵢ`")
+    s.append("")
+    s.append("**" + ("Hesap" if tr else "Computation") + "**")
+    s.append("")
+    s.append("`[L̂x,L̂y]ψ = L̂x(L̂yψ) − L̂y(L̂xψ)`")
+    s.append("")
+    s.append("`= %s`" % sp.sstr(kom))
+    s.append("")
+    s.append("`iħL̂zψ = %s`" % sp.sstr(hedef))
+    s.append("")
+    if uyuyor:
+        s.append("## `[L̂x, L̂y] = iħ L̂z`")
+        s.append("")
+        s.append(("Döngüsel olarak `[L̂y,L̂z] = iħL̂x` ve `[L̂z,L̂x] = iħL̂y`. "
+                  "Bu üç bağıntı açısal momentum cebridir; spin de aynı "
+                  "cebri sağlar ama `r̂ × p̂` biçiminde yazılamaz — spinin "
+                  "klasik karşılığının olmamasının sebebi budur."
+                  if tr else
+                  "Cyclic permutations give the full algebra; spin obeys the "
+                  "same algebra without being r x p."))
+    else:
+        s.append("_" + ("Sadeleştirme tamamlanamadı." if tr
+                        else "Simplification incomplete.") + "_")
+    s.append("")
+    s.append("_" + ("Üç boyutlu operatörler ψ(x,y,z) üzerine etkitilip "
+                    "fark SymPy ile hesaplandı; yazılı bir metinden "
+                    "alınmadı." if tr else
+                    "Computed with SymPy in three dimensions.") + "_")
+    return "\n".join(s)
+
+
+def turet_L2_Lz(lang="tr"):
+    """[L̂², L̂z] = 0 — hesaplayarak."""
+    tr = lang == "tr"
+    f = _f3()
+
+    def op_L2(g):
+        return (op_Lx(op_Lx(g)) + op_Ly(op_Ly(g)) + op_Lz(op_Lz(g)))
+
+    kom = sp.simplify(sp.expand(op_L2(op_Lz(f)) - op_Lz(op_L2(f))))
+    s = ["### " + ("Türetim: [L̂², L̂z] = 0" if tr
+                   else "Derivation: [L^2, Lz] = 0"), ""]
+    s.append(("`L̂² = L̂x² + L̂y² + L̂z²` tanımlayıp komütatörü hesaplıyoruz."
+              if tr else "Define L^2 and compute the commutator."))
+    s.append("")
+    s.append("`[L̂²,L̂z]ψ = %s`" % sp.sstr(kom))
+    s.append("")
+    if sp.simplify(kom) == 0:
+        s.append("## `[L̂², L̂z] = 0`")
+        s.append("")
+        s.append(("Sıfır olması şu demektir: `L̂²` ile `L̂z` AYNI ANDA "
+                  "keskin ölçülebilir. Kuantum durumlarının `|ℓ,m⟩` diye "
+                  "iki sayıyla etiketlenmesinin sebebi budur. Buna karşılık "
+                  "`[L̂x,L̂y] ≠ 0` olduğu için iki bileşen aynı anda keskin "
+                  "olamaz."
+                  if tr else
+                  "Zero means L^2 and Lz share eigenstates, which is why "
+                  "states are labelled |l,m>."))
+    s.append("")
+    s.append("_" + ("SymPy ile hesaplandı." if tr
+                    else "Computed with SymPy.") + "_")
+    return "\n".join(s)
+
+
 # ── Disariya acilan yuz: soruyu tanı ve turet ─────────────────────────────
 
 import re
@@ -255,6 +374,13 @@ _ISTEKLER = [
     (r"\bviry?al\b|\bvirial\b|2\s*⟨?t⟩?\s*=", turet_viryal),
     (r"\[\s*x\s*,\s*p|komutator.*x.*p|x.*p.*komutator|"
      r"\bkanonik komutasyon\b", turet_xp_komutator),
+    (r"\bl\s*kare\b|\[\s*l.?2\s*,|l2.*lz|lz.*l2|"
+     r"acisal momentum.*ayni anda|ayni anda.*acisal momentum",
+     turet_L2_Lz),
+    (r"acisal momentum.*(cebir|komutator|bagint)|"
+     r"(cebir|komutator|bagint).*acisal momentum|"
+     r"\[\s*lx\s*,\s*ly|lx.*ly.*komutator|"
+     r"acisal momentum bilesenleri", turet_acisal_momentum),
 ]
 
 
@@ -282,4 +408,5 @@ def coz(metin, lang="tr"):
 
 def kapsam():
     """Motorun HESAPLAYABILDIGI turetimler (durustluk icin acikca)."""
-    return ["[x̂,p̂] = iħ", "Ehrenfest teoremi", "Viryal teoremi"]
+    return ["[x̂,p̂] = iħ", "Ehrenfest teoremi", "Viryal teoremi",
+            "[L̂x,L̂y] = iħL̂z (acisal momentum cebri)", "[L̂²,L̂z] = 0"]
