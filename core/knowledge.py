@@ -1563,10 +1563,12 @@ def _ileri_konulari_kat():
     from .gunluk import GUNLUK_KONULAR
     from .mufredat import MUFREDAT_KONULARI
     from .gecisler import GECIS_KONULARI
+    from .turetimler import TURETIM_KONULARI
     var = {t["key"] for t in TOPICS}
     for t in (KURAM_KONULARI + DENEY_KONULARI + ILERI_KONULAR
               + BILIMCILER + YAN_BILIM_KONULARI + GUNLUK_KONULAR
-              + MUFREDAT_KONULARI + GECIS_KONULARI):
+              + MUFREDAT_KONULARI + GECIS_KONULARI
+              + TURETIM_KONULARI):
         if t["key"] not in var:
             TOPICS.append(t)
             var.add(t["key"])

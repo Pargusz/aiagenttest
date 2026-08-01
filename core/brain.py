@@ -3590,7 +3590,20 @@ def respond(message, session="default", lang_override=None):
     # atlanan sey, sonucun nerede gecerli oldugudur.
     try:
         from . import problemseti as _pset
-        if _pset.ispat_istegi_mi(etkin):
+        # CEKIRDEKTE YAZILI BIR TURETIM VARSA O ONCE GELIR. Bu blok
+        # formul DUZENLEMESI uretir (bagintiyi baska degisken icin
+        # cozer); yazili bir ispatin yerini tutmaz. Olculdu:
+        # "[x,p]=iħ'yi ispatla, sonra Cauchy-Schwarz ile belirsizligi
+        # turet" sorusu buraya takilip belirsizlik FORMUL KARTINA
+        # gidiyordu; oysa cekirdekte tam ispat yazili (189 puan).
+        _cek_turetim = False
+        try:
+            _kh0 = knowledge.search(etkin, limit=1)
+            _cek_turetim = bool(_kh0 and _kh0[0][0] >= 90
+                                and not re.search(r"\d", etkin))
+        except Exception:
+            pass
+        if not _cek_turetim and _pset.ispat_istegi_mi(etkin):
             _isp = _pset.ispat(etkin, lang)
             if _isp:
                 resp = Response(_isp, kind="derivation",
@@ -3767,6 +3780,33 @@ def respond(message, session="default", lang_override=None):
                         intent = "formul"
                 except Exception:
                     pass
+        except Exception:
+            pass
+
+    # ── ISPAT ISTEGI SAYISAL COZUCUYE GITMEZ ───────────────────────────
+    # Olculdu (20 kuramsal soru): "Born olasilik yorumunu ispatla" sorusu
+    # FOTOELEKTRIK bagintisina, "Heisenberg'i Cauchy-Schwarz ile turet"
+    # sorusu belirsizlik FORMUL KARTINA, "Noether'i ispatla" sorusu ACI
+    # MOMENTUMU hesabina gidiyordu. Bir ispat sorusunun cevabi sayi ya da
+    # formul karti degil, TURETIMDIR. Cekirdekte guclu eslesen bir
+    # anlatim varsa oraya yonlendiriyoruz.
+    # `turetim` de buraya dahildir: o isleyici FORMUL DUZENLEMESI yapar
+    # (bir bagintiyi baska degisken icin cozer), yazili bir ISPAT
+    # sunmaz. Cekirdekte guclu eslesen bir turetim varsa oraya gitmeli.
+    if intent in ("formul", "hesap", "turev", "integral", "sabit",
+                  "turetim"):
+        try:
+            if re.search(r"\b(ispatla\w*|ispat\s+ed\w*|kanitla\w*|"
+                         r"turet\w*|goster\w*\s+ki|matematiksel olarak|"
+                         r"adim adim goster|prove|derive)\b",
+                         nlu.norm(etkin)) and not re.search(r"\d", etkin):
+                _kh = knowledge.search(etkin, limit=1)
+                # Turetim isleyicisini ancak COK guclu bir eslesme ezer;
+                # boylece "F = ma'dan a'yi turet" gibi mesru formul
+                # duzenlemeleri yerinde kalir.
+                _esik = 90 if intent == "turetim" else 40
+                if _kh and _kh[0][0] >= _esik:
+                    intent = "konu"
         except Exception:
             pass
 
