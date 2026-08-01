@@ -5,6 +5,7 @@ Kullanici formul adini bilmez; "topun havada ne kadar kaldigi" der.
 Bu olcum, formul tabaninin gunluk dil kapsamini sayiyla gosterir ve
 her test kosusunda tekrar edilir; boylece kapsam sessizce gerileyemez.
 """
+import re
 
 YONLENDIRME_SORULARI = [
  ("topun havada ne kadar kaldigini nasil bulurum", "serbest_dusme egik_h egik_menzil"),
@@ -709,6 +710,35 @@ ZOR_PROBLEMLER = [
 ]
 
 
+def _zor_eslesti(metin, beklenen, tol=0.02):
+    """Cevapta beklenen SAYI var mi? Metin degil, SAYI karsilastirilir.
+
+    Olculdu: sarkac sorusuna sistem `T = 2.837 s` demisti — dogru cevap.
+    Ama olcum "2.84" dizgisini aradigi icin bunu YANLIS saymisti. Yuzde
+    iki toleransli sayisal karsilastirma, yuvarlama farkindan dogan sahte
+    basarisizliklari kaldirir.
+    """
+    try:
+        hedef = float(beklenen)
+    except Exception:
+        return beklenen in (metin or "")
+    # Bilimsel gosterim dahil tum sayilari topla (10^ ve ×10^ bicimleri de)
+    duz = (metin or "").replace("×10^", "e").replace("·10^", "e")
+    duz = duz.replace("10^", "1e").replace(",", "")
+    for parca in re.findall(r"-?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?", duz):
+        try:
+            deger = float(parca)
+        except Exception:
+            continue
+        if hedef == 0:
+            if abs(deger) < 1e-12:
+                return True
+            continue
+        if abs(deger - hedef) <= abs(hedef) * tol:
+            return True
+    return False
+
+
 def zor_puani():
     """Zor problemlerin kaci sayiyla dogru cevaplaniyor? (dogru, toplam)"""
     from . import brain
@@ -718,8 +748,7 @@ def zor_puani():
             t = brain.respond(soru, session="_olcum_zor%d" % i).text or ""
         except Exception:
             t = ""
-        hedef = beklenen.split(".")[0].split("e")[0]
-        if beklenen in t or (len(hedef) >= 2 and hedef in t):
+        if _zor_eslesti(t, beklenen):
             dogru += 1
     return dogru, len(ZOR_PROBLEMLER)
 
@@ -733,8 +762,7 @@ def zor_bosluklari():
             t = brain.respond(soru, session="_olcum_zor%d" % i).text or ""
         except Exception:
             t = ""
-        hedef = beklenen.split(".")[0].split("e")[0]
-        if beklenen in t or (len(hedef) >= 2 and hedef in t):
+        if _zor_eslesti(t, beklenen):
             continue
         bas = [x for x in t.split("\n") if x.startswith("#")]
         eksik.append((soru[:50], beklenen,

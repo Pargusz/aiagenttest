@@ -370,6 +370,36 @@ SENARYOLAR = [
 #
 # Bu degerler FIZIK bilgisidir ve elle yazilmistir; metinden cikarilamaz.
 MALZEME = [
+    # Olculdu (zor problem seti): asagidaki ORTUK degerler bilinmedigi
+    # icin dogru formul bulundugu hâlde sayi cikmiyordu. Bir ogrenci
+    # "dolu silindir" dendiginde eylemsizlik carpaninin 1/2 oldugunu
+    # bilir; sistem de bilmeli.
+    {"kw": r"\bdolu silindir|\bdolu disk|\bsolid cylinder|\bdisk\b",
+     "degerler": {"k": 0.5},
+     "not_tr": "Dolu silindir/disk için eylemsizlik çarpanı `k = 1/2` "
+               "(`I = ½mR²`).",
+     "not_en": "Solid cylinder/disk: inertia factor k = 1/2."},
+    {"kw": r"\bici bos silindir|\bhalka\b|\bcember\b|\bhoop\b|"
+           r"\bhollow cylinder|\bthin ring",
+     "degerler": {"k": 1.0},
+     "not_tr": "İçi boş silindir/halka için `k = 1` (`I = mR²`).",
+     "not_en": "Hoop/thin ring: k = 1."},
+    {"kw": r"\bdolu kure|\bsolid sphere|\bkure\b(?!.*ici bos)",
+     "degerler": {"k": 0.4},
+     "not_tr": "Dolu küre için `k = 2/5` (`I = ⅖mR²`).",
+     "not_en": "Solid sphere: k = 2/5."},
+    {"kw": r"\belektron(un|u|a)?\b|\belectron\b",
+     "degerler": {"m": 9.1093837015e-31, "q": 1.602176634e-19},
+     "not_tr": "Elektron için `m = 9,11×10⁻³¹ kg`, `q = 1,60×10⁻¹⁹ C`.",
+     "not_en": "Electron: m = 9.11e-31 kg, q = 1.60e-19 C."},
+    {"kw": r"\bproton(un|u|a)?\b|\bproton\b",
+     "degerler": {"m": 1.67262192e-27, "q": 1.602176634e-19},
+     "not_tr": "Proton için `m = 1,673×10⁻²⁷ kg`, `q = 1,60×10⁻¹⁹ C`.",
+     "not_en": "Proton: m = 1.673e-27 kg, q = 1.60e-19 C."},
+    {"kw": r"\bdunya(dan|nin|ya|da)?\b|\bearth\b",
+     "degerler": {"M": 5.972e24, "R": 6.371e6},
+     "not_tr": "Dünya için `M = 5,97×10²⁴ kg`, `R = 6,37×10⁶ m` alındı.",
+     "not_en": "Earth: M = 5.97e24 kg, R = 6.37e6 m."},
     {"kw": r"\bsu(yu|yun|ya|da)?\b|\bwater\b",
      "degerler": {"c": 4186.0},
      "not_tr": "Suyun özgül ısısı `c = 4186 J/(kg·K)` alındı.",

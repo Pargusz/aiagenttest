@@ -281,6 +281,51 @@ def _adim_coz(f, bilinen, sabitler):
     return hedef, deger, degerler
 
 
+# Sorunun GUNLUK olcekte oldugunu gosteren isaretler. Bunlar varsa ve
+# gorelilik/astronomi/kuantum isareti yoksa, cevap da gunluk olcekte
+# olmalidir.
+_GUNLUK_IZ = re.compile(
+    r"\b(araba|otomobil|arac|kamyon|bisiklet|motosiklet|viraj|donemec|"
+    r"yol|kavsak|asansor|top|taş|tas|kutu|sandik|cisim|blok|kizak|"
+    r"sarkac|yay|makara|ip|halat|kopru|bina|pencere|masa|araba"
+    r"|car|vehicle|curve|road|elevator|ball|box|block|sled|pendulum)\b",
+    re.I)
+
+_EVREN_IZ = re.compile(
+    r"\b(gorelilik|goreli|isik hizi|foton|kuantum|atom|elektron|proton|"
+    r"notron|cekirdek|galaksi|yildiz|gezegen|uydu|yorunge|kara delik|"
+    r"schwarzschild|evren|kozmik|nukleer|parcacik|relativi|photon|"
+    r"quantum|galaxy|star|planet|orbit|black hole|cosmic|nuclear)\b",
+    re.I)
+
+# Isik hizinin bu kadarini asan bir "gunluk" hiz fizik degildir.
+_HIZ_SINIRI = 0.1 * 2.99792458e8
+
+
+def _olcek_makul(soru, hedef_f, hedef, deger):
+    """Sonuc, sorunun OLCEGINE uygun mu?
+
+    Gunluk olcekli bir problemde (araba, viraj, top, sarkac) gorelilik ya
+    da astronomi isareti yoksa; isik hizina yakin bir hiz ya da yildiz
+    kutlesi buyuklugunde bir kutle cikiyorsa zincir yanlis yoldan
+    gitmistir. Boyle bir cevabi basmak yerine cozumsuz kalmak dogrudur.
+    """
+    try:
+        buyukluk = abs(float(deger))
+    except Exception:
+        return True
+    if not _GUNLUK_IZ.search(soru or "") or _EVREN_IZ.search(soru or ""):
+        return True
+    birim = (hedef_f.get("vars", {}).get(hedef) or ("", "", ""))[2] or ""
+    if birim in ("m/s", "m/sn") and buyukluk > _HIZ_SINIRI:
+        return False
+    if birim == "kg" and buyukluk > 1e12:
+        return False
+    if birim in ("J", "N") and buyukluk > 1e15:
+        return False
+    return True
+
+
 def _aday_havuzu(soru):
     """Zincirin kullanabilecegi bagintilar — KONUDA KALARAK.
 
@@ -529,6 +574,15 @@ def coz(soru, lang="tr", max_adim=MAX_ADIM):
                                        f["vars"][sym][2])
         lines.append(isaret)
         lines.append("")
+
+    # OLCEK DENETIMI: gunluk olcekli bir soruya kozmik bir cevap
+    # verilmemeli. Olculdu: "surtunme katsayisi 0.5 olan 50 m yaricapli
+    # virajda maksimum hiz" sorusunda zincir `r = 50 m`i SCHWARZSCHILD
+    # yaricapi sanip 3,4×10²⁸ kg'lik bir kutle uydurdu ve arabaya
+    # 2,1×10⁸ m/s (0,7c) dedi. Boyle bir cevap, cevapsiz kalmaktan
+    # kotudur — ogrenciyi yanlisa goturur.
+    if not _olcek_makul(soru, hedef_f, hedef, son):
+        return None
 
     lines.append("## `%s` = **%s %s**"
                  % (hedef, problem._oku_sayi(son),

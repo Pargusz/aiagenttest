@@ -246,6 +246,16 @@ FORMULAS = [
     # Olculdu (zor problem seti, 2/20): asagidaki bagintilar cekirdekte
     # yoktu ve sorular yanlis formule gidiyordu. Her biri elle hesaplanmis
     # bir problemle dogrulandi.
+    F("viraj_hiz", "mekanik", "Yatay virajda maksimum hiz",
+      "Maximum speed on a flat curve",
+      "v = sqrt(mu*g*r)",
+      {"v": ("maksimum hiz", "maximum speed", "m/s"),
+       "mu": ("surtunme katsayisi", "friction coefficient", ""),
+       "g": ("yercekimi ivmesi", "gravity", "m/s^2"),
+       "r": ("viraj yaricapi", "curve radius", "m")},
+      "virajda maksimum hiz|viraj hizi|donemecte hiz|"
+      "kaymadan alabilecegi hiz|savrulmadan hiz|yatay viraj",
+      "maximum speed curve|flat curve speed|cornering speed"),
     F("atwood", "mekanik", "Atwood makinesi ivmesi",
       "Atwood machine acceleration",
       "a = g*(m2 - m1)/(m1 + m2)",
@@ -452,8 +462,11 @@ FORMULAS = [
       "P = V*I",
       {"P": ("guc", "power", "W"), "V": ("gerilim", "voltage", "V"),
        "I": ("akim", "current", "A")},
-      "elektrik gucu|watt|harcanan guc|cekilen guc|guc nedir",
-      "electrical power|power dissipated|power drawn"),
+      # DIKKAT: buraya ciplak "guc nedir" KONULMAMALI. Olculdu: "2000 J
+      # is 4 saniyede yapilirsa guc nedir" sorusu P = V*I'ya gidiyordu;
+      # oysa mekanik guc sorusu. Anahtarlar ELEKTRIK baglamini tasimali.
+      "elektrik gucu|watt|cekilen guc|devreden cekilen guc",
+      "electrical power|power drawn from circuit"),
     F("guc_direnc", "elektrik", "Direncte harcanan guc (gerilimle)",
       "Power dissipated in a resistor (from voltage)",
       "P = V**2/R",
