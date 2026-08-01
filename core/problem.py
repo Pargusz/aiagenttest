@@ -410,9 +410,15 @@ MALZEME = [
     {"kw": r"\bdur(gun|an|uyorken)\b|"
            r"\bilk hiz(i|siz)? (sifir|yok)\b|\bfrom rest\b|"
            r"\bstarting from rest\b|\bharekete gec\w*",
-     "degerler": {"v0": 0.0},
-     "not_tr": "Durgun halden başlıyor: `v₀ = 0`.",
-     "not_en": "Starts from rest: v0 = 0."},
+     # Carpisma problemlerinde "DURAN cisme carpti" ifadesi ikinci
+     # cismin hizini sifirlar. Olculdu (zor set): "3 kg cisim 4 m/s ile
+     # DURAN 5 kg cisme carpip birlikte hareket ederse" sorusunda dogru
+     # formul (tam esnek olmayan carpisma) bulunuyor ama v2 bilinmedigi
+     # icin sayi cikmiyordu.
+     "degerler": {"v0": 0.0, "v2": 0.0},
+     "not_tr": "Durgun halden başlıyor: `v₀ = 0` "
+               "(çarpışmada duran cisim için `v₂ = 0`).",
+     "not_en": "Starts from rest: v0 = 0 (v2 = 0 for a stationary target)."},
     {"kw": r"\bdunya (yuzey|yuzeyinden)|\bearth'?s surface\b",
      "degerler": {"M": 5.972e24, "R": 6.371e6, "r": 6.371e6},
      "not_tr": "Dünya için `M = 5,97×10²⁴ kg`, `R = 6,37×10⁶ m` alındı.",

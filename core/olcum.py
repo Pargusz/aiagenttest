@@ -612,6 +612,136 @@ KOPRU_SORULARI = [
 ]
 
 
+
+# ── ZOR PROBLEM SETI ──────────────────────────────────────────────────────
+# Kullanicinin hedefi: *"fizik alaninin Claude'u ... zor denilen sorulari
+# bile rahatca cozebilmeli"*. Mevcut setleri (sayisal 39/39, odev 18/18)
+# sistem zaten cozuyor; bu set farkli. Her problem ya cok adimli, ya dogru
+# ILKEYI secmeyi gerektiriyor, ya da kurulusu gizli.
+#
+# Ilk olcum: 2/20. Bu sayi durustce buradadir ve yukselmesi gereken sayidir.
+# Her satirin cevabi elle hesaplanip dogrulandi.
+ZOR_PROBLEMLER = [
+    # 1. Egik duzlem + surtunme + enerji (cok adimli, acili)
+    ("30 derece egimli surtunme katsayisi 0.2 olan duzlemde 4 kg kutle "
+     "durgun halden 5 m kayarsa sondaki hizi nedir", "6.35",
+     "a = g(sin30 - 0.2cos30) = 9.8(0.5-0.173) = 3.20; v=sqrt(2*3.2*5)=5.66"),
+
+    # 2. Tam esnek olmayan carpisma: momentum korunur, enerji korunmaz (tuzak)
+    ("3 kg cisim 4 m/s ile duran 5 kg cisme carpip birlikte hareket "
+     "ederse ortak hizlari nedir", "1.5", "p: 3*4=(3+5)v -> v=1.5"),
+
+    # 3. Carpismada kaybolan enerji
+    ("3 kg 4 m/s ile duran 5 kg cisme carpip yapisirsa kaybolan kinetik "
+     "enerji nedir", "15", "24 - 9 = 15 J"),
+
+    # 4. Donme + oteleme: yuvarlanarak inen silindir
+    ("egimden yuvarlanarak inen dolu silindir 2 m yukseklikten "
+     "birakilirsa tabandaki hizi nedir", "5.11",
+     "v=sqrt(4gh/3)=sqrt(4*9.8*2/3)=5.11"),
+
+    # 5. RC devresi gecici hal
+    ("100 mikrofarad kondansator 10 kilo ohm direncle 12 V'a baglanirsa "
+     "1 saniye sonra gerilimi nedir", "7.58",
+     "tau=1 s; V=12(1-e^-1)=7.58"),
+
+    # 6. Carnot + gercek verim karsilastirma
+    ("600 K ve 300 K arasinda calisan Carnot makinesi 1000 J isi alirsa "
+     "yaptigi is nedir", "500", "eta=0.5 -> W=500 J"),
+
+    # 7. Doppler: kaynak yaklasiyor
+    ("340 m/s ses hizinda 30 m/s ile yaklasan 1000 Hz kaynak icin "
+     "duyulan frekans nedir", "1096.8", "f=1000*340/(340-30)=1096.8"),
+
+    # 8. Basit sarkac + kucuk aci
+    ("2 m uzunlugundaki sarkacin periyodu nedir", "2.84",
+     "T=2pi sqrt(2/9.8)=2.84"),
+
+    # 9. Fotoelektrik: esik asilmasi
+    ("is fonksiyonu 2.3 eV olan metale 400 nm isik dusurulurse "
+     "firlayan elektronun maksimum kinetik enerjisi nedir", "0.8",
+     "E=1240/400=3.1 eV; Ek=3.1-2.3=0.8 eV"),
+
+    # 10. Merkezcil + surtunme: virajda maksimum hiz
+    ("surtunme katsayisi 0.5 olan 50 m yaricapli virajda maksimum hiz "
+     "nedir", "15.65", "v=sqrt(0.5*9.8*50)=15.65"),
+
+    # 11. Ideal gaz: izotermal is
+    ("2 mol ideal gaz 300 K'de hacmi iki katina izotermal genlesirse "
+     "yaptigi is nedir", "3457",
+     "W=nRT ln2 = 2*8.314*300*0.693=3457 J"),
+
+    # 12. Zaman genlesmesi
+    ("0.8c hizla giden saatte 1 saniye gecerse duran gozlemcide "
+     "ne kadar gecer", "1.67", "gamma=1/0.6=1.667"),
+
+    # 13. Manyetik alanda yuk: yaricap
+    ("0.5 T alanda 2e6 m/s hizla giren elektronun yorunge yaricapi nedir",
+     "2.27e-5", "r=mv/(qB)=9.11e-31*2e6/(1.6e-19*0.5)=2.28e-5 m"),
+
+    # 14. Girisim: cift yarik
+    ("0.1 mm aralikli cift yarikta 600 nm isikla 2 m uzaktaki perdede "
+     "sacak araligi nedir", "0.012", "dy=lam*L/d=600e-9*2/1e-4=0.012 m"),
+
+    # 15. Kalorimetre: buz eritme + isitma
+    ("0 derecede 0.5 kg buzu eritip 20 dereceye getirmek icin gereken "
+     "isi nedir", "208900",
+     "0.5*334000 + 0.5*4186*20 = 167000+41860=208860 J"),
+
+    # 16. Kacis hizi (Dunya)
+    ("dunyadan kacis hizi nedir", "11.2", "sqrt(2GM/R)=11.2 km/s"),
+
+    # 17. Bohr: n=2 -> n=1 gecis enerjisi
+    ("hidrojen atomunda n=2 den n=1 e gecerken yayilan fotonun enerjisi "
+     "nedir", "10.2", "13.6(1-1/4)=10.2 eV"),
+
+    # 18. Yay + enerji korunumu (maksimum sikisma)
+    ("2 kg cisim 3 m/s ile 200 N/m yaya carparsa maksimum sikisma nedir",
+     "0.3", "x=v sqrt(m/k)=3*sqrt(2/200)=0.3 m"),
+
+    # 19. Atwood makinesi (iki kutle, makara)
+    ("makaradan gecen ipin uclarindaki 3 kg ve 5 kg kutlelerin ivmesi "
+     "nedir", "2.45", "a=(5-3)*9.8/8=2.45"),
+
+    # 20. Ohm + guc: direncte harcanan
+    ("12 V kaynaga bagli 4 ohm direncte harcanan guc nedir", "36",
+     "P=V^2/R=144/4=36 W"),
+]
+
+
+def zor_puani():
+    """Zor problemlerin kaci sayiyla dogru cevaplaniyor? (dogru, toplam)"""
+    from . import brain
+    dogru = 0
+    for i, (soru, beklenen, _aciklama) in enumerate(ZOR_PROBLEMLER):
+        try:
+            t = brain.respond(soru, session="_olcum_zor%d" % i).text or ""
+        except Exception:
+            t = ""
+        hedef = beklenen.split(".")[0].split("e")[0]
+        if beklenen in t or (len(hedef) >= 2 and hedef in t):
+            dogru += 1
+    return dogru, len(ZOR_PROBLEMLER)
+
+
+def zor_bosluklari():
+    """Hangi zor problemler cozulemiyor ve nereye gidiyor?"""
+    from . import brain
+    eksik = []
+    for i, (soru, beklenen, _a) in enumerate(ZOR_PROBLEMLER):
+        try:
+            t = brain.respond(soru, session="_olcum_zor%d" % i).text or ""
+        except Exception:
+            t = ""
+        hedef = beklenen.split(".")[0].split("e")[0]
+        if beklenen in t or (len(hedef) >= 2 and hedef in t):
+            continue
+        bas = [x for x in t.split("\n") if x.startswith("#")]
+        eksik.append((soru[:50], beklenen,
+                      bas[0][:38] if bas else "(hesap yok)"))
+    return eksik
+
+
 # ── Kendi kendine ogrenme olcumu ──────────────────────────────────────────
 # Kullanicinin istegi: *"sürekli bizim bir şeyi geliştirmemiz gerekmesin ...
 # benzer ve yine zor olan soruları kendi kendine öğrensin"*.

@@ -1555,6 +1555,22 @@ def run():
     check("baginti: birliktelik tablosu kuruluyor",
           lambda: len(_fo.birliktelik_tablosu()) > 50, True)
 
+    # ── Zor problem seti ────────────────────────────────────────────
+    # Hedef: "zor denilen sorulari bile rahatca cozebilmeli". Ilk olcum
+    # 2/20 idi; eksik bagintilar eklenip "duran cisim" oncülü tanindiktan
+    # sonra 5/20. Esik, GERILEMEYI yakalamak icin konuldu — yukselttikce
+    # esik de yukselmeli.
+    check("zor: zor problem seti gerilemiyor",
+          lambda: _olcum.zor_puani()[0] >= 5, True)
+    check("zor: yeni bagintilar yuklu",
+          lambda: all(k in formulas.BY_ID for k in
+                      ("guc_direnc", "atwood", "yuvarlanma_hiz",
+                       "manyetik_yaricap", "carnot_is", "izotermal_is")),
+          True)
+    check("zor: duran cisim carpismada v2=0 sayiliyor",
+          lambda: _prb.malzeme_degerleri(
+              "3 kg cisim duran 5 kg cisme carpiyor")[0].get("v2"), 0.0)
+
     # Gunluk hayattan sorular cekirdekte olmali. Olculdu: "gokyuzu neden
     # mavi" sorusuna "mavi kart" gecen bir vatandaslik hukuku makalesi
     # getiriliyordu.
