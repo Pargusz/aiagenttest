@@ -190,7 +190,7 @@ def _cevre_etiketleri(soru):
     return out
 
 
-def _etikete_gore_esle(f, etiketliler):
+def _etikete_gore_esle(f, etiketliler, dolu=None):
     """AYNI BIRIMLI birden fazla deger varsa etikete gore dagit.
 
     Olculdu: "340 m/s ses hizinda 30 m/s ile yaklasan 1000 Hz kaynak icin
@@ -224,13 +224,10 @@ def _etikete_gore_esle(f, etiketliler):
                 puan = _ortusme_puani(ad, etiket)
                 if puan > 0:
                     ciftler.append((puan, deger, birim, sym))
-    if not ciftler:
-        return {}
-    ciftler.sort(key=lambda x: -x[0])
-    atanan, kullanilan_sym, kullanilan_deger = {}, set(), set()
-    for puan, deger, birim, sym in ciftler:
-        if sym in kullanilan_sym or deger in kullanilan_deger:
-            continue
+    dolu = set(dolu or ())
+    atanan, kullanilan_sym, kullanilan_deger = {}, set(dolu), set()
+
+    def _yerlestir(deger, birim, sym):
         si = float(deger)
         if birim:
             try:
@@ -242,6 +239,29 @@ def _etikete_gore_esle(f, etiketliler):
         atanan[sym] = (si, f["vars"][sym][2])
         kullanilan_sym.add(sym)
         kullanilan_deger.add(deger)
+
+    ciftler.sort(key=lambda x: -x[0])
+    for puan, deger, birim, sym in ciftler:
+        if sym in kullanilan_sym or deger in kullanilan_deger:
+            continue
+        _yerlestir(deger, birim, sym)
+
+    # ELEME YOLUYLA ATAMA. Etiketle eslesenler yerlestikten ve senaryonun
+    # verdigi degerler dolduktan sonra, ayni birimden geriye TEK deger ve
+    # TEK degisken kaldiysa bunlar eslesmek zorundadir.
+    #
+    # Olculdu: Doppler'de "ses hizinda" etiketi 340'i `v`ye baglar,
+    # senaryo `vo = 0` der; geriye kalan 30 m/s ile kaynak hizi `vs`
+    # basbasa kalir. Etiket ("ile yaklasan") kaynak hizini adlandirmadigi
+    # icin puanla baglanamiyordu ve zincir cozumsuz kaliyordu.
+    for u, symler in birim_sym.items():
+        if len(symler) < 2:
+            continue
+        bos_sym = [s for s in symler if s not in kullanilan_sym]
+        bos_deger = [(d, b) for d, b, _e in etiketliler
+                     if d not in kullanilan_deger and _birim_ayni(b, u)]
+        if len(bos_sym) == 1 and len(bos_deger) == 1:
+            _yerlestir(bos_deger[0][0], bos_deger[0][1], bos_sym[0])
     return atanan
 
 
@@ -298,7 +318,8 @@ def _baslangic_bilinenler(soru, adaylar):
             pass
         try:
             for sym, veri in _etikete_gore_esle(
-                    adaylar[0][1], _cevre_etiketleri(soru)).items():
+                    adaylar[0][1], _cevre_etiketleri(soru),
+                    dolu=set(bilinen)).items():
                 bilinen.setdefault(sym, veri)
         except Exception:
             pass
@@ -542,6 +563,31 @@ def coz(soru, lang="tr", max_adim=MAX_ADIM):
     bilinen, sen_degerler, sen_notlar = _baslangic_bilinenler(soru, adaylar)
     if len(bilinen) < 2:
         return None            # tek deger varsa zincire gerek yok
+
+    # SORULAN BUYUKLUK BILINEN SAYILMAZ. Olculdu: "340 m/s ses hizinda
+    # 30 m/s ile yaklasan 1000 Hz kaynak icin DUYULAN FREKANS nedir"
+    # sorusunda 1000 Hz hem `f0` (kaynak frekansi) hem `f` (duyulan
+    # frekans) degiskenine yaziliyordu; `f` dolu oldugu icin hedef
+    # listesine hic girmiyor ve cozulecek bilinmeyen kalmiyordu.
+    # Sorunun ACIKCA sordugu sembol, birim eslemesiyle tahmin edilmis
+    # olsa bile bilinenlerden cikarilmalidir.
+    # DIKKAT: bu kural DAR tutulmali. Genis hâli ("sorulan sembolu her
+    # zaman cikar") olculdu ve gerileme yaptI: "surtunme katsayisi 0.4
+    # olan 10 kg cisme etkiyen surtunme kuvveti" sorusunda `f` cikarilinca
+    # cozum bozuldu (sayisal 39/39 -> 38/39). Yalnizca AYNI DEGER baska
+    # bir degiskene de yazilmissa — yani deger gercekten paylasilmissa —
+    # sorulan sembol serbest birakilir.
+    try:
+        _sorulan = problem.hedef_tahmin(adaylar[0][1], soru)
+        if _sorulan and _sorulan in bilinen:
+            _deger = bilinen[_sorulan][0]
+            _paylasan = [s for s, (d, _u) in bilinen.items()
+                         if s != _sorulan and abs(d - _deger) < 1e-9]
+            _acik = set((nlu.extract_known_values(soru) or {}).keys())
+            if _paylasan and _sorulan not in _acik:
+                bilinen.pop(_sorulan, None)
+    except Exception:
+        pass
 
     hedef_listesi = _hedef_adaylari(soru, adaylar, bilinen)
     if not hedef_listesi:
