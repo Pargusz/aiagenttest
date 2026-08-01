@@ -707,6 +707,100 @@ GIRDI_NEGATIF_OLAMAZ = {
 }
 
 
+# ── Fiziksel gecerlilik: IMKANSIZ girdiyi hesaplamadan reddet ─────────────
+# Olculdu (taze sinav, tuzak grubu 2/4): "isik hizinin 2 kati hizla giden
+# cismin kinetik enerjisi" sorusuna sistem `Ek = mv²/2` karti basiyordu ve
+# "mutlak sifirin altinda -350 derecede basinc" sorusuna "Basinc" konusunu
+# anlatiyordu. Ikisi de HESAPLANAMAZ girdilerdir.
+#
+# Eksik cevap kotudur; imkansiz girdiye sanki gecerliymis gibi cevap
+# vermek daha kotudur — ogrenciye "bu hesaplanabilir bir sey" izlenimi
+# verir. Bu denetim formul secilmeden ONCE calisir.
+
+_ISIK_HIZI = 2.99792458e8
+_MUTLAK_SIFIR_C = -273.15
+
+_C_KATI = re.compile(
+    r"\bisik hizinin\s+(\d+(?:[.,]\d+)?)\s*kat", re.I)
+_C_CARPAN = re.compile(r"(?<![\w.])(\d+(?:[.,]\d+)?)\s*c\b(?!\w)", re.I)
+_NEG_SICAKLIK = re.compile(
+    r"(-\s*\d+(?:[.,]\d+)?)\s*(?:santigrat|derece|°\s*c|celsius)", re.I)
+_NEG_KELVIN = re.compile(
+    r"(-\s*\d+(?:[.,]\d+)?)\s*(?:kelvin|\bK\b)")
+
+
+def _oku(x):
+    return float(str(x).replace(" ", "").replace(",", "."))
+
+
+def fiziksel_gecersiz(soru, lang="tr"):
+    """Soru fiziksel olarak IMKANSIZ bir girdi mi iceriyor?
+
+    Iceriyorsa aciklayici metin doner; yoksa None. Hesap yapilmaz.
+    """
+    tr = lang == "tr"
+    n = nlu.norm(soru or "")
+
+    # 1) Isik hizini asan hiz
+    kat = None
+    m = _C_KATI.search(n)
+    if m:
+        kat = _oku(m.group(1))
+    else:
+        m2 = _C_CARPAN.search(n)
+        if m2 and "isik" in n:
+            kat = _oku(m2.group(1))
+    if kat is not None and kat > 1.0:
+        if tr:
+            return ("### Bu hız fiziksel olarak mümkün değil\n\n"
+                    "Soruda ışık hızının **%g katı** bir hız veriliyor. "
+                    "Özel görelilik kuramına göre kütleli hiçbir cisim ışık "
+                    "hızına (`c = 3×10⁸ m/s`) **erişemez**, aşmak bir yana.\n\n"
+                    "**Neden?** Göreli kinetik enerji `Ek = (γ−1)mc²` ve "
+                    "`γ = 1/√(1−v²/c²)`. `v → c` iken `γ → ∞`, yani cismi "
+                    "ışık hızına çıkarmak **sonsuz enerji** ister. `v > c` "
+                    "için ise `1 − v²/c²` negatif olur ve `γ` **sanal** "
+                    "çıkar — fiziksel bir çözüm yoktur.\n\n"
+                    "Bu yüzden burada `Ek = ½mv²` ya da başka bir bağıntı "
+                    "uygulamak yanlış olur. Hız ışık hızının altındaysa "
+                    "hesaplayabilirim; örneğin `0,8c` için `γ = 1,667`."
+                    % kat)
+        return ("### This speed is not physically possible\n\n"
+                "No massive object can reach the speed of light, let alone "
+                "exceed it: gamma diverges as v -> c and becomes imaginary "
+                "for v > c. Give a speed below c and I will compute it.")
+
+    # 2) Mutlak sifirin altinda sicaklik
+    for kalip, birim in ((_NEG_SICAKLIK, "C"), (_NEG_KELVIN, "K")):
+        m = kalip.search(soru or "")
+        if not m:
+            continue
+        try:
+            deger = _oku(m.group(1))
+        except ValueError:
+            continue
+        gecersiz = (deger < _MUTLAK_SIFIR_C) if birim == "C" else (deger < 0)
+        if not gecersiz:
+            continue
+        if tr:
+            return ("### Bu sıcaklık fiziksel olarak mümkün değil\n\n"
+                    "Soruda **%g %s** veriliyor. Mutlak sıfır "
+                    "`−273,15 °C = 0 K` olup **erişilemez bir alt sınırdır**; "
+                    "altına inilemez.\n\n"
+                    "**Neden?** Sıcaklık, parçacıkların ortalama kinetik "
+                    "enerjisinin ölçüsüdür (`½m⟨v²⟩ = (3/2)k_BT`). Kinetik "
+                    "enerji negatif olamayacağı için `T ≥ 0 K`'dir. "
+                    "Termodinamiğin üçüncü yasası da mutlak sıfıra sonlu "
+                    "sayıda adımda ulaşılamayacağını söyler.\n\n"
+                    "Geçerli bir sıcaklık verirseniz hesaplarım."
+                    % (deger, "°C" if birim == "C" else "K"))
+        return ("### This temperature is not physically possible\n\n"
+                "Absolute zero (-273.15 C = 0 K) is an unreachable lower "
+                "bound; temperature measures mean kinetic energy, which "
+                "cannot be negative.")
+    return None
+
+
 def girdi_denetle(f, sayisal, lang="tr"):
     """Verilen degerler fiziksel olarak mumkun mu? Metin ya da None."""
     tr = lang == "tr"

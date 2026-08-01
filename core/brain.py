@@ -3572,6 +3572,25 @@ def respond(message, session="default", lang_override=None):
 
     intent, conf = nlu.classify(etkin)
 
+    # ── FIZIKSEL GECERLILIK: IMKANSIZ GIRDI HESAPLANMAZ ────────────────
+    # Olculdu (taze sinav): "isik hizinin 2 kati hizla giden cismin
+    # kinetik enerjisi" sorusuna `Ek = mv²/2` karti, "mutlak sifirin
+    # altinda -350 derecede basinc" sorusuna "Basinc" konu anlatimi
+    # donuyordu. Ikisi de HESAPLANAMAZ girdilerdir ve sanki
+    # hesaplanabilirmis gibi cevap vermek ogrenciyi yanlisa goturur.
+    # Bu denetim her seyden ONCE calisir.
+    try:
+        _gecersiz = problem.fiziksel_gecersiz(etkin, lang)
+        if _gecersiz:
+            resp = Response(_gecersiz, kind="topic",
+                            extra={"intent": "konu", "gecersiz": True})
+            _save_turn(session, message, resp.text, "konu",
+                       subject=nlu.strip_command_words(etkin)[:60])
+            resp.extra["lang"] = lang
+            return resp
+    except Exception:
+        pass
+
     # ── TURETIM MOTORU: HESAPLANABILEN TURETIM ONCE GELIR ──────────────
     # Olculdu (genelleme sinavi): hic yazilmamis alti turetimden sifiri
     # dogru cevaplandi; Ehrenfest "Hamilton fonksiyonu — H icin adim adim

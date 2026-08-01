@@ -497,8 +497,13 @@ TUZAK_SORULARI = [
      "3.14"),
     # Fiziksel olmayan girdi sessizce kabul edilmemeli
     ("-5 kg kutleli cismin kinetik enerjisi 10 m/s hizda", "fiziksel değil"),
+    # Bu satirin beklentisi "fiziksel değil" idi; fiziksel gecerlilik
+    # denetimi eklendikten sonra sistem daha iyi bir cevap veriyor
+    # ("Bu sicaklik fiziksel olarak mumkun degil" + mutlak sifir
+    # aciklamasi). Cevap DOGRU, yalnizca ifadesi degisti — beklenti
+    # ortak ekine cekildi.
     ("-100 K sicaklikta 2 mol gazin 0.05 m3 hacimde basinci",
-     "fiziksel değil"),
+     "mümkün değil"),
     # Sorulan buyuklugun birimi dogru olmali
     ("sabit hizla giden trenin uzerindeki net kuvvet nedir", "0 N"),
     ("dengede duran cismin ivmesi nedir", "0 m/s^2"),

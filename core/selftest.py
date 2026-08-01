@@ -1607,10 +1607,21 @@ def run():
     check("taze: gorulmemis turetimler gerilemiyor",
           lambda: _olcum.taze_kuramsal_puani()[0] >= 1, True)
     # EN ONEMLISI: imkansiz girdiye dogru tepki. Yanlis cevap, eksik
-    # cevaptan zararlidir. Su an 2/4 — "isik hizinin 2 kati" ve
-    # "mutlak sifirin altinda" girdilerinde sistem HATA yapiyor.
-    check("taze: imkansiz girdiye dogru tepki gerilemiyor",
-          lambda: _olcum.taze_tuzak_puani()[0] >= 2, True)
+    # cevaptan zararlidir. 2/4 idi; fiziksel gecerlilik denetimi
+    # eklendikten sonra 4/4 — esik TAM PUANA cekildi.
+    check("taze: imkansiz girdiye dogru tepki",
+          lambda: _olcum.taze_tuzak_puani()[0] >= 4, True)
+    check("gecerlilik: isik hizini asan hiz reddediliyor",
+          lambda: bool(_prb.fiziksel_gecersiz(
+              "isik hizinin 2 kati hizla giden cismin kinetik enerjisi")),
+          True)
+    check("gecerlilik: mutlak sifir alti reddediliyor",
+          lambda: bool(_prb.fiziksel_gecersiz(
+              "-350 santigrat derecede gazin basinci")), True)
+    check("gecerlilik: mesru hiz reddedilmiyor",
+          lambda: _prb.fiziksel_gecersiz("0.8c hizla giden saat"), None)
+    check("gecerlilik: mesru sicaklik reddedilmiyor",
+          lambda: _prb.fiziksel_gecersiz("20 dereceden 80 dereceye"), None)
 
     check("kuramsal: turetim sorulari gerilemiyor",
           lambda: _olcum.kuramsal_puani()[0] >= 14, True)
