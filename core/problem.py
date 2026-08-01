@@ -199,6 +199,20 @@ def _yumusak_kalip(ad):
     return r"(?<!\w)%s\w{0,3}(?!\w)" % re.escape(ad)
 
 
+# ── DENENDI VE GERI ALINDI: soru kelimesi yoksa cumle sonu ────────────────
+# "…telin uzerindeki KUVVET" gibi soru kelimesi olmayan cumlelerde
+# yakinlik odulu hic calismiyor ve hedef yanlis seciliyor (F yerine B,
+# cunku "manyetik alan" adi daha uzun). Cumlenin SONU soru konumu
+# sayilinca hedef DOGRU secildi (F) — ama taze sayisal olcum 4/6 -> 3/6
+# dustu: baska bir soruda sondaki kelime sorulan buyukluk degildi ve
+# yakinlik odulu yanlis adaya gitti.
+#
+# DOGRU TASARIM: cumle sonunu kosulsuz soru konumu saymak yerine, sondaki
+# ad obeginin gercekten bir BUYUKLUK adi olup olmadigina bakilmali
+# (birim tasiyan bir sayinin hemen ardindan gelen kelime cogu zaman
+# nitelemedir, sorulan buyukluk degil). Bu ayrimi yapmadan kural net
+# kazanc vermiyor.
+
 def hedef_tahmin(f, soru, lang="tr"):
     """Soruda ADIYLA anilan ve sorulan degiskeni bul (yoksa None)."""
     n = nlu.norm(soru or "")

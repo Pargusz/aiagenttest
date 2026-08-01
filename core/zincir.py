@@ -591,17 +591,47 @@ def _aday_havuzu(soru):
              if s >= MIN_SKOR and not f.get("uretilmis")]
     if not vurus:
         return []
-    ana_konu = vurus[0][1].get("topic")
     en_iyi = vurus[0][0] or 1
     esik = en_iyi * KONU_DISI_ORAN
+
+    # ANA KONU TEKIL DEGIL, KUCUK BIR KUME. Olculdu: "0,4 T manyetik
+    # alanda 5 A akim tasiyan 2 m telin uzerindeki KUVVET" sorusunda en
+    # iyi eslesme `tel_B` (telin manyetik alani) ve ana konu ondan
+    # aliniyordu; sorulan buyuklugu (kuvvet) veren `tel_kuvvet` havuza
+    # girse bile konusu disarida kaldigi icin ara adimlar eksik
+    # kaliyordu.
+    #
+    # Cozum: sorulan buyuklugu ADIYLA iceren ve esigi gecen EN IYI
+    # formulun konusu da ana konulara katilir. En fazla BIR ek konu
+    # alinir; havuzu genis tutmak "basibos zincir" sorununu geri
+    # getirir (bkz. modul basindaki not).
+    ana_konular = {vurus[0][1].get("topic")}
+    try:
+        _kuyruk = [w for w in nlu.norm(soru or "").split()[-6:] if len(w) > 3]
+        if _kuyruk:
+            for skor, f in vurus:
+                if f.get("topic") in ana_konular or skor < esik:
+                    continue
+                _tutuyor = False
+                for _sy, (t, e, _u) in f["vars"].items():
+                    ad = nlu.norm((t or "") + " " + (e or ""))
+                    if any(w in ad for w in _kuyruk):
+                        _tutuyor = True
+                        break
+                if _tutuyor:
+                    ana_konular.add(f.get("topic"))
+                    break          # en fazla bir ek konu
+    except Exception:
+        pass
+
     havuz, gorulen = [], set()
     for skor, f in vurus:
-        if f["topic"] == ana_konu or skor >= esik:
+        if f["topic"] in ana_konular or skor >= esik:
             havuz.append((skor, f))
             gorulen.add(f["id"])
     # Ayni konunun geri kalan bagintilari: ara adim uretebilirler
     for f in formulas.FORMULAS:
-        if (f.get("topic") == ana_konu and f["id"] not in gorulen
+        if (f.get("topic") in ana_konular and f["id"] not in gorulen
                 and not f.get("uretilmis")):
             havuz.append((MIN_SKOR - 1, f))
             gorulen.add(f["id"])
