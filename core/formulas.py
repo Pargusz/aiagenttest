@@ -37,7 +37,7 @@ FORMULAS = [
       {"x": ("konum", "position", "m"), "x0": ("ilk konum", "initial position", "m"),
        "v0": ("ilk hiz", "initial velocity", "m/s"),
        "a": ("ivme", "acceleration", "m/s^2"), "t": ("zaman", "time", "s")},
-      "konum zaman|alinan yol|mesafe", "position time|distance"),
+      "konum zaman|alinan yol|aldigi yol|gittigi yol|mesafe", "position time|distance"),
     F("kin_v2", "kinematik", "Hiz-yol bagintisi (Torricelli)", "Torricelli equation",
       "v**2 = v0**2 + 2*a*dx",
       {"v": ("son hiz", "final velocity", "m/s"), "v0": ("ilk hiz", "initial velocity", "m/s"),
@@ -1907,6 +1907,48 @@ def _indeks():
 # Dogru tasarim hedef-farkinda olmali: once sorulan buyukluk belirlenmeli,
 # sonra o buyuklugu ICEREN formuller arasinda degisken eslesmesine
 # bakilmali. Bu, aramanin iki asamaya bolunmesini gerektirir.
+
+def hedefe_gore_ara(query, hedef_adaylari=None, limit=6):
+    """HEDEF-FARKINDA arama: once sorulani veren formulleri sec.
+
+    `search` hedeften habersizdir; verilenlere benzeyen formul,
+    sorulani veren formulun onune gecebilir. Olculdu: "3 kg cisim
+    5 m/s2 ivmeyle 4 saniye giderse aldigi YOL" sorusunda verilenler
+    (kutle, ivme) Newton'un 2. yasasina benziyor, ama sorulan YOL ve o
+    yalnizca kinematik bagintida var.
+
+    Burada iki asama var:
+      1. `search` her zamanki gibi calisir (anahtar kelimeler, adlar).
+      2. Sorulan buyuklugu ICEREN formuller one alinir; icermeyenler
+         geride kalir ama ELENMEZ — hedef tahmini yanilabilir, o yuzden
+         sert eleme yapmiyoruz.
+
+    hedef_adaylari: sorulan buyuklugun olasi adlari (ornegin
+    ["yol", "mesafe", "distance"]). Bos ise `search` ile ayni davranir.
+    """
+    ham = search(query, limit=max(limit * 3, 12))
+    if not hedef_adaylari:
+        return ham[:limit]
+    adlar = [_norm(a) for a in hedef_adaylari if a and len(_norm(a)) > 2]
+    if not adlar:
+        return ham[:limit]
+    yeniden = []
+    for skor, f in ham:
+        iceriyor = False
+        for _s2, (t, e, _u) in f["vars"].items():
+            nt, ne = _norm(t), _norm(e)
+            for a in adlar:
+                if a in nt or a in ne or nt in a or ne in a:
+                    iceriyor = True
+                    break
+            if iceriyor:
+                break
+        # Sorulani iceren formul one alinir. Carpan degil TOPLAMA
+        # kullaniyoruz ki guclu bir anahtar eslesmesi ezilmesin.
+        yeniden.append((skor + (40 if iceriyor else 0), f))
+    yeniden.sort(key=lambda x: -x[0])
+    return yeniden[:limit]
+
 
 def search(query, limit=6):
     """Formul ara. (skor, formul) listesi doner."""
