@@ -235,6 +235,28 @@ def _yumusak_kalip(ad):
 # dogrulanmis atamalar "verilmis" sayilmali, birim tahminiyle yapilanlar
 # sayilmamali); sonra bu sinyal kullanilabilir. Yani sira ters: atama
 # duzelmeden hedef tespiti bu sinyalden yararlanamaz.
+#
+# BESINCI DENEME (EN YAKINI, dogru yoldan): "verilmis" kumesi ETIKETLE
+# DOGRULANMIS atamalarla sinirlandi — sayinin cevresindeki kelimeler
+# degiskenin adini adlandirmali. Iki alt bulgu:
+#
+#   a) CEVRE ETIKETI KENDI KENDINI YIYOR. Etiket cumle SONUNA kadar
+#      uzaniyor ve orada zaten SORULAN buyukluk duruyor ("…2 m telin
+#      uzerindeki KUVVET"), bu yuzden F "verilmis" sanildi. Etiket ilk
+#      UC kelimeye kirpilinca duzeldi: verilmis = {B, I}, hedef = F.
+#
+#   b) CALISAN PENCERE BULUNDU (kirpma + ceza 8):
+#        tel hedefi DOGRU, sayisal 39/39, odev TR 18/18 / EN 5/5,
+#        tuzak 18/18, gorulmemis 8/8, yonlendirme 40/40, taze tuzak 4/4
+#      AMA zor set 20/20 -> 19/20 dustu; o esik TAM PUANDIR, o yuzden
+#      geri alindi.
+#
+# ONCEKI DORT DENEMEDEN FARKI: yaklasim CALISIYOR. Kalan tek engel zor
+# setteki bir sorunun bu cezadan etkilenmesi — muhtemelen orada da
+# etiket penceresi sorunlu. Kucuk ve hedefli bir is; yaklasim butunuyle
+# yeniden dusunulmemeli. Bir sonraki adim: `olcum.zor_bosluklari()` ile
+# hangi sorunun dustugunu bulup o sorudaki etiket penceresine bakmak.
+
 
 def hedef_tahmin(f, soru, lang="tr"):
     """Soruda ADIYLA anilan ve sorulan degiskeni bul (yoksa None)."""
