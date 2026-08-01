@@ -2211,6 +2211,9 @@ def _sayisal_kok(ifade, sembol, aralik=(-40.0, 40.0), adim=0.25):
 # Olculdu: bu kural olmadan sistem Tc=500, Th=300 atadi ve ogrenciye
 # "verim = -0.667" dedi — kesin ve emin bicimde YANLIS bir cevap.
 SIRALI_DEGISKENLER = {
+    # Atwood'da m2 AGIR kutledir; ters atanirsa ivme negatif cikar.
+    # Olculdu: etikete gore dagitim 3 kg'i m2'ye, 5 kg'i m1'e yazdi.
+    "atwood": [("m2", "m1")],
     "carnot": [("Th", "Tc")],
     "carnot_is": [("Th", "Tc")],   # sicak kaynak >= soguk kaynak          # sicak kaynak >= soguk kaynak
     "isi_pompasi": [("Th", "Tc")],

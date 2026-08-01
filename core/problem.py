@@ -969,6 +969,20 @@ def coz(soru, lang="tr"):
         bilinen.update(nlu.extract_known_values(soru) or {})
     except Exception:
         pass
+    # AYNI BIRIMLI DEGERLERI ETIKETE GORE DAGIT. Olculdu: "0.1 mm
+    # aralikli cift yarikta 600 nm isikla ..." sorusunda 0,1 mm dalga
+    # boyuna, 600 nm yarik araligina atanIyordu (ters) ve sacak araligi
+    # 333 m cikiyordu; dogrusu 0,012 m. Etiket ("aralikli") yarik
+    # araligini adlandiriyor. Bu dagitim SIRAYLA okumadan ONCE gelmeli.
+    try:
+        from . import zincir as _zn
+        _hedef_sym = hedef_tahmin(f, soru)
+        _dolu = set(bilinen) | ({_hedef_sym} if _hedef_sym else set())
+        for sym, veri in _zn._etikete_gore_esle(
+                f, _zn._cevre_etiketleri(soru), dolu=_dolu).items():
+            bilinen.setdefault(sym, veri)
+    except Exception:
+        pass
     try:
         for sym, (deger, birim) in (nlu.formul_degerleri(f, soru) or {}).items():
             if sym not in bilinen:
