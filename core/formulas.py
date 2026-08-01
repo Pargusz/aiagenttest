@@ -886,7 +886,7 @@ FORMULAS = [
       "lorentz carpani|gama|gorelilik", "lorentz factor|gamma"),
     F("zaman_genlesme", "gorelilik", "Zaman genlesmesi", "Time dilation",
       "dt = dt0/sqrt(1 - v**2/c**2)",
-      {"dt": ("gozlenen sure", "dilated time", "s"),
+      {"dt": ("duran gozlemcide gecen sure gozlenen sure", "dilated time", "s"),
        "dt0": ("oz sure", "proper time", "s"),
        "v": ("hiz", "speed", "m/s"), "c": ("isik hizi", "light speed", "m/s")},
       "hizla giden saatte gecen sure|duran gozlemcide ne kadar gecer|hareketli saatte gecen sure|gozlemcide gecen sure|zaman genlesmesi|zaman uzamasi", "time dilation"),

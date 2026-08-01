@@ -654,6 +654,19 @@ def coz(soru, lang="tr", max_adim=MAX_ADIM):
         if "v" in bilinen and "v0" not in bilinen:
             bilinen["v0"] = bilinen.pop("v")
 
+    # ZAMAN GENLESMESINDE HANGI SURE VERILDI? "0.8c hizla giden SAATTE
+    # 1 saniye gecerse DURAN GOZLEMCIDE ne kadar gecer" cumlesinde
+    # 1 saniye HAREKETLI saatin oz suresidir (dt0); sorulan, duran
+    # gozlemcinin olctugu suredir (dt). Olculdu: 1 saniye `dt`ye
+    # yaziliyor, sorulan buyukluk dolu kaldigi icin cozum cikmiyordu.
+    if re.search(r"\b(giden|hareketli|hizla giden|ucan|seyahat eden)\b"
+                 r"[^.?]{0,30}\b(saat|saatte|saati|clock)", nlu.norm(soru or "")) \
+            and re.search(r"\b(duran|durgun|hareketsiz|sabit)\b"
+                          r"[^.?]{0,20}\b(gozlemci|gozlemcide|yerde|dunyada)",
+                          nlu.norm(soru or "")):
+        if "dt" in bilinen and "dt0" not in bilinen:
+            bilinen["dt0"] = bilinen.pop("dt")
+
     # Senaryo degerlerini uygun formullerin birimiyle ekle. Hedef
     # adaylari birden fazla oldugu icin burada hedefe gore eleme
     # yapmiyoruz; zincir zaten bilineni yeniden uretmeye calismaz.
