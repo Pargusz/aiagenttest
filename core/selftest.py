@@ -1626,6 +1626,28 @@ def run():
     check("kuramsal: turetim sorulari gerilemiyor",
           lambda: _olcum.kuramsal_puani()[0] >= 14, True)
 
+
+    # ── "Sorulan buyukluk, verilmemis olandir" ──────────────────────
+    # En guclu hedef sinyali. Iki koruma sart: etiket cumle sonuna
+    # kadar uzanmamali (yoksa sorulani "verilmis" gosterir) ve BIRIM
+    # tutmali (yoksa siga degeri gerilimi isaretler).
+    check("hedef: verilmis kume birim tutmayani almaz",
+          lambda: _prb.etiketle_dogrulanmis(
+              formulas.BY_ID["rc_gerilim"],
+              "100 mikrofarad kondansator 10 kilo ohm direncle 12 V'a "
+              "baglanirsa 1 saniye sonra gerilimi nedir"),
+          {"R"})
+    check("hedef: sorulan buyukluk verilmis sayilmaz",
+          lambda: "F" in _prb.etiketle_dogrulanmis(
+              formulas.BY_ID["tel_kuvvet"],
+              "0.4 T manyetik alanda 5 A akim tasiyan 2 m telin "
+              "uzerindeki kuvvet"), False)
+    check("hedef: verilmemis olan sorulan secilir",
+          lambda: _prb.hedef_tahmin(
+              formulas.BY_ID["tel_kuvvet"],
+              "0.4 T manyetik alanda 5 A akim tasiyan 2 m telin "
+              "uzerindeki kuvvet"), "F")
+
     check("zor: zor problem seti tam cozuluyor",
           lambda: _olcum.zor_puani()[0] >= 20, True)
     check("zor: yeni bagintilar yuklu",

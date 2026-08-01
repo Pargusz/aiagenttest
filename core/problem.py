@@ -258,6 +258,45 @@ def _yumusak_kalip(ad):
 # hangi sorunun dustugunu bulup o sorudaki etiket penceresine bakmak.
 
 
+def etiketle_dogrulanmis(f, soru):
+    """Soruda GERCEKTEN verilmis olan semboller (etiketle dogrulanmis)."""
+    try:
+        from . import zincir as _zn
+        cevre = _zn._cevre_etiketleri(soru)
+    except Exception:
+        return set()
+    if not cevre:
+        return set()
+    out = set()
+    for sym, veri in (f.get("vars") or {}).items():
+        ad = (veri[0] or "") + " " + (veri[1] or "")
+        _hedef_birim = veri[2] if len(veri) > 2 else ""
+        for _deger, _birim, etiket in cevre:
+            # BIRIM TUTMALI. Olculdu: "100 mikroFARAD kondansator …"
+            # ifadesinde etiket "kondansator"dur ve `Vc` degiskeninin
+            # adi "kondansator gerilimi"; tek ortak kelime yuzunden
+            # SIGA degeri GERILIMI "verilmis" gosteriyordu ve sorulan
+            # buyukluk cezalandiriliyordu (zor set 20/20 -> 19/20).
+            # Bir sayi, ancak birimi tutuyorsa o degiskeni verebilir.
+            if _hedef_birim and _birim:
+                try:
+                    from . import zincir as _zn2
+                    if not _zn2._birim_ayni(_birim, _hedef_birim):
+                        continue
+                except Exception:
+                    pass
+            # Etiket cumle sonuna kadar uzanip SORULAN buyuklugu de
+            # icerebiliyor; ilk uc kelimeyle sinirliyoruz.
+            etiket = " ".join((etiket or "").split()[:3])
+            try:
+                if _zn._ortusme_puani(ad, etiket) > 0:
+                    out.add(sym)
+                    break
+            except Exception:
+                continue
+    return out
+
+
 def hedef_tahmin(f, soru, lang="tr"):
     """Soruda ADIYLA anilan ve sorulan degiskeni bul (yoksa None)."""
     n = nlu.norm(soru or "")
@@ -379,6 +418,14 @@ def hedef_tahmin(f, soru, lang="tr"):
                 (p + (10 if u == en_yakin and u < 10 ** 6 else 0), s)
                 for p, s, u in yeni_adaylar]
         adaylar = yeni_adaylar
+
+    try:
+        _verilen = etiketle_dogrulanmis(f, soru)
+        if _verilen and len(_verilen) < len(f["vars"]):
+            adaylar = [(p - (8 if sym in _verilen else 0), sym)
+                       for p, sym in adaylar]
+    except Exception:
+        pass
 
     # En UZUN eslesme kazanir: "esdeger direnc", "direnc"ten daha ozeldir.
     adaylar.sort(reverse=True)
