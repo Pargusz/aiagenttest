@@ -265,6 +265,25 @@ def _etikete_gore_esle(f, etiketliler, dolu=None):
     return atanan
 
 
+def _sabit_sembol_mu(sym, adaylar):
+    """Bu sembol adaylarin BIRINDE fiziksel sabit olarak mi geciyor?
+
+    Olculdu: "400 nm isik dusurulurse" sorusunda 400 nm degeri `h`
+    sembolune yaziliyordu; `h` bazi bagintilarda YUKSEKLIK ama
+    fotoelektrikte PLANCK SABITIDIR. Sabitin uzerine soru degeri
+    yazilmasi cevabi sessizce mahveder.
+    """
+    for _s, f in adaylar:
+        veri = (f.get("vars") or {}).get(sym)
+        if not veri:
+            continue
+        ad = (veri[0] or "") + " " + (veri[1] or "")
+        if re.search(r"\b(sabit|constant|planck|boltzmann|avogadro|"
+                     r"isik hizi|speed of light)\b", ad, re.I):
+            return True
+    return False
+
+
 def _baslangic_bilinenler(soru, adaylar):
     """Sorudaki degerleri oku: (sembol -> (deger_SI, birim))."""
     bilinen = {}
@@ -344,6 +363,9 @@ def _baslangic_bilinenler(soru, adaylar):
             continue
         for sym, (deger, birim) in okunan.items():
             if sym in bilinen or deger is None:
+                continue
+            # Fiziksel SABITIN uzerine soru degeri yazilmaz.
+            if _sabit_sembol_mu(sym, adaylar):
                 continue
             if (f["id"] != en_iyi_id
                     and not _atama_uygun_mu(f, sym, deger, etiketliler,
@@ -738,7 +760,24 @@ def coz(soru, lang="tr", max_adim=MAX_ADIM):
             # borusundan 0.0 donuyordu. Soruya en cok uyan baginti
             # once denenmeli.
             _skor = {f["id"]: s for s, f in adaylar}
-            _sirali = sorted(hedef_listesi,
+            _liste = list(hedef_listesi)
+            # SORULAN sembolu iceren HER bagintiyi da dene. Olculdu:
+            # fotoelektrikte `Ek` sembolu hedef listesinde vardi ama
+            # yalnizca birkac baginti ile; dalga boyu bicimindeki
+            # (`Ek = h*c/lam - W`) baginti listeye hic girmiyordu ve
+            # cozum kaciyordu. Sistem cozucu dogru bagintiyla
+            # cagrildiginda 1,281×10⁻¹⁹ J'yi dogru veriyor.
+            try:
+                _sorulan2 = problem.hedef_tahmin(adaylar[0][1], soru)
+            except Exception:
+                _sorulan2 = None
+            if _sorulan2:
+                _var = {(h, f["id"]) for h, f in _liste}
+                for _s2, f2 in adaylar:
+                    if _sorulan2 in f2["vars"] and \
+                            (_sorulan2, f2["id"]) not in _var:
+                        _liste.append((_sorulan2, f2))
+            _sirali = sorted(_liste,
                              key=lambda x: -_skor.get(x[1]["id"], 0))
             for _h, _hf in _sirali:
                 sonuc = _sis.coz(soru, adaylar, bilinen, _h, _hf, lang)

@@ -733,7 +733,33 @@ FORMULAS = [
       {"Ek": ("maks. kinetik enerji", "max kinetic energy", "J"),
        "h": ("Planck sabiti", "Planck", "J·s"), "f": ("frekans", "frequency", "Hz"),
        "W": ("is fonksiyonu", "work function", "J")},
-      "fotoelektrik|is fonksiyonu|einstein", "photoelectric|work function"),
+      # Olculdu: "is fonksiyonu 2.3 eV olan metale 400 nm isik
+      # dusurulurse firlayan elektronun maksimum kinetik enerjisi"
+      # sorusu KINETIK ENERJI bagintisina gidiyordu ("kinetik enerji"
+      # kelimeleri agir basiyordu). Fotoelektrige ozgu ifadeler eklendi.
+      "fotoelektrik|is fonksiyonu|einstein|"
+      "firlayan elektronun kinetik enerjisi|"
+      "firlayan elektronun maksimum kinetik enerjisi|"
+      "kopan elektronun enerjisi|metale isik dusurul|"
+      "esik frekansi|esik dalga boyu|fotoelektron enerjisi",
+      "photoelectric|work function|ejected electron kinetic energy|"
+      "threshold frequency|photoemission"),
+    # Dalga boyu cinsinden fotoelektrik: soru cogu zaman frekansi degil
+    # DALGA BOYUNU verir (400 nm). Ara adim (f = c/lam) zincirde
+    # kayboluyordu; tek denklemde yazmak hem kisa hem guvenli.
+    F("fotoelektrik_lam", "kuantum",
+      "Fotoelektrik olay (dalga boyu ile)",
+      "Photoelectric effect (from wavelength)",
+      "Ek = h*c/lam - W",
+      {"Ek": ("maks. kinetik enerji", "max kinetic energy", "J"),
+       "h": ("Planck sabiti", "Planck", "J·s"),
+       "c": ("isik hizi", "speed of light", "m/s"),
+       "lam": ("dalga boyu", "wavelength", "m"),
+       "W": ("is fonksiyonu", "work function", "J")},
+      "is fonksiyonu dalga boyu|nm isik dusurul|"
+      "dalga boylu isikla fotoelektrik|"
+      "firlayan elektronun maksimum kinetik enerjisi dalga boyu",
+      "photoelectric from wavelength|work function wavelength"),
     F("debroglie", "kuantum", "de Broglie dalga boyu", "de Broglie wavelength",
       "lam = h/(m*v)",
       {"lam": ("dalga boyu", "wavelength", "m"),

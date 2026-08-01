@@ -660,8 +660,8 @@ ZOR_PROBLEMLER = [
 
     # 9. Fotoelektrik: esik asilmasi
     ("is fonksiyonu 2.3 eV olan metale 400 nm isik dusurulurse "
-     "firlayan elektronun maksimum kinetik enerjisi nedir", "0.8",
-     "E=1240/400=3.1 eV; Ek=3.1-2.3=0.8 eV"),
+     "firlayan elektronun maksimum kinetik enerjisi nedir", "1.281e-19",
+     "E=1240/400=3.1 eV; Ek=0.8 eV = 1.281e-19 J (sistem SI verir)"),
 
     # 10. Merkezcil + surtunme: virajda maksimum hiz
     ("surtunme katsayisi 0.5 olan 50 m yaricapli virajda maksimum hiz "
@@ -698,7 +698,7 @@ ZOR_PROBLEMLER = [
 
     # 17. Bohr: n=2 -> n=1 gecis enerjisi
     ("hidrojen atomunda n=2 den n=1 e gecerken yayilan fotonun enerjisi "
-     "nedir", "10.2", "13.6(1-1/4)=10.2 eV"),
+     "nedir", "1.634e-18", "13.6(1-1/4)=10.2 eV = 1.634e-18 J"),
 
     # 18. Yay + enerji korunumu (maksimum sikisma)
     ("2 kg cisim 3 m/s ile 200 N/m yaya carparsa maksimum sikisma nedir",

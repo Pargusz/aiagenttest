@@ -136,15 +136,17 @@ def _tek_dene(adaylar, bilinen, hedef, ana, hedef_f):
         if deger is None:
             continue
         yerine[sp.Symbol(sym)] = deger
-    # Fiziksel sabitler
+    # FIZIKSEL SABITLER. Olculdu: fotoelektrik denkleminde `h` (Planck)
+    # ve `c` (isik hizi) doldurulmadigi icin sistemde iki fazla
+    # bilinmeyen kaliyor ve cozum bulunamiyordu. zincir._sabit_doldur
+    # her formulun kendi degisken ADINA bakarak sabiti tanir.
     try:
-        for sym in semboller:
-            if sym in yerine or sym == hedef:
-                continue
-            sabit = problem.sabit_degeri(sym) if hasattr(
-                problem, "sabit_degeri") else None
-            if sabit is not None:
-                yerine[sp.Symbol(sym)] = float(sabit)
+        from . import zincir as _zn
+        for f in denklemler:
+            for sym, deger in (_zn._sabit_doldur(f, bilinen) or {}).items():
+                if sym == hedef:
+                    continue
+                yerine.setdefault(sp.Symbol(sym), float(deger))
     except Exception:
         pass
 
