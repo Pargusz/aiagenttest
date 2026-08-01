@@ -625,8 +625,11 @@ KOPRU_SORULARI = [
 ZOR_PROBLEMLER = [
     # 1. Egik duzlem + surtunme + enerji (cok adimli, acili)
     ("30 derece egimli surtunme katsayisi 0.2 olan duzlemde 4 kg kutle "
-     "durgun halden 5 m kayarsa sondaki hizi nedir", "6.35",
-     "a = g(sin30 - 0.2cos30) = 9.8(0.5-0.173) = 3.20; v=sqrt(2*3.2*5)=5.66"),
+     "durgun halden 5 m kayarsa sondaki hizi nedir", "5.66",
+     # Beklenen deger "6.35" yaziliyordu ama ayni satirdaki hesap 5,66
+     # veriyor: a = 9,8(sin30 - 0,2cos30) = 3,203 ve v = sqrt(2·3,203·5)
+     # = 5,66 m/s. Sistem 5,661 diyordu ve olcum bunu YANLIS sayiyordu.
+     "a = g(sin30 - 0.2cos30) = 3.203; v = sqrt(2*3.203*5) = 5.66"),
 
     # 2. Tam esnek olmayan carpisma: momentum korunur, enerji korunmaz (tuzak)
     ("3 kg cisim 4 m/s ile duran 5 kg cisme carpip birlikte hareket "

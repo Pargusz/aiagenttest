@@ -1557,11 +1557,11 @@ def run():
 
     # ── Zor problem seti ────────────────────────────────────────────
     # Hedef: "zor denilen sorulari bile rahatca cozebilmeli". Ilk olcum
-    # 2/20 idi; eksik bagintilar eklenip "duran cisim" oncülü tanindiktan
-    # sonra 5/20. Esik, GERILEMEYI yakalamak icin konuldu — yukselttikce
-    # esik de yukselmeli.
-    check("zor: zor problem seti gerilemiyor",
-          lambda: _olcum.zor_puani()[0] >= 5, True)
+    # 2/20 idi. Sistem cozucu, etikete gore deger dagitimi, sabit
+    # korumasi, birim oneki okuma ve eksik bagintilarla 20/20'ye cikti.
+    # Esik TAM PUANDIR: buradan asagisi gerilemedir.
+    check("zor: zor problem seti tam cozuluyor",
+          lambda: _olcum.zor_puani()[0] >= 20, True)
     check("zor: yeni bagintilar yuklu",
           lambda: all(k in formulas.BY_ID for k in
                       ("guc_direnc", "atwood", "yuvarlanma_hiz",

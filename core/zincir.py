@@ -214,8 +214,12 @@ def _etikete_gore_esle(f, etiketliler, dolu=None):
     ciftler = []
     for deger, birim, etiket in etiketliler:
         for u, symler in birim_sym.items():
-            if len(symler) < 2:
-                continue          # tek aday varsa zaten karisiklik yok
+            # NOT: tek aday varken de calisiyoruz. Olculdu: RC sorusunda
+            # `R` tek ohm degiskeni oldugu icin bu dagitim atlanIyor,
+            # sirayla okuma ise 12 V'u `R`ye yaziyordu (birim tutmadigi
+            # hâlde). Etiket ("kilo ohm direncle") dogru degeri bagliyor.
+            if len(symler) < 1:
+                continue
             if not _birim_ayni(birim, u):
                 continue
             for sym in symler:

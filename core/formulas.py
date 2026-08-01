@@ -42,7 +42,7 @@ FORMULAS = [
       "v**2 = v0**2 + 2*a*dx",
       {"v": ("son hiz", "final velocity", "m/s"), "v0": ("ilk hiz", "initial velocity", "m/s"),
        "a": ("ivme", "acceleration", "m/s^2"), "dx": ("yol", "displacement", "m")},
-      "torricelli|hiz yol|zamansiz", "torricelli|velocity displacement"),
+      "kayarsa sondaki hizi|kayarak sondaki hiz|m kayarsa hizi|yol sonunda hizi|sondaki hizi|torricelli|hiz yol|zamansiz", "torricelli|velocity displacement"),
     F("ivme", "kinematik", "Ivme tanimi", "Acceleration definition",
       "a = dv/dt",
       {"a": ("ivme", "acceleration", "m/s^2"), "dv": ("hiz degisimi", "velocity change", "m/s"),
