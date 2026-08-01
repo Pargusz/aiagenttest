@@ -440,6 +440,21 @@ def classify(text):
     # duzeyi hesapla" -> "kuyuda*n*sonsuz = 3*duzeyi*enerji").
     hits = [(p, i) for (p, i) in hits
             if i != "denklem" or _cebirsel_mi(text)]
+    # TUREV/INTEGRAL/LIMIT niyetleri de ancak ISLENECEK BIR IFADE varsa
+    # gecerlidir. Olculdu: "...neden IKINCI TUREV ciktigini ayrintili
+    # olarak acikla" cumlesi turev hesaplayicisina gidiyor, hesaplayici
+    # Turkce cumleyi matematik sanip cokuyordu:
+    #   "Hata: Ifade cozumlenemedi: invalid syntax"
+    # Bir kuramsal soruya hesap makinesiyle cevap vermek zaten yanlisti;
+    # cokmek daha da kotu.
+    if any(i in ("turev", "integral", "limit", "seri") for _p, i in hits):
+        if not re.search(r"[\d\^]|[a-zA-Z]\s*\*\*|\bx\b|\bsin\b|\bcos\b|"
+                         r"\bexp\b|\blog\b|\bsqrt\b", t) or \
+                len(t.split()) > 12:
+            hits = [(p_, i) for p_, i in hits
+                    if i not in ("turev", "integral", "limit", "seri")]
+        if not hits:
+            return "konu", 30
     if not hits:
         if _verili_deger_sorusu(t):
             return "formul", 65
