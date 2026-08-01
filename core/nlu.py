@@ -493,7 +493,25 @@ def extract_number_unit(text):
         if norm(unit) in ("ve", "ile", "de", "da", "ise", "and", "or", "the",
                           "to", "in", "a", "is", "of", "cinsinden", "olarak"):
             continue
-        out.append((val, unit, m.start(), m.end()))
+        son = m.end()
+        # BIRIM ONEKI AYRI YAZILMIS OLABILIR: "10 kilo ohm", "5 mega
+        # pascal". Olculdu: "10 kilo ohm direncle" ifadesinde birim
+        # "kilo" okunuyor, 10 000 ohm yerine deger tamamen kayboluyordu
+        # ve RC devresi sorusunda direnc yanlis (12) atanIyordu.
+        if norm(unit) in ("kilo", "mega", "giga", "mili", "milli", "mikro",
+                          "micro", "nano", "piko", "pico", "santi", "centi",
+                          "desi", "deci", "tera"):
+            devam = re.match(r"\s*([A-Za-zΩµ°/\^0-9]+)", text[m.end():])
+            if devam:
+                from . import units as _u
+                birlesik = norm(unit) + devam.group(1)
+                try:
+                    if _u.to_si(1.0, birlesik)[0] is not None:
+                        unit = birlesik
+                        son = m.end() + devam.end()
+                except Exception:
+                    pass
+        out.append((val, unit, m.start(), son))
     return out
 
 

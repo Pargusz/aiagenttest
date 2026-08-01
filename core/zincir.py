@@ -349,10 +349,17 @@ def _baslangic_bilinenler(soru, adaylar):
             _dolu = set(bilinen)
             if _sorulan:
                 _dolu.add(_sorulan)
-            for sym, veri in _etikete_gore_esle(
-                    adaylar[0][1], _cevre_etiketleri(soru),
-                    dolu=_dolu).items():
-                bilinen.setdefault(sym, veri)
+            # Etiket eslemesi YALNIZCA en iyi formule uygulanIyordu.
+            # Olculdu: RC sorusunda kullanilan baginti `rc_gerilim` ama
+            # havuzun tepesinde baska bir baginti vardi; 10 kΩ hicbir
+            # zaman `R`ye baglanmiyordu. Havuzun ilk birkac bagintisi
+            # icin de calistirmak, dogru atamayi kaciran bu bosluğu
+            # kapatir (setdefault: once gelen kazanir).
+            _cevre = _cevre_etiketleri(soru)
+            for _s3, _f3 in adaylar[:5]:
+                for sym, veri in _etikete_gore_esle(
+                        _f3, _cevre, dolu=_dolu).items():
+                    bilinen.setdefault(sym, veri)
         except Exception:
             pass
 

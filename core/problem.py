@@ -397,6 +397,17 @@ SENARYOLAR = [
 #
 # Bu degerler FIZIK bilgisidir ve elle yazilmistir; metinden cikarilamaz.
 MALZEME = [
+    # BUZU ERITIP ISITMAK: erime bittikten sonra isitilan sey SUDUR,
+    # buz degil. Olculdu: "0 derecede 0,5 kg buzu eritip 20 dereceye
+    # getirmek" sorusunda buzun ozgul isisi (2100) kullanilinca sonuç
+    # 188 kJ cikiyordu; dogrusu suyun ozgul isisiyla (4186) 208,9 kJ.
+    # malzeme_degerleri setdefault kullanir: ILK eslesme kazanir,
+    # bu yuzden bu kayit BUZ kaydindan ONCE durmalidir.
+    {"kw": r"\bbuzu erit\w*|\beriyip\b|\berittikten sonra|"
+           r"\bmelt(ing)? .*(then|and) heat",
+     "degerler": {"c": 4186.0},
+     "not_tr": "Erimeden sonra ısıtılan **su**dur: `c = 4186 J/(kg·K)`.",
+     "not_en": "After melting, the substance heated is water: c = 4186."},
     # Olculdu (zor problem seti): asagidaki ORTUK degerler bilinmedigi
     # icin dogru formul bulundugu hâlde sayi cikmiyordu. Bir ogrenci
     # "dolu silindir" dendiginde eylemsizlik carpaninin 1/2 oldugunu
@@ -522,10 +533,29 @@ _FARK = re.compile(
     r"(\d+(?:[.,]\d+)?)\s*(?:derece|°|C|K|santigrat)?\s*"
     r"(?:ye|ya|'ye|'ya|e|a)\b", re.I)
 
+# "X DERECEDE ... Y DERECEYE" kalibi. Olculdu: "0 derecede 0,5 kg buzu
+# eritip 20 dereceye getirmek" cumlesinde sicaklik farki okunamiyor,
+# `dT` bilinmiyor ve toplam isi yalnizca erime terimiyle (167 kJ)
+# hesaplaniyordu; dogrusu 208,9 kJ. Ilk sicaklik "-de" ekiyle, hedef
+# sicaklik "-ye" ekiyle geliyor ve araya baska kelimeler girebiliyor.
+# DIKKAT: her iki sayi da SICAKLIK BIRIMIYLE bitisik olmali. Gevsek
+# hâli "0 derecede 0.5 kg ... 20 dereceye" cumlesinde 0,5'i (kutleyi)
+# ilk sicaklik saniyor ve dT = 19,5 veriyordu; dogrusu 20.
+_FARK_DE_YE = re.compile(
+    r"(?<![\d.,])(\d+(?:[.,]\d+)?)\s*(?:derece|°|C|K|santigrat)"
+    r"(?:de|da|ta|te)\b"
+    # Aradaki bosluk NOKTA icerebilir ("0.5 kg"); nokta disarida
+    # birakilinca kalip kopuyordu (olculdu: hic eslesme yok).
+    r"[^;?]{0,70}?"
+    r"(?<![\d.,])(\d+(?:[.,]\d+)?)\s*(?:derece|°|C|K|santigrat)\s*"
+    r"(?:ye|ya|'ye|'ya)\b", re.I)
+
 
 def fark_degerleri(soru):
     """'X dereceden Y dereceye' -> {dT: Y-X}. Yoksa bos."""
     m = _FARK.search(soru or "")
+    if not m:
+        m = _FARK_DE_YE.search(soru or "")
     if not m:
         return {}
     try:
