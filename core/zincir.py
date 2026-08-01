@@ -716,6 +716,67 @@ def coz(soru, lang="tr", max_adim=MAX_ADIM):
             son, hedef, hedef_f = _d, _h, _hf
             break
     if son is None:
+        # ACGOZLU ZINCIR TIKANDI — SISTEMI BIRLIKTE COZ.
+        # Kullanicinin tespiti: bir insan problemi tek tek formul
+        # secerek degil, ilgili BUTUN bagintilari yan yana yazip sistemi
+        # cozerek halleder. Olculdu: Doppler'de `f` sembolu organ
+        # borusu, dalga ve Doppler bagintilarinda birden geciyor; zincir
+        # yanlis dala girip tukeniyordu. Sistem cozucude hangi
+        # bagintinin once geldigi onemli degildir.
+        try:
+            from . import sistem as _sis
+            # Hedefleri, bagintinin SORUYLA ESLESME SKORUNA gore sirala.
+            # Olculdu: `f` sembolu organ borusu, dalga ve Doppler'de
+            # birden geciyor; liste sirasiyla gidince once organ
+            # borusundan 0.0 donuyordu. Soruya en cok uyan baginti
+            # once denenmeli.
+            _skor = {f["id"]: s for s, f in adaylar}
+            _sirali = sorted(hedef_listesi,
+                             key=lambda x: -_skor.get(x[1]["id"], 0))
+            for _h, _hf in _sirali:
+                sonuc = _sis.coz(soru, adaylar, bilinen, _h, _hf, lang)
+                if not sonuc:
+                    continue
+                _deger, _kullanilan = sonuc
+                # Sifir sonuc, cogu zaman dejenere bir sistemin isaretidir
+                # (organ borusu bagintisi bilinmeyen uzunlukla 0 veriyordu).
+                if abs(_deger) < 1e-12 and not (sen_degerler or {}):
+                    continue
+                if not _olcek_makul(soru, _hf, _h, _deger):
+                    continue
+                satir = ["### " + L("Çözüm — denklem sistemi",
+                                    "Solution — system of equations"), ""]
+                satir.append(L("**Birlikte çözülen bağıntılar**",
+                               "**Equations solved together**"))
+                satir.append("")
+                for f in _kullanilan:
+                    satir.append("- `%s`  —  %s"
+                                 % (f["eq"], f["tr"] if tr else f["en"]))
+                satir.append("")
+                satir.append("**" + L("Verilenler", "Given") + "**")
+                satir.append("")
+                for sym, veri in sorted(bilinen.items()):
+                    if sym == _h:
+                        continue
+                    if not any(sym in f["vars"] for f in _kullanilan):
+                        continue
+                    satir.append("- `%s` = %s %s"
+                                 % (sym, problem._oku_sayi(veri[0]),
+                                    veri[1] or ""))
+                satir.append("")
+                satir.append("## `%s` = **%s %s**"
+                             % (_h, problem._oku_sayi(_deger),
+                                _hf["vars"][_h][2]))
+                satir.append("")
+                satir.append("_" + L(
+                    "İlgili bağıntılar birlikte yazılıp sistem SymPy ile "
+                    "çözüldü; sonuç fiziksel olarak denetlendi.",
+                    "The relevant equations were solved as a system with "
+                    "SymPy and the result was checked for plausibility.")
+                    + "_")
+                return "\n".join(satir)
+        except Exception:
+            pass
         return None            # tek adimliysa normal cozucu zaten yeter
     # Adimlar geri zincirlemede TERS sirada birikir; ogrenciye ilerleyen
     # sirada gosterilmeli.
