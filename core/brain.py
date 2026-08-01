@@ -3572,6 +3572,37 @@ def respond(message, session="default", lang_override=None):
 
     intent, conf = nlu.classify(etkin)
 
+    # ── TURETIM MOTORU: HESAPLANABILEN TURETIM ONCE GELIR ──────────────
+    # Olculdu (genelleme sinavi): hic yazilmamis alti turetimden sifiri
+    # dogru cevaplandi; Ehrenfest "Hamilton fonksiyonu — H icin adim adim
+    # cozum"e gidiyordu. Motor bu turetimleri YAZILI METINDEN OKUMAZ,
+    # komutatorleri SymPy ile hesaplar (bkz. turetimmotor.py).
+    try:
+        from . import turetimmotor as _tmot
+        # Motor, YAZILI bir turetim yoksa devreye girer. Olculdu: motoru
+        # kosulsuz one alinca "[x,p]=iħ'yi ispatla, SONRA Cauchy-Schwarz
+        # ile belirsizligi turet" sorusu motora gidiyor; motor yalnizca
+        # komutatoru hesapliyor, ikinci yariyi veremiyordu. Yazili
+        # belirsizlik ispati ikisini birden kapsiyor.
+        _yazili = False
+        try:
+            _km = knowledge.search(etkin, limit=1)
+            _yazili = bool(_km and _km[0][0] >= 90)
+        except Exception:
+            pass
+        if not _yazili and _tmot.istek_mi(etkin):
+            _tmetin = _tmot.coz(etkin, lang)
+            if _tmetin:
+                resp = Response(_tmetin, kind="derivation",
+                                extra={"intent": "turetim"})
+                _save_turn(session, message, resp.text, "turetim",
+                           subject=nlu.strip_command_words(etkin)[:60])
+                resp.extra["lang"] = lang
+                return resp
+    except Exception:
+        pass
+
+
     # Soru tipi, anahtar kelime siniflandirmasinin ustune biner: hesap/kod gibi
     # kesin niyetler korunur, ama genel bir "konu" sorusu ise tipe gore
     # ozellesir (neden / nasil / karsilastirma).
