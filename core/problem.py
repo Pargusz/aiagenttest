@@ -213,6 +213,29 @@ def _yumusak_kalip(ad):
 # nitelemedir, sorulan buyukluk degil). Bu ayrimi yapmadan kural net
 # kazanc vermiyor.
 
+# ── DENENDI VE GERI ALINDI: "sorulan = verilmemis olan" cezasi ────────────
+# Sinyal DOGRUDUR ve en gucludur: mercekte `u` (cisim uzakligi) = 30 cm
+# VERILMIS, `v` verilmemis; telde B, I, L verilmis, F verilmemistir.
+# Verilen bir buyukluk sorulan olamaz.
+#
+# UYGULAMASI TUTMADI. Aday puanindan sabit bir ceza dusuruldu:
+#   ceza 14 -> tel hedefi DOGRU (F) ama sayisal 39/39 -> 38/39
+#   ceza  7 -> tel DOGRU, sayisal 39/39, ama ODEV 18/18 -> 16/18
+#   ceza  4 -> odev yine 16/18 ve tel kazanimi kayboldu (B'ye dondu)
+# Yani ceza penceresi YOK: kazanc veren her deger baska bir olcumu
+# bozuyor.
+#
+# NEDENI: `nlu.formul_degerleri` bir sembole deger ATAYABILIYOR olmasi,
+# o degerin soruda GERCEKTEN verildigi anlamina gelmiyor — birim
+# tutan herhangi bir sayi atanabiliyor. Yani "verilmis" kumesi
+# GURULTULU. Ceza, gercekten verilmis olanlari degil, yanlis atanmis
+# olanlari da cezalandiriyor.
+#
+# DOGRU TASARIM: once deger atamasi guvenilir hale gelmeli (etiketle
+# dogrulanmis atamalar "verilmis" sayilmali, birim tahminiyle yapilanlar
+# sayilmamali); sonra bu sinyal kullanilabilir. Yani sira ters: atama
+# duzelmeden hedef tespiti bu sinyalden yararlanamaz.
+
 def hedef_tahmin(f, soru, lang="tr"):
     """Soruda ADIYLA anilan ve sorulan degiskeni bul (yoksa None)."""
     n = nlu.norm(soru or "")
