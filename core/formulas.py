@@ -1016,8 +1016,16 @@ FORMULAS = [
       {"v": ("ortak hiz", "common velocity", "m/s"),
        "m1": ("1. kutle", "mass 1", "kg"), "v1": ("1. hiz", "velocity 1", "m/s"),
        "m2": ("2. kutle", "mass 2", "kg"), "v2": ("2. hiz", "velocity 2", "m/s")},
-      "esnek olmayan carpisma|plastik carpisma|ortak hiz",
-      "inelastic collision|perfectly inelastic"),
+      # Olculdu (taze sinav): "0,02 kg mermi 400 m/s ile 2 kg tahta
+      # bloga SAPLANIRSA ortak hizlari" sorusu ISI ILETIMI bagintisina
+      # gidiyordu. Carpismanin gunluk anlatimlari ("saplanir", "gomulur",
+      # "yapisir") anahtarlarda yoktu.
+      "esnek olmayan carpisma|plastik carpisma|ortak hiz|"
+      "saplanirsa ortak hiz|bloga saplanir|mermi saplanir|"
+      "gomulurse ortak hiz|yapisirsa ortak hiz|"
+      "carpip birlikte hareket ederse hiz|birlikte hareket ederse ortak hiz",
+      "inelastic collision|perfectly inelastic|bullet embeds|"
+      "stick together common velocity"),
     F("egik_duzlem", "dinamik", "Egik duzlemde ivme (surtunmeli)",
       "Acceleration on an incline with friction",
       "a = g*(sin(theta) - mu*cos(theta))",

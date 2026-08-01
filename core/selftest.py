@@ -1603,7 +1603,7 @@ def run():
     # yakalamak ve ilerlemeyi gorunur kilmak. Bu sayilar yukselmeden
     # "sistem gelisti" denmemelidir.
     check("taze: gorulmemis sayisal problemler gerilemiyor",
-          lambda: _olcum.taze_sayisal_puani()[0] >= 3, True)
+          lambda: _olcum.taze_sayisal_puani()[0] >= 4, True)
     check("taze: gorulmemis turetimler gerilemiyor",
           lambda: _olcum.taze_kuramsal_puani()[0] >= 1, True)
     # EN ONEMLISI: imkansiz girdiye dogru tepki. Yanlis cevap, eksik

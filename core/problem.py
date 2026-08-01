@@ -411,6 +411,16 @@ SENARYOLAR = [
 #
 # Bu degerler FIZIK bilgisidir ve elle yazilmistir; metinden cikarilamaz.
 MALZEME = [
+    # CARPILAN CISIM DURGUNDUR. "Mermi bloga saplanir", "arac duran
+    # araca carpar" gibi anlatimlarda hedefin hizi soylenmez cunku
+    # sifirdir. Olculdu (taze sinav): mermi-blok sorusunda `v2`
+    # bilinmedigi icin ortak hiz hesaplanamiyordu. Iki hiz da
+    # verilmisse bu kural zarar vermez; setdefault ile ilk deger kazanir.
+    {"kw": r"\bsaplan\w*|\bgomul\w*|\byapis\w*|\bicine gir\w*|"
+           r"\bembed\w*|\blodges?\b",
+     "degerler": {"v2": 0.0},
+     "not_tr": "Çarpılan cisim durgun kabul edildi: `v₂ = 0`.",
+     "not_en": "The struck body is taken to be at rest: v2 = 0."},
     # BUZU ERITIP ISITMAK: erime bittikten sonra isitilan sey SUDUR,
     # buz degil. Olculdu: "0 derecede 0,5 kg buzu eritip 20 dereceye
     # getirmek" sorusunda buzun ozgul isisi (2100) kullanilinca sonuç
