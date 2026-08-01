@@ -270,6 +270,60 @@ FORMULAS = [
     # Olculdu (zor problem seti, 2/20): asagidaki bagintilar cekirdekte
     # yoktu ve sorular yanlis formule gidiyordu. Her biri elle hesaplanmis
     # bir problemle dogrulandi.
+    # Olculdu (zor set): asagidaki dort baginti cekirdekte yoktu ve
+    # sorular ya yanlis formule gidiyor ya da sayi cikmiyordu.
+    F("egik_surtunmeli_ivme", "mekanik",
+      "Surtunmeli egik duzlemde ivme",
+      "Acceleration on an incline with friction",
+      "a = g*(sin(theta) - mu*cos(theta))",
+      {"a": ("ivme", "acceleration", "m/s^2"),
+       "g": ("yercekimi ivmesi", "gravity", "m/s^2"),
+       "theta": ("egim acisi", "incline angle", "rad"),
+       "mu": ("surtunme katsayisi", "friction coefficient", "")},
+      "egik duzlemde surtunme ivme|egimli duzlemde ivme|"
+      "surtunmeli egik duzlem|egik duzlemde kayan cisim ivmesi|"
+      "egimli yuzeyde ivme",
+      "incline friction acceleration|slope acceleration friction"),
+    F("carpisma_enerji_kaybi", "mekanik",
+      "Esnek olmayan carpismada kaybolan enerji",
+      "Energy lost in a perfectly inelastic collision",
+      "dEk = m1*m2*(v1 - v2)**2/(2*(m1 + m2))",
+      {"dEk": ("kaybolan kinetik enerji", "kinetic energy lost", "J"),
+       "m1": ("1. kutle", "mass 1", "kg"), "m2": ("2. kutle", "mass 2", "kg"),
+       "v1": ("1. hiz", "speed 1", "m/s"), "v2": ("2. hiz", "speed 2", "m/s")},
+      "carpismada kaybolan enerji|kaybolan kinetik enerji|"
+      "carpismada kaybedilen enerji|yapisirsa kaybolan enerji|"
+      "esnek olmayan carpismada enerji kaybi|isiya donusen enerji",
+      "energy lost in collision|kinetic energy lost inelastic"),
+    F("rc_gerilim", "elektrik",
+      "RC devresinde kondansator gerilimi (dolarken)",
+      "Capacitor voltage while charging in an RC circuit",
+      "Vc = V0*(1 - exp(-t/(R*C)))",
+      {"Vc": ("kondansator gerilimi", "capacitor voltage", "V"),
+       "V0": ("kaynak gerilimi", "source voltage", "V"),
+       "t": ("sure", "time", "s"), "R": ("direnc", "resistance", "ohm"),
+       "C": ("siga", "capacitance", "F")},
+      "kondansator gerilimi saniye sonra|rc devresinde gerilim|"
+      "dolarken gerilim|kondansator dolarken gerilimi|"
+      "saniye sonra kondansator gerilimi",
+      "capacitor voltage charging|rc circuit voltage after"),
+    F("bohr_gecis", "kuantum",
+      "Bohr modelinde gecis enerjisi",
+      "Transition energy in the Bohr model",
+      "E = Ry*Z**2*(1/n2**2 - 1/n1**2)",
+      {"E": ("yayilan foton enerjisi", "emitted photon energy", "J"),
+       "Ry": ("Rydberg enerjisi", "Rydberg energy", "J"),
+       "Z": ("atom numarasi", "atomic number", ""),
+       "n1": ("ust duzey", "upper level", ""),
+       "n2": ("alt duzey", "lower level", "")},
+      # DIKKAT: "yayilan enerji" gibi genel bir anahtar KOYULMAMALI.
+      # Olculdu: "gunes ne kadar enerji yayiyor" sorusu Stefan-Boltzmann
+      # yerine buraya geliyordu (yonlendirme 40/40 -> 39/40). Her anahtar
+      # DUZEY GECISINI adlandirmali.
+      "gecerken yayilan fotonun enerjisi|duzeyler arasi gecis enerjisi|"
+      "n den n e gecis enerjisi|hidrojen gecis enerjisi|"
+      "enerji duzeyi gecisi",
+      "transition energy bohr|emitted photon energy level"),
     F("viraj_hiz", "mekanik", "Yatay virajda maksimum hiz",
       "Maximum speed on a flat curve",
       "v = sqrt(mu*g*r)",
