@@ -401,6 +401,21 @@ MALZEME = [
     # icin dogru formul bulundugu hâlde sayi cikmiyordu. Bir ogrenci
     # "dolu silindir" dendiginde eylemsizlik carpaninin 1/2 oldugunu
     # bilir; sistem de bilmeli.
+    # "hacmi IKI KATINA" gibi ORAN ifadeleri. Izotermal iste yapilan is
+    # yalnizca V2/V1 oranina baglidir; mutlak hacimler gerekmez. Olculdu:
+    # "2 mol ideal gaz 300 K'de hacmi iki katina izotermal genlesirse
+    # yaptigi is" sorusunda dogru baginti bulunuyor ama V1 ve V2
+    # bilinmedigi icin sayi cikmiyordu.
+    {"kw": r"\bhacmi iki katina|\biki katina cik|\biki kati(na|nA)?\b|"
+           r"\bdoubl(es|ed|ing) (its )?volume|\btwice the volume",
+     "degerler": {"V1": 1.0, "V2": 2.0},
+     "not_tr": "Hacim iki katına çıkıyor: `V₂/V₁ = 2` "
+               "(iş yalnızca orana bağlıdır).",
+     "not_en": "Volume doubles: V2/V1 = 2 (work depends only on the ratio)."},
+    {"kw": r"\buc katina cik|\bthree times the volume|\btriples",
+     "degerler": {"V1": 1.0, "V2": 3.0},
+     "not_tr": "Hacim üç katına çıkıyor: `V₂/V₁ = 3`.",
+     "not_en": "Volume triples: V2/V1 = 3."},
     {"kw": r"\bdolu silindir|\bdolu disk|\bsolid cylinder|\bdisk\b",
      "degerler": {"k": 0.5},
      "not_tr": "Dolu silindir/disk için eylemsizlik çarpanı `k = 1/2` "

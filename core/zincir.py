@@ -725,6 +725,13 @@ def coz(soru, lang="tr", max_adim=MAX_ADIM):
         # bagintinin once geldigi onemli degildir.
         try:
             from . import sistem as _sis
+            # DIKKAT: `L` yardimcisi bu noktadan SONRA tanimlaniyor;
+            # burada kullanilirsa NameError atar ve disaridaki
+            # `except Exception: pass` bunu sessizce yutar. Olculdu:
+            # sistem cozucu Doppler'i 1096,77 diye dogru cozuyordu ama
+            # metin kurulurken atilan NameError yuzunden cevap
+            # "cozulemedi" olarak donuyordu.
+            _L = lambda a, b: a if tr else b
             # Hedefleri, bagintinin SORUYLA ESLESME SKORUNA gore sirala.
             # Olculdu: `f` sembolu organ borusu, dalga ve Doppler'de
             # birden geciyor; liste sirasiyla gidince once organ
@@ -744,16 +751,16 @@ def coz(soru, lang="tr", max_adim=MAX_ADIM):
                     continue
                 if not _olcek_makul(soru, _hf, _h, _deger):
                     continue
-                satir = ["### " + L("Çözüm — denklem sistemi",
+                satir = ["### " + _L("Çözüm — denklem sistemi",
                                     "Solution — system of equations"), ""]
-                satir.append(L("**Birlikte çözülen bağıntılar**",
+                satir.append(_L("**Birlikte çözülen bağıntılar**",
                                "**Equations solved together**"))
                 satir.append("")
                 for f in _kullanilan:
                     satir.append("- `%s`  —  %s"
                                  % (f["eq"], f["tr"] if tr else f["en"]))
                 satir.append("")
-                satir.append("**" + L("Verilenler", "Given") + "**")
+                satir.append("**" + _L("Verilenler", "Given") + "**")
                 satir.append("")
                 for sym, veri in sorted(bilinen.items()):
                     if sym == _h:
@@ -768,7 +775,7 @@ def coz(soru, lang="tr", max_adim=MAX_ADIM):
                              % (_h, problem._oku_sayi(_deger),
                                 _hf["vars"][_h][2]))
                 satir.append("")
-                satir.append("_" + L(
+                satir.append("_" + _L(
                     "İlgili bağıntılar birlikte yazılıp sistem SymPy ile "
                     "çözüldü; sonuç fiziksel olarak denetlendi.",
                     "The relevant equations were solved as a system with "

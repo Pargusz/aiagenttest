@@ -290,7 +290,7 @@ FORMULAS = [
     F("carnot_is", "termodinamik", "Carnot makinesinin yaptigi is",
       "Work done by a Carnot engine",
       "W = Qh*(1 - Tc/Th)",
-      {"W": ("yapilan is", "work done", "J"),
+      {"W": ("yaptigi net is", "net work done", "J"),
        "Qh": ("alinan isi", "heat absorbed", "J"),
        "Tc": ("soguk kaynak", "cold reservoir", "K"),
        "Th": ("sicak kaynak", "hot reservoir", "K")},
@@ -2097,7 +2097,8 @@ def _sayisal_kok(ifade, sembol, aralik=(-40.0, 40.0), adim=0.25):
 # Olculdu: bu kural olmadan sistem Tc=500, Th=300 atadi ve ogrenciye
 # "verim = -0.667" dedi — kesin ve emin bicimde YANLIS bir cevap.
 SIRALI_DEGISKENLER = {
-    "carnot": [("Th", "Tc")],          # sicak kaynak >= soguk kaynak
+    "carnot": [("Th", "Tc")],
+    "carnot_is": [("Th", "Tc")],   # sicak kaynak >= soguk kaynak          # sicak kaynak >= soguk kaynak
     "isi_pompasi": [("Th", "Tc")],
     "sogutma_cop": [("Th", "Tc")],
 }
