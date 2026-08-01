@@ -243,13 +243,22 @@ def hedef_tahmin(f, soru, lang="tr"):
             # reach the ground" diyor (olculdu: cevap sure yerine hiz
             # geliyordu). Puani dusuk tutulur ki birebir eslesme onde
             # kalsin.
+            # KAC kelime tutuyor? Olculdu: "yayilan fotonun enerjisi
+            # nedir" sorusunda `E` ("yayilan foton enerjisi") IKI
+            # kelimede tutuyor, `Ry` ("Rydberg enerjisi") BIR kelimede;
+            # ama puan yalnizca ILK tutan kelimenin uzunluguna
+            # bakiyordu ve daha uzun kelime ("enerjisi") yuzunden Ry
+            # kazaniyordu. Sorulan buyukluk yanlis seciliyordu.
+            tutan, en_uzun = 0, 0
             for kelime in a.split():
                 if len(kelime) < 4 or kelime in _GENEL_AD:
                     continue
                 if re.search(r"(?<!\w)%s\w{0,3}(?!\w)" % re.escape(kelime),
                              n):
-                    adaylar.append((len(kelime) - 3, sym))
-                    break
+                    tutan += 1
+                    en_uzun = max(en_uzun, len(kelime))
+            if tutan:
+                adaylar.append((en_uzun - 3 + 4 * (tutan - 1), sym))
     if not adaylar:
         return None
 
@@ -278,15 +287,20 @@ def hedef_tahmin(f, soru, lang="tr"):
                 # duyulan frekans"; cumlede tam hâli gecmedigi icin yer
                 # bulunamiyor, yakinlik odulu hic verilmiyordu ve hedef
                 # yanlis seciliyordu.
+                # Soru kelimesine EN YAKIN eslesen kelimenin yeri alinir.
+                # Olculdu: `E` ("yayilan foton enerjisi") uc kelimede
+                # tutuyordu ama konum olarak ILK kelimesi ("yayilan")
+                # aliniyor, `Ry` ise tek kelimesiyle ("enerjisi")
+                # "nedir"e daha yakin duruyor ve yakinlik odulunu
+                # kapiyordu. Sorulan buyukluk Rydberg sabiti saniliyordu.
                 for kelime in a.split():
                     if len(kelime) < 4 or kelime in _GENEL_AD:
                         continue
-                    mk = re.search(r"(?<!\w)%s\w{0,3}(?!\w)"
-                                   % re.escape(kelime), n)
-                    if mk:
-                        yer = (mk.start() if yer is None
-                               else min(yer, mk.start()))
-                        break
+                    for mk in re.finditer(r"(?<!\w)%s\w{0,3}(?!\w)"
+                                          % re.escape(kelime), n):
+                        if yer is None or abs(soru_yeri - mk.start()) < \
+                                abs(soru_yeri - yer):
+                            yer = mk.start()
             # Soru kelimesine yakinlik, puana eklenir (en fazla +8)
             if yer is not None:
                 uzaklik = abs(soru_yeri - yer)
