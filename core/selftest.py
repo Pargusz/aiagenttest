@@ -16,6 +16,26 @@ def contains_len(en_az):
     return f
 
 
+def _oturum_temizle(*oturumlar):
+    """Test oturumlarinin sohbet gecmisini siler; DB kilitliyse pes eder.
+
+    Olculdu: sunucu acikken `DELETE FROM chat` "database is locked"
+    firlatiyor ve tum suit (474 test) tek satirda duruyordu. Temizlik
+    testlerin on hazirligi, kendisi degil; kilit gecici oldugu icin
+    kisa aralikla birkac kez denenir, yine olmazsa sessizce gecilir.
+    """
+    import time as _t
+    for _o in oturumlar:
+        for _deneme in range(4):
+            try:
+                db.conn().execute("DELETE FROM chat WHERE session=?", (_o,))
+                db.conn().commit()
+                break
+            except Exception:
+                _t.sleep(0.25)
+        brain._SESSION_MEM.pop(_o, None)
+
+
 def check(name, fn, expect=None):
     try:
         got = fn()
@@ -357,9 +377,7 @@ def run():
     # ---------------------------------------------------- sohbet baglami
     def akis():
         s = "_test_baglam"
-        db.conn().execute("DELETE FROM chat WHERE session=?", (s,))
-        db.conn().commit()
-        brain._SESSION_MEM.pop(s, None)
+        _oturum_temizle(s)
         brain.respond("entropi nedir", session=s)
         return s
 
@@ -1489,6 +1507,33 @@ def run():
           contains("de Broglie"))
     check("cekirdek: kanonik kuantumlama konusu yuklu",
           lambda: bool(knowledge.get("kanonik_kuantumlama")), True)
+    # Dis degerlendirme (GPT) iki KAVRAMSAL eksik buldu; ikisi de bu
+    # soruya ozel degil, operatorun gectigi her cevap icin gecerli:
+    #   1. "Gozlenebilirler NEDEN operator" hic soylenmiyordu — cevap
+    #      kuantumun durum tanimindadir (durum Hilbert vektoru ise
+    #      gozlenebilir doğrusal operatordur), gecisin kendisinde degil.
+    #   2. p̂ = −iħ∇ gerekcesi olarak yalnizca duzlem dalga veriliyordu;
+    #      oysa p̂ ancak de Broglie + oteleme uretici + [x̂,p̂] = iħ
+    #      birlikte alininca TEK operatordur.
+    check("kuantumlama: 'neden operator' gerekcesi var",
+          lambda: knowledge.get("kanonik_kuantumlama")["tr"],
+          contains("Hilbert uzayı", "operatörle temsil edilir"))
+    check("kuantumlama: ozdeger-olcum baglantisi kuruluyor",
+          lambda: knowledge.get("kanonik_kuantumlama")["tr"],
+          contains("özdeğer", "Hermit"))
+    check("kuantumlama: p̂ gerekcesi duzlem dalgayla sinirli degil",
+          lambda: knowledge.get("kanonik_kuantumlama")["tr"],
+          contains("öteleme", "[x̂, p̂] = iħ"))
+    check("kuantumlama: p̂'nin tekligi soyleniyor",
+          lambda: knowledge.get("kanonik_kuantumlama")["tr"],
+          contains("tek", "zorunluluktur"))
+    check("kuantumlama: ingilizce govde de gerekceyi tasiyor",
+          lambda: knowledge.get("kanonik_kuantumlama")["en"],
+          contains("Hilbert", "translation", "unique"))
+    # Canli yol: soru sorulunca bu gerekceler gercekten cevaba giriyor mu
+    check("kuantumlama: canli cevapta 'neden operator' yer aliyor",
+          lambda: brain.respond(_KE_SORU, session="_test_kuant").text,
+          contains("Hilbert uzayı", "öteleme", "[x̂, p̂] = iħ"))
     check("cekirdek: klasik limit konusu yuklu",
           lambda: bool(knowledge.get("klasik_limit")), True)
     check("cekirdek: legendre donusumu konusu yuklu",
@@ -2031,10 +2076,7 @@ def run():
     from . import profile as _pr
 
     _pr.forget()
-    for _s in ("_test_pr1", "_test_pr2"):
-        db.conn().execute("DELETE FROM chat WHERE session=?", (_s,))
-        brain._SESSION_MEM.pop(_s, None)
-    db.conn().commit()
+    _oturum_temizle("_test_pr1", "_test_pr2")
 
     db.flush_writes()
     check("profil: ad cikarimi", lambda: (_pr.extract("adim Polat"), _pr.name())[1],

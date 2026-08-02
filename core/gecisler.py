@@ -30,6 +30,25 @@ T("kanonik_kuantumlama",
 Soru şudur: `Ek = ½mv²` gibi bir SAYI, nasıl olup da
 `T̂ = −(ħ²/2m)∇²` gibi bir OPERATÖRE dönüşür?
 
+**0. Önce: neden operatör kullanıyoruz?**
+Klasik mekanikte bir parçacığın durumu `(x, p)` çiftidir ve her
+gözlenebilir bu çiftin bir FONKSİYONUDUR — yani bir sayı verir.
+Kuantum mekaniğinde durum ise bir **Hilbert uzayı vektörüdür** (`|ψ⟩`),
+ve deneyler gösteriyor ki bir ölçüm tek bir değer değil, bir DEĞERLER
+KÜMESİ verebilir (Stern-Gerlach'ta iki demet, atomda ayrık çizgiler).
+
+Bir vektöre etki edip ondan sayı çıkaran ve "olası değerler kümesi"
+kavramını taşıyan matematiksel nesne **doğrusal operatördür**: `Â|ψ⟩`
+yine bir vektördür, `Â|ψₙ⟩ = aₙ|ψₙ⟩` özdeğer denklemi de o kümeyi
+verir. Bu yüzden kuantum mekaniğinde **her gözlenebilir büyüklük bir
+operatörle temsil edilir**; ölçüm sonuçları o operatörün özdeğerleridir.
+Gerçel sonuç vermesi için operatörün **Hermit** olması gerekir.
+
+Yani "klasik nicelik neden operatöre dönüşüyor" sorusunun cevabı, bu
+geçişin kendisinde değil, kuantum mekaniğinin durum tanımındadır:
+durum bir vektörse, gözlenebilir de bir operatördür. Aşağıdaki adımlar
+o operatörün HANGİSİ olduğunu belirler.
+
 **1. Klasik ifadeyi momentum cinsinden yaz.**
 p = mv olduğundan
     Ek = ½mv² = p²/(2m)
@@ -47,8 +66,23 @@ de Broglie bağıntısı p = ħk. Şimdi türev alalım:
 İşte kritik nokta: `−iħ ∂/∂x` işlemi, dalga fonksiyonundan momentumun
 KENDİSİNİ çekip çıkarıyor. Bu yüzden momentum operatörü
     p̂ = −iħ ∂/∂x     (üç boyutta p̂ = −iħ∇)
-diye tanımlanır. Tanım keyfi değil; düzlem dalganın özdeğerini doğru
-vermesi zorunluluğundan geliyor.
+diye tanımlanır.
+
+Tanım keyfi değildir — ama gerekçesi yalnızca düzlem dalga DEĞİLDİR.
+Üç koşul birlikte `p̂`yi **tek** seçenek olarak bırakır:
+
+  * **de Broglie:** düzlem dalgada özdeğer `ħk` çıkmalı (yukarıdaki hesap).
+  * **Öteleme simetrisi:** momentum, uzayda ötelemenin ÜRETECİDİR.
+    `a` kadar ötelemenin operatörü `T̂(a) = e^(−iap̂/ħ)` olmalıdır;
+    sonsuz küçük öteleme `ψ(x+ε) = ψ(x) + ε∂ψ/∂x` açılımıyla
+    karşılaştırılınca üreteç doğrudan `−iħ∂/∂x` çıkar.
+  * **Kanonik komütasyon:** `[x̂, p̂] = iħ` sağlanmalı; çarpma ve türev
+    operatörleri bunu tam olarak verir (ispatı için bkz. belirsizlik
+    ilkesi türetimi).
+
+Bu üç koşulu birden sağlayan başka bir doğrusal operatör yoktur
+(Stone-von Neumann teoremi bunu kesinleştirir). Yani `p̂ = −iħ∇`
+bir tercih değil, zorunluluktur.
 
 **3. Kinetik enerji operatörünü kur.**
 Klasik ifadede p yerine p̂ koyarız:
@@ -79,10 +113,22 @@ deneyle sınanır ve bugüne kadar sınavı geçmiştir.
 """, """
 How does the number Ek = mv^2/2 become the operator T = -(hbar^2/2m) del^2?
 
+0. Why operators at all? Classically a state is the pair (x, p) and every
+   observable is a FUNCTION of it, returning a number. In quantum
+   mechanics the state is a vector in a Hilbert space, and measurements
+   can yield a SET of values (two beams in Stern-Gerlach, discrete atomic
+   lines). The object that acts on a vector and carries a set of possible
+   values is a LINEAR OPERATOR, whose eigenvalues are the outcomes; it
+   must be Hermitian for those to be real. So observables are operators
+   because states are vectors — the steps below only fix WHICH operator.
 1. Write it with momentum: Ek = p^2/2m.
 2. Read the momentum operator off a de Broglie plane wave: with
    psi = exp(i(kx - wt)) and p = hbar k, we get -i hbar d(psi)/dx = p psi,
-   so p_hat = -i hbar d/dx.
+   so p_hat = -i hbar d/dx. The plane wave alone is not the full
+   justification: p_hat is the unique linear operator consistent with
+   de Broglie, with translation symmetry (momentum generates
+   translations, T(a) = exp(-i a p/hbar)) and with [x,p] = i hbar
+   (Stone-von Neumann).
 3. Substitute: T = p_hat^2/2m = -(hbar^2/2m) del^2.
 4. Add the potential: H = T + V gives the Schrodinger equation.
 
@@ -111,7 +157,7 @@ follows from [x,p] = i hbar rather than being a separate postulate.
      "klasik ile kuantum arasindaki gecis|operator karsiligi|"
      "canonical quantization|momentum operator|kinetic energy operator|"
      "hamiltonian operator|from classical to quantum",
-  related="kuantum_formalizm|kanonik_donusum|kuantum_temelleri"),
+  related="kuantum_formalizm|hermit_operator|kanonik_donusum|kuantum_temelleri"),
 
 T("klasik_limit", "Kuantumdan Klasiğe: Karşılık Gelme İlkesi",
   "From Quantum to Classical: the Correspondence Principle", """
