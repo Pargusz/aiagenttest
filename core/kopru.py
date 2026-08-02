@@ -67,9 +67,27 @@ _ILISKI = re.compile("(%s)|(%s)" % (_ILISKI_GUCLU.pattern, _ISPAT.pattern),
 
 # Iliski sorulmasa bile IKI KAVRAM birlikte anilmissa ve biri otekinin
 # genellemesi/limitiyse gecis anlatimi dogru cevaptir.
-_GECIS_ANAHTARLARI = ("kanonik_kuantumlama", "klasik_limit",
-                      "lagrange_hamilton_gecis", "newton_gorelilik_gecis",
-                      "kanonik_donusum")
+#
+# Bu kume ELLE YAZILIYDU ve genel bir kusurdu: gecisler.py'ye yeni bir
+# kopru konusu eklendiginde burasi guncellenmedigi surece konu YOK
+# sayiliyordu. Olculdu — "Poisson parantezinden komutatore" konusu
+# yazildi, arama onu 530 puanla tepeye koydu, ama bu listede olmadigi
+# icin kopru cozucusu None dondu ve cevap alakasiz bir genel kuantum
+# kartina dustu. Artik kume, gecisleri TANIMLAYAN dosyadan okunuyor;
+# bundan sonra eklenen her gecis kendiliginde taninir.
+def _gecis_anahtarlari():
+    anahtarlar = set()
+    try:
+        from . import gecisler as _g
+        anahtarlar.update(t["key"] for t in _g.GECIS_KONULARI)
+    except Exception:
+        pass
+    # gecisler.py disinda yasayan, biciminde gecis olan konular
+    anahtarlar.update(("kanonik_donusum",))
+    return frozenset(anahtarlar)
+
+
+_GECIS_ANAHTARLARI = _gecis_anahtarlari()
 
 
 def _norm(s):

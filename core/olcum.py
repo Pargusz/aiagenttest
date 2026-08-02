@@ -791,6 +791,28 @@ def zor_bosluklari():
 #
 # Ilk olcum 2/20 idi. Icerik yazildikca ve yonlendirme duzeldikce yukseldi.
 KURAMSAL_SORULAR = [
+ # Dis degerlendirmenin (GPT) yakaladigi genel kusur: soru HANGI kavrami
+ # istiyorsa ona degil, tanidigi en guclu anahtar kelimeye gidiyordu.
+ # Asagidaki iki soru da "Klasik Kinetik Enerjiden Kuantum Operatorune"
+ # kartina dusuyordu — cevap dogruydu ama BASKA sorunun cevabiydi.
+ # Olcut, sorunun ASIL istedigi zincirin cevapta gecmesi.
+ ("Klasik mekanikte Newton'un ikinci hareket yasasından başlayarak "
+  "Schrödinger denklemindeki potansiyel enerji teriminin Hamiltonyen "
+  "içerisine neden yalnızca çarpma operatörü olarak eklendiğini "
+  "matematiksel olarak açıklayıp ispatlar mısın? Kuvvet, potansiyel enerji "
+  "ve Hamiltonyen arasındaki geçişi anlat.",
+  ["F = −∇V", "−∇V", "çarpma"], ["V̂ψ(x) = V(x)", "Ehrenfest", "⟨F⟩"]),
+
+ ("Klasik mekanikte Poisson parantezi kavramından başlayarak kuantum "
+  "mekaniğindeki komütatör bağıntısının nasıl elde edildiğini matematiksel "
+  "olarak ispatlar mısın? Klasik faz uzayından Hilbert uzayına geçişi, "
+  "kanonik kuantumlamanın temel mantığını ve konum ile momentum "
+  "operatörlerinin neden değişmeli olmadığını adım adım açıklamanı "
+  "istiyorum. Ayrıca bu geçişin Heisenberg belirsizlik ilkesine nasıl "
+  "temel oluşturduğunu da ayrıntılı olarak açıklar mısın?",
+  ["∂A/∂q", "{q,p} = 1", "Jacobi"],
+  ["[x̂,p̂] = iħ", "Cauchy-Schwarz", "Δx·Δp ≥ ħ/2"]),
+
  ("Klasik fizik kinetik enerji formülünden başlayarak Schrödinger denklemindeki "
   "Hamiltonyen operatörünün kinetik enerji terimini matematiksel olarak türetir "
   "misin? Geçişte neden momentumun operatöre dönüştüğünü ve neden ikinci türev "

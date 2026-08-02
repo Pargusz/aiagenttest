@@ -1526,7 +1526,7 @@ def run():
           contains("öteleme", "[x̂, p̂] = iħ"))
     check("kuantumlama: p̂'nin tekligi soyleniyor",
           lambda: knowledge.get("kanonik_kuantumlama")["tr"],
-          contains("tek", "zorunluluktur"))
+          contains("tercih değildir", "farklı bir seçenek yoktur"))
     check("kuantumlama: ingilizce govde de gerekceyi tasiyor",
           lambda: knowledge.get("kanonik_kuantumlama")["en"],
           contains("Hilbert", "translation", "unique"))
@@ -1534,6 +1534,63 @@ def run():
     check("kuantumlama: canli cevapta 'neden operator' yer aliyor",
           lambda: brain.respond(_KE_SORU, session="_test_kuant").text,
           contains("Hilbert uzayı", "öteleme", "[x̂, p̂] = iħ"))
+    # Stone-von Neumann fazla iddiali soylenmisti ("baska operator yok").
+    # Teorem bunu demez: temsiller uniter ESDEGERDIR.
+    check("kuantumlama: Stone-von Neumann dogru ifade ediliyor",
+          lambda: knowledge.get("kanonik_kuantumlama")["tr"],
+          contains("üniter eşdeğer"))
+
+    # ── Soru HANGI kavrami istiyorsa ona gitmeli ────────────────────
+    # Dis degerlendirmenin yakaladigi genel kusur: asagidaki iki soru
+    # da "Klasik Kinetik Enerjiden Kuantum Operatorune" kartina
+    # dusuyordu. Cevap dogru, ama BASKA sorunun cevabiydi. Kok neden
+    # tek bir soruya ozel degildi: gecis konularinin kumesi kopru.py
+    # icinde ELLE yaziliydi, yeni yazilan kopru konusu yok sayiliyordu.
+    _S_POT = ("Klasik mekanikte Newton'un ikinci hareket yasasindan "
+              "baslayarak Schrodinger denklemindeki potansiyel enerji "
+              "teriminin Hamiltonyen icerisine neden yalnizca carpma "
+              "operatoru olarak eklendigini matematiksel olarak "
+              "aciklayip ispatlar misin?")
+    _S_POI = ("Klasik mekanikte Poisson parantezi kavramindan baslayarak "
+              "kuantum mekanigindeki komutator bagintisinin nasil elde "
+              "edildigini matematiksel olarak ispatlar misin? Ayrica bu "
+              "gecisin Heisenberg belirsizlik ilkesine nasil temel "
+              "olusturdugunu da ayrintili olarak aciklar misin?")
+    check("cekirdek: potansiyel operatoru konusu yuklu",
+          lambda: bool(knowledge.get("potansiyel_operatoru")), True)
+    check("cekirdek: poisson-komutator konusu yuklu",
+          lambda: bool(knowledge.get("poisson_komutator")), True)
+    # Gecis kumesi artik ELLE degil, gecisleri tanimlayan dosyadan
+    # okunuyor; bundan sonra eklenen her gecis kendiliginden taninir.
+    check("kopru: gecis kumesi kaynagindan turetiliyor",
+          lambda: {"potansiyel_operatoru", "poisson_komutator",
+                   "kanonik_kuantumlama", "kanonik_donusum"}
+                  <= set(_kop._GECIS_ANAHTARLARI), True)
+    check("hedef: potansiyel sorusu kinetik kartina dusmuyor",
+          lambda: brain.respond(_S_POT, session="_test_pot").text,
+          contains("F = −∇V", "çarpma operatörü"))
+    check("hedef: potansiyel cevabi Newton'a geri baglaniyor",
+          lambda: brain.respond(_S_POT, session="_test_pot").text,
+          contains("Ehrenfest", "⟨F⟩"))
+    check("hedef: potansiyelde 'carpma' tabana bagli deniyor",
+          lambda: knowledge.get("potansiyel_operatoru")["tr"],
+          contains("momentum gösteriminde", "konvolüsyon"))
+    check("hedef: poisson sorusu poisson konusuna gidiyor",
+          lambda: brain.respond(_S_POI, session="_test_poi").text,
+          contains("∂A/∂q", "{q,p} = 1"))
+    check("hedef: poisson cevabinda Dirac kurali gerekcelendiriliyor",
+          lambda: brain.respond(_S_POI, session="_test_poi").text,
+          contains("Jacobi", "ANTİ-Hermit"))
+    check("hedef: belirsizlik ISPATI veriliyor, sadece anilmiyor",
+          lambda: brain.respond(_S_POI, session="_test_poi").text,
+          contains("Cauchy-Schwarz", "Robertson", "Δx·Δp ≥ ħ/2"))
+    check("hedef: [x̂,p̂] dogrudan hesapla saglaniyor",
+          lambda: knowledge.get("poisson_komutator")["tr"],
+          contains("x̂p̂ψ", "p̂x̂ψ"))
+    # Kuralin siniri durustce yaziliyor (asiri iddia etmemek icin)
+    check("hedef: Dirac kuralinin siniri soyleniyor",
+          lambda: knowledge.get("poisson_komutator")["tr"],
+          contains("Groenewold", "sıralama"))
     check("cekirdek: klasik limit konusu yuklu",
           lambda: bool(knowledge.get("klasik_limit")), True)
     check("cekirdek: legendre donusumu konusu yuklu",
@@ -1692,7 +1749,7 @@ def run():
           lambda: _prb.fiziksel_gecersiz("20 dereceden 80 dereceye"), None)
 
     check("kuramsal: turetim sorulari gerilemiyor",
-          lambda: _olcum.kuramsal_puani()[0] >= 14, True)
+          lambda: _olcum.kuramsal_puani()[0] >= 17, True)
 
 
     # ── "Sorulan buyukluk, verilmemis olandir" ──────────────────────
