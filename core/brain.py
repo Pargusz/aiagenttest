@@ -3609,6 +3609,10 @@ def respond(message, session="default", lang_override=None):
             _yazili = bool(_km and _km[0][0] >= 90)
         except Exception:
             pass
+        # NOT: motora oncelik verip yazili konuyu ezmek DENENDI ve
+        # geri alindi — taze kuramsal duzelmedi (2/4), kuramsal
+        # 15/20 -> 14/20 dustu. Yazili turetim cogu soruda motorun
+        # dar ciktisindan daha iyi.
         if not _yazili and _tmot.istek_mi(etkin):
             _tmetin = _tmot.coz(etkin, lang)
             if _tmetin:
@@ -3868,6 +3872,10 @@ def respond(message, session="default", lang_override=None):
     # `turetim` de buraya dahildir: o isleyici FORMUL DUZENLEMESI yapar
     # (bir bagintiyi baska degisken icin cozer), yazili bir ISPAT
     # sunmaz. Cekirdekte guclu eslesen bir turetim varsa oraya gitmeli.
+    # NOT: `nasil`/`neden` niyetleri buraya EKLENDI ve GERI ALINDI —
+    # kuramsal olcum 15/20 -> 13/20, taze kuramsal 3/4 -> 2/4 dustu.
+    # O niyetlerin kendi isleyicileri cekirdek anlatimini zaten dogru
+    # kullaniyor; bu kapiya alinca ikinci kez yonlendirilip bozuluyor.
     if intent in ("formul", "hesap", "turev", "integral", "sabit",
                   "turetim"):
         try:

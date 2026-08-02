@@ -452,6 +452,26 @@ def classify(text):
     #   "Hata: Ifade cozumlenemedi: invalid syntax"
     # Bir kuramsal soruya hesap makinesiyle cevap vermek zaten yanlisti;
     # cokmek daha da kotu.
+    # KENDINI TANITMA KISA BIR MESAJDIR. Olculdu (canli sohbet): 40
+    # kelimelik bir TURETIM sorusu — "…operatore donustugunu ADIM ADIM
+    # ACIKLAMANI ve aradaki fiziksel gecisi yorumlamani istiyorum" —
+    # kendini_tanit niyetine gidip "Memnun oldum Adım!" cevabini aldi.
+    # Kullanicinin gordugu ILK cevap buydu.
+    #
+    # Fiil listesi uzatmak (goster, anlat, acikla, hesapla...) bitmeyen
+    # bir istir. Yapisal olcut daha saglam: kendini tanitan bir mesaj
+    # kisadir ve icinde fizik sorusu olmaz.
+    if any(i == "kendini_tanit" for _p, i in hits):
+        _uzun = len(t.split()) > 10
+        _fizik_sorusu = re.search(
+            r"\b(ispatla\w*|turet\w*|kanitla\w*|hesapla\w*|acikla\w*|"
+            r"nedir|neden|nasil|goster\w*|denklem\w*|formul\w*|"
+            r"operator\w*|bagint\w*|prove|derive|explain)\b", t)
+        if _uzun or _fizik_sorusu:
+            hits = [(p_, i) for p_, i in hits if i != "kendini_tanit"]
+            if not hits:
+                return "konu", 30
+
     if any(i in ("turev", "integral", "limit", "seri") for _p, i in hits):
         if not re.search(r"[\d\^]|[a-zA-Z]\s*\*\*|\bx\b|\bsin\b|\bcos\b|"
                          r"\bexp\b|\blog\b|\bsqrt\b", t) or \
