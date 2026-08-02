@@ -560,6 +560,30 @@ def _olcek_makul(soru, hedef_f, hedef, deger):
     return True
 
 
+# ── DENENDI VE GERI ALINDI: zincir cerrahisi (dort ayri deneme) ───────────
+# "0,4 T manyetik alanda 5 A akim tasiyan 2 m telin uzerindeki KUVVET"
+# sorusu cevaplanamiyordu. Zincirin icinde dort ayri duzeltme denendi;
+# DORDU DE ya gerileme yaptI ya da bir seyi duzeltirken otekini bozdu:
+#
+#   1. Deneyimi (sema_ipucu) "ilgi esigi" ile sinirlamak. Tel sorusu
+#      duzeldi ama zor set 20/20 -> 19/20 dustu: esik, havuza KASITLI
+#      olarak MIN_SKOR altinda giren "ayni konu" dolgu bagintilarini da
+#      eliyor, oysa ara adimi ureten baginti cogu zaman tam olarak odur.
+#   2. Tek adimlik cozumu son care kabul etmek. Tel sorusunu cozdu ama
+#      fotoelektrikte iki adimli zincirden ONCE devreye girip tek
+#      adimlik foton enerjisini dondurdu.
+#   3. Hedef listesini havuz sirasi yerine PUANA baglamak. Tel duzeldi,
+#      fotoelektrik bozuldu: 233 puanlik `fotoelektrik` bagintisi hedef
+#      uretmedigi icin liste `E <- foton_lam` ile basliyor.
+#   4. Hedef listesini HER IKI siralamadan beslemek. Ikisi de bozuldu.
+#
+# GERCEK KOK NEDEN BASKA YERDEYDI: soruda ACI verilmemisti ve
+# F = B·I·L·sin(theta) cozulemiyordu. problem.py'ye "manyetik kuvvet
+# baglaminda aci soylenmediyse diktir" ortuk degeri eklenince soru
+# zincire hic dokunmadan cozuldu (taze sayisal 4/6 -> 5/6, zor 20/20
+# korundu). Ders: cozulemeyen bir problemde once EKSIK VERIYI ara,
+# arama/siralama mantigini kurcalama.
+
 # ── DENENDI VE GERI ALINDI: hedef-farkinda aday havuzu ────────────────────
 # formulas.hedefe_gore_ara() iki ayri yerde denendi ve ikisi de
 # tutmadi. Kayit, ayni yola tekrar girilmesin diye:

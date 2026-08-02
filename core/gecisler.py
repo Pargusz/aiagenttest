@@ -590,6 +590,41 @@ Yani üretici fonksiyon, en küçük etki ilkesindeki ETKİDİR (Hamilton'un
 asal fonksiyonu). Klasik mekanik böylece tek bir skaler alanın kısmi
 diferansiyel denklemine indirgenir.
 
+**3b. Zamanı ayır: KARAKTERİSTİK fonksiyon.**
+`H` zamana açıkça bağlı değilse (`∂H/∂t = 0`) değişkenler ayrılabilir:
+    S(q,t) = W(q) − E·t
+Yerine koyunca `∂S/∂t = −E` olur ve Hamilton-Jacobi denklemi ZAMANDAN
+ARINIR:
+    **H(q, ∂W/∂q) = E**
+Buna **Hamilton'un KARAKTERİSTİK fonksiyonu** `W(q)` denir; `S`ye ise
+ASAL fonksiyon denir. İkisi karıştırılmamalıdır:
+
+    S(q,t) — asal fonksiyon      — etkinin kendisi, S = ∫L dt
+    W(q)   — karakteristik fonks. — indirgenmiş etki, W = ∫p·dq
+
+**Karakteristik fonksiyonun fiziksel anlamı.** `p = ∂W/∂q` olduğundan
+    W = ∫p dq
+yani `W` **indirgenmiş etkidir** (abbreviated action). Üç okuması vardır:
+
+  * **Geometrik:** `S = sabit` yüzeyleri zamanla İLERLER (dalga cephesi
+    gibi), ama `W = sabit` yüzeyleri SABİTTİR ve yörüngeler onlara
+    diktir. Yani `W`, hareketin yörüngesini zamandan bağımsız olarak
+    kodlar — "yol", "zaman çizelgesi" değil.
+  * **Değişimsel:** Hamilton ilkesi `δ∫L dt = 0` iken, Maupertuis
+    ilkesi `δ∫p dq = 0`dır (sabit enerjide). `W` bu ikinci ilkenin
+    fonksiyonelidir; enerji sabitken doğru olan "en kısa yol" ölçüsü.
+  * **Kuantum köprüsü:** Eski kuantum kuramının Bohr-Sommerfeld
+    koşulu doğrudan `W` üzerinden yazılır:
+        ∮p dq = n·h
+    WKB yaklaşımında dalga fonksiyonunun fazı da `W/ħ`dır:
+    `ψ ~ e^(iW/ħ)·e^(−iEt/ħ)`. Yani karakteristik fonksiyon, klasik
+    yörüngeyle kuantum fazı arasındaki doğrudan bağdır.
+
+**Ne zaman hangisi?** `W` ayrılabilir sistemlerde (merkezî kuvvet,
+periyodik hareket) çözümü tamamen cebire indirger ve etki-açı
+değişkenlerinin (`J = ∮p dq`) temelidir. `S` ise zamana bağlı
+problemlerde ve kuantum bağlantısında gereklidir.
+
 **4. Neden bu biçim dalgaları çağrıştırır?**
 `S = sabit` yüzeyleri uzayda ilerleyen bir DALGA CEPHESİ gibi hareket
 eder ve parçacık yörüngeleri bu cephelere diktir (`p = ∇S`). Bu, geometrik
@@ -666,6 +701,14 @@ quantum mechanics, and it is the road Schrodinger travelled.
 2. That condition is the Hamilton-Jacobi equation:
    H(q, dS/dq, t) + dS/dt = 0, i.e. (dS/dx)^2/2m + V + dS/dt = 0.
 3. S is the action itself: dS/dt = L, so S = int L dt.
+3b. If H has no explicit time dependence, separate S(q,t) = W(q) - Et, giving
+   the time-independent form H(q, dW/dq) = E. W is Hamilton's CHARACTERISTIC
+   function (not to be confused with S, the principal function). Since
+   p = dW/dq, W = int p dq is the abbreviated action. Surfaces of constant W
+   are fixed and trajectories are normal to them, so W encodes the path
+   rather than the schedule; it is the functional of Maupertuis' principle
+   (delta int p dq = 0 at fixed energy), it carries the Bohr-Sommerfeld
+   condition (closed integral of p dq = n h), and in WKB the phase is W/hbar.
 4. Surfaces of constant S move like wavefronts, with trajectories normal to
    them - mechanics' "geometrical optics".
 5. Write psi = A exp(iS/hbar) and substitute into the Schrodinger equation.
@@ -681,7 +724,8 @@ quantum mechanics, and it is the road Schrodinger travelled.
    genuine limit.
 """,
   eqs=["H(q, ∂S/∂q, t) + ∂S/∂t = 0", "(1/2m)(∂S/∂x)² + V + ∂S/∂t = 0",
-       "S = ∫L dt", "p = ∇S", "ψ = A·e^(iS/ħ)",
+       "S = ∫L dt", "S(q,t) = W(q) − Et", "H(q, ∂W/∂q) = E",
+       "W = ∫p dq", "∮p dq = n·h", "p = ∇S", "ψ = A·e^(iS/ħ)",
        "∂ρ/∂t + ∇·(ρ∇S/m) = 0", "Q = −(ħ²/2m)(∇²A/A)"],
   ex_tr=["Serbest parçacık: V = 0 için Hamilton-Jacobi denklemi "
          "(1/2m)(∂S/∂x)² + ∂S/∂t = 0. Ayrıştırarak S = px − Et "
@@ -696,6 +740,7 @@ quantum mechanics, and it is the road Schrodinger travelled.
      "hamilton jacobi nasil elde edilir|hamilton jacobi ispati|"
      "hamiltonun asal fonksiyonu|uretici fonksiyon kanonik donusum|"
      "hamilton jacobi dalga fonksiyonu iliskisi|"
+     "karakteristik fonksiyon|hamiltonun karakteristik fonksiyonu|karakteristik fonksiyonun fiziksel anlami|indirgenmis etki|abbreviated action|maupertuis ilkesi|asal fonksiyon ile karakteristik fonksiyon farki|bohr sommerfeld kosulu|etki aci degiskenleri|"
      "hamilton jacobiden schrodingere|klasik mekanikten dalga denklemine|"
      "kuantum potansiyeli|eylem ve dalga fonksiyonu|"
      "S = sabit dalga cephesi|mekanigin geometrik optigi|"

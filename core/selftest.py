@@ -1642,6 +1642,51 @@ def run():
           lambda: bool(knowledge.get("euler_lagrange_turetim")), True)
     check("cekirdek: hamilton-jacobi konusu yuklu",
           lambda: bool(knowledge.get("hamilton_jacobi")), True)
+    # ASAL fonksiyon (S) ile KARAKTERISTIK fonksiyon (W) ayri seylerdir;
+    # dis degerlendirme "karakteristik fonksiyonun fiziksel anlami"
+    # istendiginde asal fonksiyonun anlatildigini yakaladi.
+    check("hamilton-jacobi: karakteristik fonksiyon ayri anlatiliyor",
+          lambda: knowledge.get("hamilton_jacobi")["tr"],
+          contains("S(q,t) = W(q) − E·t", "H(q, ∂W/∂q) = E",
+                   "KARAKTERİSTİK"))
+    check("hamilton-jacobi: W'nin fiziksel anlami veriliyor",
+          lambda: knowledge.get("hamilton_jacobi")["tr"],
+          contains("W = ∫p dq", "indirgenmiş etki", "Maupertuis",
+                   "Bohr-Sommerfeld"))
+
+    # ── ACI SOYLENMEDIYSE DIKTIR ────────────────────────────────────
+    # Olculdu (taze sinav): "0,4 T manyetik alanda 5 A akim tasiyan
+    # 2 m telin uzerindeki kuvvet" sorusunda dogru baginti
+    # F = B·I·L·sin(theta) havuzda 162 puanla VARDI, ama theta
+    # bilinmedigi icin cozulemiyor ve cevap "Duz telin manyetik alani"
+    # kartina dusuyordu. Beklenen 4 N.
+    #
+    # NOT: aci degerleri RADYAN saklanir. 90.0 yazmak "90 radyan"
+    # demek olurdu (sin = 0,894) — olculdu ve duzeltildi.
+    from . import problem as _prb
+    import math as _math
+    check("ortuk: aci soylenmediyse dik kabul ediliyor",
+          lambda: abs(_prb.malzeme_degerleri(
+              "0.4 T manyetik alanda 5 A akim tasiyan 2 m telin "
+              "uzerindeki kuvvet")[0].get("theta", 0)
+              - _math.pi / 2) < 1e-9, True)
+    check("ortuk: aci verilmisse dokunulmuyor",
+          lambda: "theta" in _prb.malzeme_degerleri(
+              "0.4 T manyetik alanda 30 derece acyla duran 5 A akim "
+              "tasiyan 2 m telin uzerindeki kuvvet")[0], False)
+    check("ortuk: manyetik olmayan soruya bulasmiyor",
+          lambda: "theta" in _prb.malzeme_degerleri(
+              "20 m/s hizla atilan cismin menzili nedir")[0], False)
+    check("tel kuvveti: sorulan buyukluk veriliyor",
+          lambda: brain.respond(
+              "0.4 T manyetik alanda 5 A akim tasiyan 2 m telin "
+              "uzerindeki kuvvet", session="_test_tel").text,
+          contains("B*I*L*sin(theta)", "4"))
+    # Egik atista aci BELIRLEYICIDIR; dik kabulu oraya sizmamali.
+    check("egik atis: dik kabulu bozmuyor",
+          lambda: brain.respond(
+              "20 m/s hizla 30 derece acyla atilan cismin menzili nedir",
+              session="_test_egik").text, contains("menzil"))
     check("bilesik: dort asama ayirt ediliyor",
           lambda: len(_bil.asamalar(_S_DORT)), 4)
     # Asamalarin ikincisi ve sonrasi neredeyse her zaman artgonderimli
@@ -2038,7 +2083,7 @@ def run():
     # yakalamak ve ilerlemeyi gorunur kilmak. Bu sayilar yukselmeden
     # "sistem gelisti" denmemelidir.
     check("taze: gorulmemis sayisal problemler gerilemiyor",
-          lambda: _olcum.taze_sayisal_puani()[0] >= 4, True)
+          lambda: _olcum.taze_sayisal_puani()[0] >= 5, True)
     check("taze: gorulmemis turetimler gerilemiyor",
           lambda: _olcum.taze_kuramsal_puani()[0] >= 2, True)
     # EN ONEMLISI: imkansiz girdiye dogru tepki. Yanlis cevap, eksik

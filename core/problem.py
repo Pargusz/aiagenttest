@@ -517,6 +517,34 @@ SENARYOLAR = [
 #
 # Bu degerler FIZIK bilgisidir ve elle yazilmistir; metinden cikarilamaz.
 MALZEME = [
+    # ACI SOYLENMEDIYSE DIKTIR. Manyetik kuvvet bagintilarinda
+    # (F = B·I·L·sin(theta), F = q·v·B·sin(theta)) aci verilmezse
+    # fizikte alisilmis kabul dik konumdur; zaten "telin uzerindeki
+    # kuvvet" denince kastedilen budur.
+    #
+    # Olculdu (taze sinav): "0,4 T manyetik alanda 5 A akim tasiyan
+    # 2 m telin uzerindeki kuvvet" sorusunda dogru baginti havuzda
+    # 162 puanla VARDI, ama theta bilinmedigi icin zincir cozemedi ve
+    # cevap "Duz telin manyetik alani" formul kartina dustu. Beklenen
+    # 4 N.
+    #
+    # Kural DAR tutuldu: yalnizca manyetik kuvvet baglaminda ve
+    # soruda hicbir aci gecmiyorsa. Egik atista aci belirleyicidir,
+    # oraya bulasmamasi icin "manyetik/alan/tel/akim" baglami aranir
+    # ve aci sozcugu gecen sorular disarida birakilir.
+    {"kw": r"(?=.*(\bmanyetik\b|\btesla\b|\b\d+\s*t\b))"
+           r"(?=.*(\btel\w*|\bakim\w*|\byuk\w*|\bparcacik\w*|"
+           r"\biletken\w*))"
+           r"(?!.*(\baci\w*|\bderece\b|\bacisi\b|\bacilik\b|"
+           r"\bangle\b|\bdegree\b|°))",
+     # DIKKAT: aci degerleri RADYAN saklanir (egik atista 30 derece
+     # 0,5236 olarak duruyor). 90.0 yazmak "90 radyan" demek olurdu ve
+     # sin(90 rad) = 0,894 cikardi — olculdu.
+     "degerler": {"theta": 1.5707963267948966},
+     "not_tr": "Açı belirtilmediği için akım/hız ile alan **dik** "
+               "kabul edildi: `θ = 90°`, `sin θ = 1`.",
+     "not_en": "No angle given, so the field is taken perpendicular: "
+               "theta = 90 deg, sin(theta) = 1."},
     # CARPILAN CISIM DURGUNDUR. "Mermi bloga saplanir", "arac duran
     # araca carpar" gibi anlatimlarda hedefin hizi soylenmez cunku
     # sifirdir. Olculdu (taze sinav): mermi-blok sorusunda `v2`
