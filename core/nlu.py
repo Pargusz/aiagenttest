@@ -106,6 +106,37 @@ def strip_accents(s):
 
 # ------------------------------------------------------------- niyet oruntusu
 # (niyet, oncelik, desenler)
+# ── Yonerge fiilleri ──────────────────────────────────────────────────
+# Sinav/odev dilinde "yapilacak isi" bildiren fiiller. Bu liste IKI ayri
+# yerde gerekiyor ve ayri ayri yazildiklarinda birbirinden SAPIYORLAR;
+# olculen iki ayri kusur da tam olarak bundan cikti:
+#
+#   * bilesik.py'deki liste "coz" fiilini icermiyordu; "Klasik harmonik
+#     osilator denklemini COZ. Daha sonra ..." sorusunda birinci asama
+#     komple dusuyordu.
+#   * asagidaki "sifirdan" kaliginin istisna listesi "tanit" fiilini
+#     icermiyordu; "Dirac gosterimini SIFIRDAN TANIT" sorusu bir
+#     ogrenme plani istegi sanilip yol haritasi cevabi aliyordu.
+#
+# Bu yuzden liste TEK yerde tutulur ve her iki taraf da buradan okur.
+# NOT: "et-" yardimci fiili cekimlenirken UNSUZ YUMUSAMASINA ugrar:
+# "elde ET" ama "elde EDiniz", "elde EDerek". Duz "elde et" kalibi
+# "elde ediniz"i KACIRIYORDU ve 4 asamali soru 3 asama goruluyordu
+# (olculdu). Bu yuzden o fiillerde e[dt] siniifi kullanilir.
+YONERGE_FIILLERI = (
+    "turet", "elde e[dt]", "ispatla", "ispat e[dt]", "kanitla", "goster",
+    "acikla", "cikar", "yaz", "kur", "bul", "hesapla", "anlat",
+    "tanimla", "coz", "tanit", "incele", "tartis", "degerlendir",
+    "karsilastir", "belirle", "ifade e[dt]", "ele al", "uygula", "yorumla",
+    "derive", "prove", "show", "obtain", "explain", "find", "solve",
+    "compute", "evaluate", "discuss", "compare", "determine", "introduce",
+)
+
+# Regex parcasi: "turet\\w*|elde\\s+et\\w*|..."
+YONERGE_KALIBI = "|".join(
+    f.replace(" ", r"\s+") + r"\w*" for f in YONERGE_FIILLERI)
+
+
 PATTERNS = [
     ("selam", 100, [
         r"^\s*(merhaba|selam|slm|gunaydin|iyi (gunler|aksamlar|geceler)|"
@@ -145,7 +176,10 @@ PATTERNS = [
         r"ogret(ir|ebilir|ebilir m[iı]s[iı]n)|ogretebilir misin|"
         r"what can you teach|teach me|can you teach)\b",
         # "sifirdan TURET/ISPATLA" bir ogrenme plani istegi degildir.
-        r"\bsifirdan\b(?!\s*(turet|ispatla|kanitla|coz|hesapla))",
+        # Istisna listesi ELLE yaziliydi ve "tanit" eksikti;
+        # "Dirac gosterimini sifirdan tanit" ogrenme plani
+        # sanildi (olculdu). Artik ortak listeden kuruluyor.
+        r"\bsifirdan\b(?!\s*(?:%s))" % YONERGE_KALIBI,
         # "matlab ogrenmek zor mu" bir kod istegi degil: zorluk/sure sorulari
         # da plan tarafina gitmeli.
         r"\b(ogrenmek|ogrenmesi)\s+(zor|kolay|ne kadar surer|zor mu)\b",

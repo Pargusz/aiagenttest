@@ -34,7 +34,7 @@ tamamlar.
 """
 import re
 
-from . import knowledge, kopru
+from . import knowledge, kopru, nlu
 
 # ── Asama sinirlari ───────────────────────────────────────────────────
 # Iki tur sinir var ve IKISI de gerekli (olculdu):
@@ -60,11 +60,16 @@ _CUMLE = re.compile(r"(?<=[\.\?\!;])\s+(?![0-9])")
 
 # Her asamanin bir IS istedigini gosteren fiiller. Bir parca bunlardan
 # birini icermiyorsa muhtemelen asama degil, yan cumledir.
-_ISTEK = re.compile(
-    r"(elde\s+ed\w*|turet\w*|ispatla\w*|ispat\s+ed\w*|kanitla\w*|"
-    r"goster\w*|acikla\w*|cikar\w*|yaz\w*|kur\w*|bul\w*|hesapla\w*|"
-    r"anlat\w*|tanimla\w*|"
-    r"derive\w*|prove\w*|show\w*|obtain\w*|explain\w*|find\w*)", re.I)
+#
+# Olculdu: liste "coz" fiilini icermiyordu ve "Klasik harmonik osilator
+# denklemini COZ. Daha sonra ayni sistemi kuantum mekaniginde cozerek
+# yaratma/yok etme operatorlerini turet." sorusunda BIRINCI asama
+# tamamen dusuyordu. Dahasi ikinci asama artgonderimliydi ("AYNI
+# sistemi") ve devralacagi baglam da onunla birlikte kaybolmustu.
+# Yonerge fiili listesi eksik kalirsa asama sessizce yok oluyor; bu
+# yuzden liste sinav dilinde kullanilan fiillerin tamamini kapsamali.
+# Liste nlu.py'de TEK yerde tutulur; iki kopya birbirinden sapiyordu.
+_ISTEK = re.compile("(%s)" % nlu.YONERGE_KALIBI, re.I)
 
 
 def _norm(s):

@@ -1686,6 +1686,46 @@ def run():
                            "enerjisini bul ve karsilastir.", "tr"), None)
     check("bilesik: kisa soru bilesige girmiyor",
           lambda: _bil.asamalar("entropi nedir"), [])
+
+    # ── YONERGE FIILLERI TEK LISTEDE ────────────────────────────────
+    # Ayni kusur IKI ayri yerde ayri ayri cikti, ikisi de ELLE yazilmis
+    # ve birbirinden sapmis fiil listelerinden:
+    #   * bilesik.py "coz" fiilini bilmiyordu -> "Klasik harmonik
+    #     osilator denklemini COZ. Daha sonra..." sorusunda birinci
+    #     asama komple dusuyordu (ve artgonderimli ikinci asamanin
+    #     devralacagi baglam da onunla birlikte).
+    #   * nlu.py'deki "sifirdan" istisnasi "tanit" fiilini bilmiyordu
+    #     -> "Dirac gosterimini SIFIRDAN TANIT" bir ogrenme plani
+    #     istegi sanilip yol haritasi cevabi aliyordu.
+    # Liste artik nlu.YONERGE_FIILLERI'nde TEK yerde.
+    check("yonerge: ortak fiil listesi kullaniliyor",
+          lambda: all(f in nlu.YONERGE_FIILLERI
+                      for f in ("coz", "tanit", "turet", "ispatla",
+                                "goster", "solve", "prove")), True)
+    check("yonerge: bilesik ortak listeden okuyor",
+          lambda: bool(_bil._ISTEK.search("denklemini coz")), True)
+    check("yonerge: 'coz' asama fiili sayiliyor",
+          lambda: len(_bil.asamalar(
+              "Klasik harmonik osilator denklemini coz. Daha sonra ayni "
+              "sistemi kuantum mekaniginde cozerek yaratma ve yok etme "
+              "operatorlerini turet.")), 2)
+    # Yazim duzeltici BUYRUK kipindeki yonerge fiillerini bozmamali:
+    # "tanit" -> "tait" oluyordu.
+    for _f in ("tanit", "coz", "turet", "ispatla", "goster", "tartis"):
+        check("yazim: '%s' buyrugu bozulmuyor" % _f,
+              (lambda f: (lambda: _an.duzelt(f)[0]))(_f), _f)
+    # "sifirdan TANIT" ogrenme plani degil; "sifirdan OGRET" oyle.
+    check("niyet: 'sifirdan tanit' yol haritasi sanilmiyor",
+          lambda: nlu.classify(
+              "Dirac gosterimini sifirdan tanit. Ic carpim ve dis "
+              "carpimin matris gosterimine nasil donustugunu goster."
+          )[0] != "yol_haritasi", True)
+    check("niyet: gercek yol haritasi istegi korunuyor",
+          lambda: nlu.classify("bana sifirdan matlab ogretebilir misin")[0],
+          "yol_haritasi")
+    check("niyet: 'sifirdan nasil baslamaliyim' korunuyor",
+          lambda: nlu.classify("fizige sifirdan nasil baslamaliyim")[0],
+          "yol_haritasi")
     # Asama sayisinda UST SINIR yok: 10 asamali soruda onunun da
     # kendi bolumu olmali. Bir asamanin en iyi konusu daha onceki bir
     # asamaya gittiyse asama dusurulmez, SIRADAKI adayina gecilir —
@@ -1970,7 +2010,7 @@ def run():
           lambda: _prb.fiziksel_gecersiz("20 dereceden 80 dereceye"), None)
 
     check("kuramsal: turetim sorulari gerilemiyor",
-          lambda: _olcum.kuramsal_puani()[0] >= 22, True)
+          lambda: _olcum.kuramsal_puani()[0] >= 24, True)
 
 
     # ── "Sorulan buyukluk, verilmemis olandir" ──────────────────────

@@ -126,6 +126,16 @@ acar acsana anlatir anlatır soyler söyler yazar cozer çözer verir
 misal mesela ornegin örneğin acaba galiba belki kesin tabii tabi
 please could would should thanks thank okay sure maybe about again
 alakali alakasiz alaka ilgili ilgisiz
+tanit tanıt tanitin tanıtın tanitiniz tanıtınız
+coz çöz cozun çözün cozunuz çözünüz cozumle çözümle
+turet türet turetin türetin turetiniz türetiniz
+ispatla ispatlayin ispatlayın ispatlayiniz ispatlayınız
+goster göster gosterin gösterin gosteriniz gösteriniz
+acikla açıkla aciklayin açıklayın aciklayiniz açıklayınız
+kanitla kanıtla kanitlayin kanıtlayın hesapla hesaplayin hesaplayın
+tartis tartış degerlendir değerlendir karsilastir karşılaştır
+incele inceleyin belirle belirleyin cikarim çıkarım kurun kurunuz
+yazin yazın yaziniz yazınız bulun bulunuz anlatin anlatın
 naber nbr nbrs napiyorsun napiyon haber keyif keyifler selam merhaba
 gunaydin iyi aksamlar kolay gelsin gorusuruz hosca kal tamamdir
 artar artis artiyor azalir azaliyor degisir değişir degismez sabit kalir
