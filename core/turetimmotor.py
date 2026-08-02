@@ -365,6 +365,175 @@ def turet_L2_Lz(lang="tr"):
     return "\n".join(s)
 
 
+
+# ── Uc yeni yetenek: hepsi HESAPLANIR ─────────────────────────────────────
+
+def turet_degiskenlere_ayirma(lang="tr"):
+    """Zamana bagli denklemden zamandan bagimsiz denklemi cikar."""
+    tr = lang == "tr"
+    fi = sp.Function("phi")(x)
+    g = sp.Function("f")(t)
+    E = sp.Symbol("E", real=True)
+    # Psi = phi(x)*f(t) yerine konur
+    Psi = fi * g
+    sol = sp.I * hbar * sp.diff(Psi, t)
+    sag = -hbar ** 2 / (2 * m) * sp.diff(Psi, x, 2) + _V(x) * Psi
+    # Iki tarafi da Psi'ye bolersek degiskenler ayrilir
+    solb = sp.simplify(sol / Psi)
+    sagb = sp.simplify(sag / Psi)
+    s = ["### " + ("Türetim: Değişkenlere Ayırma" if tr
+                   else "Derivation: separation of variables"), ""]
+    s.append(("Zamana bağlı Schrödinger denkleminde `Ψ(x,t) = φ(x)·f(t)` "
+              "deneriz — yani çözümün ayrılabilir olduğunu VARSAYARIZ."
+              if tr else "Try Psi = phi(x) f(t)."))
+    s.append("")
+    s.append("`iħ ∂Ψ/∂t = %s`" % sp.sstr(sol))
+    s.append("")
+    s.append("`ĤΨ = %s`" % sp.sstr(sag))
+    s.append("")
+    s.append(("**Her iki tarafı da Ψ'ye bölelim:**" if tr
+              else "**Divide both sides by Psi:**"))
+    s.append("")
+    s.append("`sol/Ψ = %s`   (yalnızca t'ye bağlı)" % sp.sstr(solb))
+    s.append("")
+    s.append("`sağ/Ψ = %s`   (yalnızca x'e bağlı)" % sp.sstr(sagb))
+    s.append("")
+    s.append(("Sol taraf yalnızca `t`'ye, sağ taraf yalnızca `x`'e bağlı. "
+              "İki bağımsız değişkenin fonksiyonları her yerde eşitse, "
+              "ikisi de aynı **SABİTE** eşittir. Bu sabite `E` diyoruz "
+              "(boyutu enerjidir)." if tr else
+              "Both sides must equal the same constant E."))
+    s.append("")
+    s.append("**" + ("Zaman kısmı" if tr else "Time part") + ":** "
+             "`iħ df/dt = E·f`  ⇒  `f(t) = e^(−iEt/ħ)`")
+    s.append("")
+    s.append("**" + ("Uzay kısmı" if tr else "Space part") + ":** "
+             "`−(ħ²/2m)φ'' + Vφ = Eφ`")
+    s.append("")
+    s.append("## `Ĥφ = Eφ`  " + ("(zamandan bağımsız Schrödinger denklemi)"
+                                 if tr else "(time-independent equation)"))
+    s.append("")
+    s.append(("Zaman çarpanının modülü `|e^(−iEt/ħ)| = 1` olduğu için "
+              "`|Ψ|² = |φ|²` zamanla değişmez — bu yüzden bu çözümlere "
+              "**durağan durum** denir." if tr else
+              "The time factor has unit modulus, hence stationary states."))
+    s.append("")
+    s.append("_" + ("Yerine koyma ve bölme SymPy ile yapıldı." if tr
+                    else "Computed with SymPy.") + "_")
+    return "\n".join(s)
+
+
+def turet_superpozisyon(lang="tr"):
+    """Superpozisyon ilkesi: denklemin DOGRUSALLIGINDAN cikar."""
+    tr = lang == "tr"
+    p1 = sp.Function("psi1")(x, t)
+    p2 = sp.Function("psi2")(x, t)
+    c1, c2 = sp.symbols("c1 c2")
+
+    def _S(psi):
+        """Schrodinger operatorunun psi'ye etkisi (sifira esit olmali)."""
+        return (sp.I * hbar * sp.diff(psi, t)
+                + hbar ** 2 / (2 * m) * sp.diff(psi, x, 2) - _V(x) * psi)
+
+    toplam = sp.expand(_S(c1 * p1 + c2 * p2))
+    ayri = sp.expand(c1 * _S(p1) + c2 * _S(p2))
+    ayni = sp.simplify(toplam - ayri) == 0
+    s = ["### " + ("Türetim: Süperpozisyon İlkesi" if tr
+                   else "Derivation: the superposition principle"), ""]
+    s.append(("Schrödinger denklemini `Ŝψ = 0` biçiminde yazalım: "
+              "`Ŝψ ≡ iħ∂ψ/∂t + (ħ²/2m)∂²ψ/∂x² − Vψ`." if tr else
+              "Write the equation as S psi = 0."))
+    s.append("")
+    s.append("`Ŝ(c₁ψ₁ + c₂ψ₂) = %s`" % sp.sstr(toplam))
+    s.append("")
+    s.append("`c₁·Ŝψ₁ + c₂·Ŝψ₂ = %s`" % sp.sstr(ayri))
+    s.append("")
+    if ayni:
+        s.append(("**İki ifade özdeştir.** Yani `Ŝ` DOĞRUSAL bir "
+                  "operatördür: türev almak ve bir fonksiyonla çarpmak "
+                  "doğrusal işlemlerdir." if tr else
+                  "The two are identical, so S is linear."))
+        s.append("")
+        s.append(("`ψ₁` ve `ψ₂` çözümse (`Ŝψ₁ = Ŝψ₂ = 0`), o hâlde"
+                  if tr else "If both are solutions, then"))
+        s.append("")
+        s.append("## `Ŝ(c₁ψ₁ + c₂ψ₂) = c₁·0 + c₂·0 = 0`")
+        s.append("")
+        s.append(("Yani **çözümlerin her doğrusal birleşimi de çözümdür**. "
+                  "Süperpozisyon bir postülat değil, denklemin "
+                  "doğrusallığının doğrudan sonucudur. Girişim, "
+                  "dolanıklık ve kuantum bilgisayarların çalışma ilkesi "
+                  "buradan gelir." if tr else
+                  "Any linear combination of solutions is a solution."))
+    s.append("")
+    s.append("_" + ("Doğrusallık SymPy ile açılıp karşılaştırıldı."
+                    if tr else "Linearity verified with SymPy.") + "_")
+    return "\n".join(s)
+
+
+def turet_indirgenmis_kutle(lang="tr"):
+    """Iki cisim problemi -> tek cisim, indirgenmis kutle ile."""
+    tr = lang == "tr"
+    m1, m2 = sp.symbols("m1 m2", positive=True)
+    r1 = sp.Function("r1")(t)
+    r2 = sp.Function("r2")(t)
+    R = (m1 * r1 + m2 * r2) / (m1 + m2)          # kutle merkezi
+    r = r1 - r2                                   # goreli konum
+    # Toplam kinetik enerji
+    T = sp.Rational(1, 2) * m1 * sp.diff(r1, t) ** 2 + \
+        sp.Rational(1, 2) * m2 * sp.diff(r2, t) ** 2
+    # r1, r2'yi R ve r cinsinden yaz
+    r1_yeni = R + m2 / (m1 + m2) * r
+    r2_yeni = R - m1 / (m1 + m2) * r
+    T_yeni = sp.simplify(sp.expand(
+        T.subs({r1: r1_yeni, r2: r2_yeni}).doit()))
+    mu = sp.simplify(m1 * m2 / (m1 + m2))
+    T_bekl = sp.simplify(
+        sp.Rational(1, 2) * (m1 + m2) * sp.diff(R, t) ** 2
+        + sp.Rational(1, 2) * mu * sp.diff(r, t) ** 2)
+    T_bekl = sp.simplify(sp.expand(
+        T_bekl.subs({r1: r1_yeni, r2: r2_yeni}).doit()))
+    ayni = sp.simplify(T_yeni - T_bekl) == 0
+    s = ["### " + ("Türetim: İndirgenmiş Kütle" if tr
+                   else "Derivation: reduced mass"), ""]
+    s.append(("İki cisim problemi, doğru koordinatlarda TEK cisim "
+              "problemine dönüşür." if tr else
+              "The two-body problem becomes a one-body problem."))
+    s.append("")
+    s.append("**" + ("Koordinat değişimi" if tr else "New coordinates")
+             + ":**")
+    s.append("")
+    s.append("- Kütle merkezi: `R = (m₁r₁ + m₂r₂)/(m₁+m₂)`")
+    s.append("- Göreli konum: `r = r₁ − r₂`")
+    s.append("")
+    s.append(("Ters çevirince `r₁ = R + (m₂/M)r`, `r₂ = R − (m₁/M)r` "
+              "(M = m₁+m₂). Kinetik enerjiye koyalım:" if tr else
+              "Substituting into the kinetic energy:"))
+    s.append("")
+    if ayni:
+        s.append("## `T = ½M·Ṙ² + ½μ·ṙ²`,  `μ = m₁m₂/(m₁+m₂)`")
+        s.append("")
+        s.append(("**Çapraz terimler birbirini götürür** — SymPy ile "
+                  "açıp doğruladık. Sonuç iki BAĞIMSIZ parçadır: kütle "
+                  "merkezinin serbest hareketi ve `μ` kütleli tek bir "
+                  "parçacığın göreli hareketi.\n\n"
+                  "Potansiyel yalnızca `|r|`'ye bağlıysa (merkezî kuvvet) "
+                  "kütle merkezi hiç görünmez ve geriye **tek cisim "
+                  "problemi** kalır. Hidrojen atomunda çekirdek sonsuz "
+                  "ağır sayılmazsa `μ = mₑM/(mₑ+M)` kullanılır; bu, "
+                  "döteryum ile hidrojenin tayflarının neden biraz farklı "
+                  "olduğunu açıklar." if tr else
+                  "Cross terms cancel; the motion splits into free CM "
+                  "motion and a one-body problem with reduced mass."))
+    else:
+        s.append("_" + ("Sadeleştirme tamamlanamadı." if tr
+                        else "Simplification incomplete.") + "_")
+    s.append("")
+    s.append("_" + ("Koordinat değişimi ve sadeleştirme SymPy ile yapıldı."
+                    if tr else "Computed with SymPy.") + "_")
+    return "\n".join(s)
+
+
 # ── Disariya acilan yuz: soruyu tanı ve turet ─────────────────────────────
 
 import re
@@ -377,6 +546,13 @@ _ISTEKLER = [
     (r"\bl\s*kare\b|\[\s*l.?2\s*,|l2.*lz|lz.*l2|"
      r"acisal momentum.*ayni anda|ayni anda.*acisal momentum",
      turet_L2_Lz),
+    (r"degiskenlere ayir|degiskenine ayir|ayirma yontemi|"
+     r"zamandan bagimsiz.*zamana bagli|zamana bagli.*zamandan bagimsiz",
+     turet_degiskenlere_ayirma),
+    (r"superpozisyon|super pozisyon|dogrusallig|dogrusalligindan|"
+     r"cozumlerin toplami da cozum", turet_superpozisyon),
+    (r"indirgenmis kutle|iki cisim problemi|reduced mass|two.body",
+     turet_indirgenmis_kutle),
     (r"acisal momentum.*(cebir|komutator|bagint)|"
      r"(cebir|komutator|bagint).*acisal momentum|"
      r"\[\s*lx\s*,\s*ly|lx.*ly.*komutator|"
@@ -409,4 +585,6 @@ def coz(metin, lang="tr"):
 def kapsam():
     """Motorun HESAPLAYABILDIGI turetimler (durustluk icin acikca)."""
     return ["[x̂,p̂] = iħ", "Ehrenfest teoremi", "Viryal teoremi",
-            "[L̂x,L̂y] = iħL̂z (acisal momentum cebri)", "[L̂²,L̂z] = 0"]
+            "[L̂x,L̂y] = iħL̂z (acisal momentum cebri)", "[L̂²,L̂z] = 0",
+            "Degiskenlere ayirma", "Superpozisyon ilkesi",
+            "Indirgenmis kutle"]

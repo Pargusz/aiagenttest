@@ -1580,6 +1580,17 @@ def run():
           contains("[L̂x, L̂y] = iħ L̂z"))
     check("motor: [L²,Lz] = 0 hesaplaniyor",
           lambda: _tmot.turet_L2_Lz("tr"), contains("[L̂², L̂z] = 0"))
+    check("motor: degiskenlere ayirma hesaplaniyor",
+          lambda: _tmot.turet_degiskenlere_ayirma("tr"),
+          contains("Ĥφ = Eφ"))
+    check("motor: superpozisyon dogrusalliktan cikiyor",
+          lambda: _tmot.turet_superpozisyon("tr"),
+          contains("c₁ψ₁ + c₂ψ₂"))
+    check("motor: indirgenmis kutle hesaplaniyor",
+          lambda: _tmot.turet_indirgenmis_kutle("tr"),
+          contains("m₁m₂/(m₁+m₂)"))
+    check("taze: gorulmemis turetimler gerilemiyor (motor genisledi)",
+          lambda: _olcum.taze_kuramsal_puani()[0] >= 3, True)
     check("motor: kapsam disi soruyu tanimiyor",
           lambda: _tmot.coz("Bloch teoremini ispatla"), None)
     check("genelleme: yazilmamis turetimler cozuluyor",
@@ -1605,7 +1616,7 @@ def run():
     check("taze: gorulmemis sayisal problemler gerilemiyor",
           lambda: _olcum.taze_sayisal_puani()[0] >= 4, True)
     check("taze: gorulmemis turetimler gerilemiyor",
-          lambda: _olcum.taze_kuramsal_puani()[0] >= 1, True)
+          lambda: _olcum.taze_kuramsal_puani()[0] >= 3, True)
     # EN ONEMLISI: imkansiz girdiye dogru tepki. Yanlis cevap, eksik
     # cevaptan zararlidir. 2/4 idi; fiziksel gecerlilik denetimi
     # eklendikten sonra 4/4 — esik TAM PUANA cekildi.
