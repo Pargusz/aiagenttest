@@ -72,6 +72,48 @@ _CUMLE = re.compile(r"(?<=[\.\?\!;])\s+(?![0-9])")
 _ISTEK = re.compile("(%s)" % nlu.YONERGE_KALIBI, re.I)
 
 
+# Cevabin BICIMINI isteyen kelimeler. Bunlar bir fizik konusu
+# adlandirmaz; nasil anlatilacagini soyler.
+#
+# Olculdu: sorunun son cumlesi "Tum ara adimlari, kullanilan
+# matematiksel varsayimlari, fiziksel yorumlari ve yaklasik yontemleri
+# eksiksiz olarak aciklamanizi istiyorum" bir ASAMA sanildi ve sistem
+# "Varyasyonel Yontem ve Yaklasik Cozumler" anlatti — soruda hic
+# istenmemis bir konu. Bu kalip her uzun sinav sorusunun sonunda
+# bulunur, dolayisiyla kusur tek soruya ozel degildi.
+_BICIM_KELIME = set("""
+ara adim adimi adimlari adimlarini adimlariyla basamak basamaklari
+varsayim varsayimi varsayimlari varsayimlarini kabul kabuller
+yorum yorumu yorumlari yorumlarini gerekce gerekceleri
+yontem yontemi yontemleri yontemlerini teknik teknikleri
+yaklasik yaklasim yaklasimi yaklasimlari yaklasimlarini
+adimlariyla asama asamalari sira sirasiyla
+matematiksel fiziksel kavramsal kuramsal sayisal
+kullanilan kullandigin izlenen secilen gerekli
+eksiksiz eksiksizce atlamadan tam tamamen butun tum her
+ayrintili detayli acik net anlasilir titiz
+bicimde sekilde olarak halde duzeyde
+aciklamanizi aciklamani aciklamanizi gostermenizi gostermeni
+yazmanizi yazmani belirtmenizi belirtmeni vermenizi vermeni
+istiyorum isterim rica beklerim lutfen ayrica
+ile birlikte kadar gibi
+""".split())
+
+
+def _bicim_istegi_mi(parca):
+    """Parca bir fizik konusu degil, cevabin BICIMINI mi istiyor?
+
+    Olcut: parcadaki ANLAMLI kelimelerin hepsi bicim sozlugundeyse
+    ortada adlandirilmis bir fizik kavrami yok demektir. Tek bir konu
+    kelimesi bile varsa ("Hamilton-Jacobi ... fiziksel anlamini
+    aciklayiniz") parca gercek bir asamadir ve dokunulmaz.
+    """
+    kelimeler = _anahtar_kelimeler(parca)
+    if not kelimeler:
+        return True
+    return all(k in _BICIM_KELIME for k in kelimeler)
+
+
 def _norm(s):
     return knowledge._norm(s or "")
 
@@ -91,6 +133,8 @@ def asamalar(metin):
                 parcalar.append(p)
     # Her parca bir IS istemeli; istemiyorsa asama degildir.
     parcalar = [p for p in parcalar if _ISTEK.search(p)]
+    # ...ve istenen is bir FIZIK konusu olmali, cevabin BICIMI degil.
+    parcalar = [p for p in parcalar if not _bicim_istegi_mi(p)]
     return parcalar if len(parcalar) >= 2 else []
 
 
@@ -186,6 +230,33 @@ def _en_iyi_konu(parca, esik=60, baglam=""):
 # uclusunde belirsizlik ilkesi dusuyordu).
 _SAYIM = re.compile(r"\s{2,}|\s*,\s*|\s+ve\s+|\s+and\s+", re.I)
 
+# ARAC EDATI: "X ARACILIGIYLA/YARDIMIYLA/KULLANARAK Y" kaliplarinda X,
+# kullanilmasi istenen YONTEMDIR ve cogu zaman adiyla anilmis bir
+# teoremdir. Turkcede son cekim edati kendinden HEMEN ONCEKI ad
+# obegine baglanir; bu yuzden edattan onceki en fazla uc kelime
+# alinir.
+#
+# Olculdu: "...elde edilen Hamiltonyen operatorunun EHRENFEST TEOREMI
+# ARACILIGIYLA klasik Newton hareket denklemlerini nasil verdigini
+# ispatlayiniz" asamasinda toplam kelime ortusmesi kanonik_kuantumlama'yi
+# one gecirdi (136 / 121) ve kullanicinin adiyla istedigi teorem cevaba
+# hic girmedi. Edattan BOLMEK yetmedi (parcanin basinda "hamiltonyen
+# operatorunun" kaldigi icin yine ayni konu kazaniyordu); ise yarayan,
+# edat oncesi ad obegini AYRICA aramak oldu.
+_ARAC = re.compile(
+    r"((?:\S+\s+){1,3}?)(?:araciligiyla|yardimiyla|kullanarak|"
+    r"vasitasiyla|uzerinden|by\s+means\s+of|using)(?!\w)", re.I)
+
+
+def _arac_obekleri(parca):
+    """Arac edatlarindan once gelen ad obekleri."""
+    out = []
+    for m in _ARAC.finditer(parca):
+        obek = m.group(1).strip()
+        if len(_anahtar_kelimeler(obek)) >= 1:
+            out.append(obek)
+    return out
+
 
 def _asama_konulari(parca, baglam="", en_fazla=4):
     """Bir asamada adi gecen KONULARIN hepsi, gorunme sirasiyla.
@@ -207,10 +278,27 @@ def _asama_konulari(parca, baglam="", en_fazla=4):
     Bir asamada dortten fazla kavram sayilmasi seyrek; sinirsiz
     birakmak da cevabi sisiriyor.
     """
-    out = []
-    for t in _adaylar(parca, baglam)[:1]:
-        out.append(t)
-    for oge in _SAYIM.split(parca):
+    # DENENDI VE GERI ALINDI — "adiyla anilan konu one gecsin".
+    # Fikir: asama bir teoremi ADIYLA aniyorsa (kw'si metinde aynen
+    # geciyorsa) toplam kelime ortusmesini yensin. Gerekcesi olculmustu:
+    # "...Hamiltonyen operatorunun EHRENFEST TEOREMI araciligiyla..."
+    # asamasinda kanonik_kuantumlama 136, ehrenfest_teoremi 121 puan
+    # aliyor ve adiyla istenen teorem cevaba hic girmiyordu.
+    #
+    # Neden geri alindi: "ad" ile "genel tabir" ayirt edilemedi.
+    # Ayirt edicilik olcutu olarak once uzunluk/kelime sayisi (>=10
+    # harf ya da 2 kelime), sonra "adi tek basina aratinca konu acik
+    # ara birinci mi" denendi. Ikincisi de ayirmadi:
+    #     hamiltonyen operatoru -> 2.67x   (genel tabir)
+    #     ehrenfest teoremi     -> 1.39x   (gercek ad)
+    # yani genel tabir gercek addan DAHA ayirt edici cikti. Sonuc:
+    #   * 10 asamali soru 10 yerine 17 bolum uretti (sisme),
+    #   * "belirsizlik ilkesinin ispatini yaz" asamasi poisson_komutator
+    #     yerine olcum_hata'ya (olcum hatasi!) gitti — acik gerileme.
+    # Kural kaldirildi; yerine ARAC EDATI ayraci kondu (bkz. _SAYIM).
+    adaylar = _adaylar(parca, baglam)
+    out = adaylar[:1]
+    for oge in _arac_obekleri(parca) + _SAYIM.split(parca):
         if len(_anahtar_kelimeler(oge)) < 2:
             continue
         hits = knowledge.search(oge, limit=2) or []

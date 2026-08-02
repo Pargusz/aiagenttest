@@ -1687,6 +1687,50 @@ def run():
     check("bilesik: kisa soru bilesige girmiyor",
           lambda: _bil.asamalar("entropi nedir"), [])
 
+    # ── BICIM TALEBI ASAMA DEGILDIR ─────────────────────────────────
+    # Uzun sinav sorularinin sonunda hep bulunur: "Tum ara adimlari,
+    # kullanilan matematiksel varsayimlari, fiziksel yorumlari ve
+    # yaklasik yontemleri eksiksiz olarak aciklamanizi istiyorum."
+    # Bu bir ASAMA sanilip "Varyasyonel Yontem ve Yaklasik Cozumler"
+    # anlatiliyordu — soruda hic istenmemis bir konu.
+    _META = ("tum ara adimlari kullanilan matematiksel varsayimlari "
+             "fiziksel yorumlari ve yaklasik yontemleri eksiksiz olarak "
+             "aciklamanizi istiyorum")
+    check("bilesik: bicim talebi asama sayilmiyor",
+          lambda: _bil._bicim_istegi_mi(_META), True)
+    check("bilesik: konu adi tasiyan parca bicim sayilmiyor",
+          lambda: _bil._bicim_istegi_mi(
+              "hamilton jacobi denklemini tureterek karakteristik "
+              "fonksiyonun fiziksel anlamini ayrintili olarak "
+              "aciklayiniz"), False)
+    check("bilesik: 'adim adim goster' asama olmaya devam ediyor",
+          lambda: _bil._bicim_istegi_mi(
+              "noether teoremini adim adim ispatla"), False)
+
+    # ── ADIYLA ANILAN KONU CEVABA GIRMELI ───────────────────────────
+    # "...elde edilen Hamiltonyen operatorunun EHRENFEST TEOREMI
+    # araciligiyla klasik Newton hareket denklemlerini nasil verdigini
+    # ispatlayiniz" asamasinda arama kanonik_kuantumlama'yi 136,
+    # ehrenfest_teoremi'ni 121 puanla siraliyordu; toplam kelime
+    # ortusmesi kazaniyor ve kullanicinin ADIYLA istedigi teorem
+    # cevaba hic girmiyordu. Bir teoremin adi aciktan geciyorsa bu,
+    # toplam benzerlikten daha guclu bir istektir. Asama birden cok
+    # konuyu adiyla anabilir; hepsi alinir.
+    _P_EHR = ("elde edilen hamiltonyen operatorunun ehrenfest teoremi "
+              "araciligiyla klasik newton hareket denklemlerini nasil "
+              "verdigini ayrintili bicimde ispatlayiniz")
+    # Turkcede son cekim edati kendinden HEMEN ONCEKI ad obegine
+    # baglanir; "X araciligiyla" kalibinda X istenen YONTEMDIR.
+    check("bilesik: arac edati oncesi ad obegi cikariliyor",
+          lambda: any("ehrenfest teoremi" in o
+                      for o in _bil._arac_obekleri(_P_EHR)), True)
+    check("bilesik: arac obegi yoksa bos donuyor",
+          lambda: _bil._arac_obekleri(
+              "noether teoremini adim adim ispatla"), [])
+    check("bilesik: adiyla istenen yontem asama konularina giriyor",
+          lambda: "ehrenfest_teoremi" in
+                  [t["key"] for t in _bil._asama_konulari(_P_EHR)], True)
+
     # ── YONERGE FIILLERI TEK LISTEDE ────────────────────────────────
     # Ayni kusur IKI ayri yerde ayri ayri cikti, ikisi de ELLE yazilmis
     # ve birbirinden sapmis fiil listelerinden:
@@ -1813,6 +1857,11 @@ def run():
           lambda: knowledge.get("ehrenfest_teoremi")["tr"],
           contains("İSPATLAMAZ", "dekoherens"))
 
+    # Bolme kurallari (sayim ayraci, arac edati) cevabi SISIRMEMELI:
+    # 10 asama -> 10 bolum. Adiyla-anma kurali denendiginde 17 olmustu.
+    check("bilesik: bolme kurallari cevabi sisirmiyor",
+          lambda: len(re.findall(r"^## ", _bil.coz(_S_ON, "tr") or "",
+                                 re.M)), 10)
     check("bilesik: on asamada konular tekrar etmiyor",
           lambda: (lambda ks: len(ks) == len(set(ks)))(
               [k for _p, k in _bil.kapsam(_S_ON)]), True)
@@ -2010,7 +2059,7 @@ def run():
           lambda: _prb.fiziksel_gecersiz("20 dereceden 80 dereceye"), None)
 
     check("kuramsal: turetim sorulari gerilemiyor",
-          lambda: _olcum.kuramsal_puani()[0] >= 24, True)
+          lambda: _olcum.kuramsal_puani()[0] >= 25, True)
 
 
     # ── "Sorulan buyukluk, verilmemis olandir" ──────────────────────

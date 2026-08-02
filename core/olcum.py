@@ -791,6 +791,29 @@ def zor_bosluklari():
 #
 # Ilk olcum 2/20 idi. Icerik yazildikca ve yonlendirme duzeldikce yukseldi.
 KURAMSAL_SORULAR = [
+ # Canli sohbetten: BES asamali soru. Iki genel kusur cikti —
+ # (a) son cumle bir BICIM talebiydi ("tum ara adimlari ... eksiksiz
+ #     olarak aciklamanizi istiyorum") ama asama sanilip alakasiz bir
+ #     konu (varyasyonel yontem) anlatildi;
+ # (b) besinci asama Ehrenfest teoremini ADIYLA istiyordu ama toplam
+ #     kelime ortusmesi kanonik kuantumlamayi one gecirdi ve teorem
+ #     cevaba hic girmedi.
+ ("Klasik mekanikte en küçük etki (Hamilton) prensibinden başlayarak "
+  "Euler-Lagrange denklemlerini matematiksel olarak türetiniz. Daha sonra "
+  "Legendre dönüşümünü kullanarak Hamilton formalizmine geçişi "
+  "ispatlayınız ve Hamilton denklemlerini elde ediniz. Hamilton-Jacobi "
+  "denklemini türeterek karakteristik fonksiyonun fiziksel anlamını "
+  "açıklayınız. Ardından WKB yaklaşımını kullanarak Hamilton-Jacobi "
+  "denkleminin Schrödinger denkleminin klasik limitinden nasıl elde "
+  "edildiğini matematiksel olarak gösteriniz. Son olarak elde edilen "
+  "Hamiltonyen operatörünün Ehrenfest teoremi aracılığıyla klasik Newton "
+  "hareket denklemlerini nasıl verdiğini ayrıntılı biçimde ispatlayınız. "
+  "Tüm ara adımları, kullanılan matematiksel varsayımları, fiziksel "
+  "yorumları ve yaklaşık yöntemleri eksiksiz olarak açıklamanızı "
+  "istiyorum.",
+  ["d/dt(∂L/∂q̇) − ∂L/∂q = 0", "q̇_i = ∂H/∂p_i", "H(q, ∂S/∂q, t) + ∂S/∂t = 0"],
+  ["Ehrenfest", "d⟨x̂⟩/dt = ⟨p̂⟩/m", "m d²⟨x̂⟩/dt² = ⟨F(x̂)⟩"]),
+
  # Arastirma seviyesi soru: bir ASAMA kendi icinde birden cok kavram
  # SAYIYOR ("Poisson parantezi, kanonik donusumler VE Hamilton
  # akisindan..."). Asama basina tek konu verilince dis degerlendirme
