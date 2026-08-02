@@ -99,7 +99,14 @@ mekanigine ve istatistiksel mekanige acilan kapi budur.
 
 **Gecis (Legendre donusumu):** p = ∂L/∂q̇ tanimlanir ve
     H(q, p, t) = Σ p·q̇ - L
-Cogu sistemde H toplam enerjidir: H = T + V.
+
+**H ne zaman toplam enerjidir?** Otomatik degildir; IKI kosul birden
+gerekir: (a) baglar/koordinat donusumu zamandan bagimsiz olmali
+(skleronom), (b) potansiyel hiza bagli olmamali. Bu ikisi saglanirsa
+H = T + V olur. Aksi halde H yine korunabilir ama toplam enerji
+DEGILDIR — donen bir cerceve ya da manyetik alandaki yuk bunun
+orneginidir. Ayrica L acikca zamana bagli degilse H korunur; bu ayri
+bir ifadedir (dH/dt = -∂L/∂t).
 
 **Hamilton denklemleri:** Ikinci mertebeden tek denklem yerine, birinci
 mertebeden IKI denklem:
@@ -109,9 +116,12 @@ mertebeden IKI denklem:
 bu nokta faz uzayinda bir egri cizer. Liouville teoremi, faz uzayi
 hacminin korundugunu soyler — istatistiksel mekanigin temeli budur.
 
-**Neden onemli:** Kuantum mekaniginde Hamilton operatoru sistemin enerjisini
-ve zaman evrimini yonetir (Schrödinger denklemi: iħ ∂ψ/∂t = Ĥψ). Klasik
-Poisson parantezi {A,H}, kuantumda komutatore [Â,Ĥ]/(iħ) donusur.
+**Neden onemli:** Kuantum mekaniginde zaman evrimini Hamilton OPERATORU
+yonetir (Schrödinger denklemi: iħ ∂ψ/∂t = Ĥψ). Dikkat: Ĥ, klasik H
+fonksiyonunun "karsiligi" degil, KANONIK KUANTUMLAMA ile elde edilen
+TEMSILIDIR — H(q,p) ifadesinde q ve p yerine q̂, p̂ operatorleri konur ve
+konum gosteriminde Ĥ = -(ħ²/2m)∇² + V(x) cikar. Klasik Poisson parantezi
+{A,H}, kuantumda komutatore [Â,Ĥ]/(iħ) donusur.
 """, """
 Hamiltonian mechanics replaces velocities with momenta via a Legendre
 transform: H = Σp·q' - L, usually the total energy. The equations of motion

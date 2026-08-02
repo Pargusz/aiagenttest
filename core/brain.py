@@ -3900,8 +3900,30 @@ def respond(message, session="default", lang_override=None):
     # cumleden yalnizca "kinetik enerji" cekilip Ek = mv²/2 karti
     # basiliyordu. Soruda IKI kavram ve aralarindaki GECIS isteniyordu.
     # Iliski sorusu tek bir formul karti ile cevaplanamaz.
+    # ── SORUNUN KAPSAMI KADAR CEVAP ────────────────────────────────
+    # Olculdu (dis degerlendirme): "Once Euler-Lagrange'i elde ediniz.
+    # Daha sonra Legendre ile Hamilton'a gecisi ispatlayiniz.
+    # Hamilton-Jacobi'yi tureterek dalga fonksiyonuyla iliskisini
+    # aciklayiniz ve son olarak Hamiltonyen operatorunu gosteriniz."
+    # — dort asama istendi, tek kart donduruldu; degerlendirme
+    # "sorunun %25'i cevaplanmis" dedi. Bu tek soruya ozel degil:
+    # "once X, sonra Y, ardindan Z" kalibindaki HER soru ayni sekilde
+    # sakatlaniyordu. Asamalara ayirip sirayla cevaplamak gerekiyor.
+    # Kopru kapisindan ONCE bakilir, cunku bilesik soru genelde bir
+    # kopru sorusu gibi de gorunur ve kopru tek konuya kilitlenir.
     if intent in ("formul", "konu", "turetim", "nasil", "neden", "ornek",
-                  "makale"):
+                  "makale", "kopru"):
+        try:
+            from . import bilesik as _bil
+            _bm = _bil.coz(etkin, lang)
+            if _bm:
+                ctx["kopru_metin"] = _bm
+                intent = "kopru"
+        except Exception:
+            pass
+
+    if intent in ("formul", "konu", "turetim", "nasil", "neden", "ornek",
+                  "makale") and not ctx.get("kopru_metin"):
         try:
             from . import kopru as _kopru
             # Sonuc bir kez hesaplanir ve isleyiciye tasinir: iki kez

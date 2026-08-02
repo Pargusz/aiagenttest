@@ -464,6 +464,249 @@ The chain is: Poisson bracket -> commutator -> [x,p] = i hbar -> dx dp >= hbar/2
   related="kanonik_kuantumlama|kuantum_formalizm|hermit_operator|"
           "belirsizlik_ilkesi|lagrange_hamilton_gecis|kanonik_donusum"),
 
+T("euler_lagrange_turetim",
+  "En Küçük Etkiden Euler-Lagrange Denklemine",
+  "From Least Action to the Euler-Lagrange Equation", """
+Euler-Lagrange denklemi bir varsayım değildir; **en küçük etki
+ilkesinden varyasyon hesabıyla TÜRETİLİR.** İspat şudur.
+
+**1. Etki fonksiyoneli.**
+Sistemin Lagrange fonksiyonu `L(q, q̇, t)` olsun. `t₁`den `t₂`ye giden
+her YOL için bir sayı tanımlarız:
+    S[q] = ∫_{t₁}^{t₂} L(q, q̇, t) dt
+`S` bir fonksiyon değil FONKSİYONELDİR: girdisi bir sayı değil, bütün
+bir `q(t)` yoludur.
+
+**2. İlke.**
+Hamilton ilkesi: gerçek yol, `S`yi DURAĞAN yapan yoldur.
+    δS = 0
+("En küçük" denir ama doğrusu duruğandır; minimum, maksimum ya da eyer
+noktası olabilir.)
+
+**3. Yolu varyasyona uğrat.**
+Gerçek yol `q(t)` olsun. Komşu yolları tek bir parametreyle yazalım:
+    q_ε(t) = q(t) + ε·η(t)
+Burada `η(t)` keyfi düzgün bir fonksiyondur, ama **uçlar sabittir**:
+    η(t₁) = η(t₂) = 0
+Çünkü başlangıç ve bitiş noktalarını değiştirmiyoruz. Hızın varyasyonu:
+    q̇_ε(t) = q̇(t) + ε·η̇(t)
+
+**4. Etkiyi ε'ya göre türetle.**
+    S(ε) = ∫ L(q + εη, q̇ + εη̇, t) dt
+Duruğanlık koşulu `dS/dε|_{ε=0} = 0` demektir. Zincir kuralıyla:
+    dS/dε|₀ = ∫ (∂L/∂q · η + ∂L/∂q̇ · η̇) dt = 0
+
+**5. Kritik adım: PARÇALI İNTEGRASYON.**
+İkinci terimde `η̇` var; `η`yi tek başına bırakmak için parçalı
+integrasyon yaparız:
+    ∫ (∂L/∂q̇)·η̇ dt = [ (∂L/∂q̇)·η ]_{t₁}^{t₂} − ∫ d/dt(∂L/∂q̇)·η dt
+**Sınır terimi düşer**, çünkü 3. adımda `η(t₁) = η(t₂) = 0` koyduk. İşte
+uçların sabit tutulmasının gerekçesi budur. Geriye:
+    ∫ [ ∂L/∂q − d/dt(∂L/∂q̇) ] · η(t) dt = 0
+
+**6. Varyasyon hesabının temel önermesi.**
+`η(t)` KEYFİDİR. Sürekli bir `f(t)` için, uçlarda sıfırlanan her `η`
+ile `∫f·η dt = 0` oluyorsa, zorunlu olarak `f(t) ≡ 0`dır. (Aksi hâlde
+`f`nin sıfırdan farklı olduğu bir aralıkta `η`yi `f` ile aynı işaretli
+seçip integrali sıfırdan farklı yapardık — çelişki.)
+
+**7. Sonuç.**
+    **d/dt(∂L/∂q̇) − ∂L/∂q = 0**   ∎
+n serbestlik derecesi için her `qᵢ` bağımsız varyasyona uğratılır ve n
+tane denklem çıkar.
+
+**Sağlaması (Newton geri geliyor).**
+Tek boyutta `L = ½mẋ² − V(x)`:
+    ∂L/∂ẋ = mẋ,   d/dt(∂L/∂ẋ) = mẍ,   ∂L/∂x = −dV/dx = F
+Denkleme koyarsak `mẍ − F = 0`, yani **F = ma**. Newton yasası, en küçük
+etki ilkesinin bir sonucudur.
+
+**Neden bu biçim daha güçlü?** Denklem koordinat seçimine göre biçim
+değiştirmez (kutupsal, küresel, genelleştirilmiş koordinatlar aynı
+kalıbı kullanır) ve bağ kuvvetleri hesaba hiç girmez. Ayrıca `L`nin bir
+simetrisi varsa Noether teoremi doğrudan bir korunum yasası verir.
+""", """
+The Euler-Lagrange equation is derived, not assumed.
+
+1. Action functional S[q] = int L(q, qdot, t) dt over a path.
+2. Hamilton's principle: the true path makes S stationary, dS = 0.
+3. Vary the path: q_eps = q + eps*eta with eta(t1) = eta(t2) = 0.
+4. dS/deps at 0 = int (dL/dq * eta + dL/dqdot * etadot) dt = 0.
+5. Integrate the second term by parts; the boundary term vanishes because
+   eta vanishes at the endpoints, leaving
+   int [dL/dq - d/dt(dL/dqdot)] eta dt = 0.
+6. Since eta is arbitrary, the fundamental lemma of the calculus of
+   variations forces the bracket to vanish.
+7. Hence d/dt(dL/dqdot) - dL/dq = 0.
+
+Check: L = m xdot^2/2 - V(x) returns m xddot = -dV/dx, i.e. F = ma.
+""",
+  eqs=["S[q] = ∫L(q,q̇,t)dt", "δS = 0", "q_ε = q + εη, η(t₁)=η(t₂)=0",
+       "d/dt(∂L/∂q̇) − ∂L/∂q = 0"],
+  ex_tr=["Serbest parçacık: L = ½mẋ². ∂L/∂x = 0 olduğundan "
+         "d/dt(mẋ) = 0, yani mẋ = sabit — momentum korunur ve yol "
+         "düz çizgidir. En küçük etki ilkesinin en yalın sonucu budur: "
+         "kuvvet yoksa etkiyi durağan yapan yol doğrudur."],
+  ex_en=["Free particle: L = m xdot^2/2 gives d/dt(m xdot) = 0, so momentum "
+         "is conserved and the path is a straight line."],
+  kw="euler lagrange denklemi turetimi|euler-lagrange turetimi|"
+     "euler lagrange nasil elde edilir|euler lagrange ispati|"
+     "en kucuk etki ilkesinden euler lagrange|"
+     "lagrange fonksiyonundan euler lagrange|varyasyon hesabi turetim|"
+     "etki fonksiyoneli varyasyon|hamilton ilkesi turetim|"
+     "delta S = 0|parcali integrasyon varyasyon|"
+     "varyasyon hesabinin temel onermesi|"
+     "euler-lagrange equation derivation|principle of least action|"
+     "calculus of variations derivation",
+  related="varyasyon|lagrange|lagrange_hamilton_gecis|noether|"
+          "hamilton_jacobi"),
+
+T("hamilton_jacobi",
+  "Hamilton-Jacobi Denklemi ve Dalga Fonksiyonuyla İlişkisi",
+  "The Hamilton-Jacobi Equation and its Link to the Wave Function", """
+Klasik mekaniğin kuantum mekaniğine EN ÇOK benzeyen biçimi budur.
+Schrödinger'in denklemini bulurken izlediği yol da buydu.
+
+**1. Kanonik dönüşüm fikri.**
+Kanonik bir dönüşüm `(q,p) → (Q,P)`, üretici fonksiyon `S(q,P,t)` ile
+tanımlanır:
+    p = ∂S/∂q,     Q = ∂S/∂P,     K = H + ∂S/∂t
+Burada `K` yeni Hamiltonyendir. Şimdi cesur bir soru: `K = 0` yapacak
+bir dönüşüm seçebilir miyiz? Seçebilirsek yeni denklemler
+`Q̇ = ∂K/∂P = 0`, `Ṗ = −∂K/∂Q = 0` olur — yani bütün yeni değişkenler
+SABİTTİR ve hareket tamamen çözülmüş demektir.
+
+**2. Hamilton-Jacobi denklemi.**
+`K = 0` koşulunu yazalım:
+    **H(q, ∂S/∂q, t) + ∂S/∂t = 0**
+Bu, `S(q,t)` için bir kısmi diferansiyel denklemdir. Tek parçacık ve
+`H = p²/2m + V` için açık biçimi:
+    (1/2m)(∂S/∂x)² + V(x) + ∂S/∂t = 0
+
+**3. `S` nedir? — ETKİNİN kendisidir.**
+`dS/dt = ∂S/∂t + (∂S/∂q)q̇ = −H + pq̇ = L` olduğundan
+    S = ∫L dt
+Yani üretici fonksiyon, en küçük etki ilkesindeki ETKİDİR (Hamilton'un
+asal fonksiyonu). Klasik mekanik böylece tek bir skaler alanın kısmi
+diferansiyel denklemine indirgenir.
+
+**4. Neden bu biçim dalgaları çağrıştırır?**
+`S = sabit` yüzeyleri uzayda ilerleyen bir DALGA CEPHESİ gibi hareket
+eder ve parçacık yörüngeleri bu cephelere diktir (`p = ∇S`). Bu, geometrik
+optikteki ışın-dalga ilişkisinin tıpatıp aynısıdır: **Hamilton-Jacobi,
+mekaniğin "geometrik optiği"dir.** Optikte ışınlar dalga denkleminin
+kısa dalga boyu limitiyse, mekanikte de yörüngeler bir DALGA
+denkleminin limiti olmalıdır. Schrödinger'in çıkış noktası buydu.
+
+**5. Geçiş: `ψ = A·e^(iS/ħ)`.**
+Dalga fonksiyonunu genlik ve fazla yazalım; fazın `S/ħ` olması boyut
+gereğidir (`S` etki boyutundadır, `ħ` de öyle):
+    ψ(x,t) = A(x,t)·e^(iS(x,t)/ħ)
+Bunu zamana bağlı Schrödinger denklemine koyalım:
+    iħ ∂ψ/∂t = −(ħ²/2m)∇²ψ + Vψ
+Türevleri alalım:
+    ∂ψ/∂t = (∂A/∂t + (i/ħ)A ∂S/∂t)·e^(iS/ħ)
+    ∇ψ = (∇A + (i/ħ)A∇S)·e^(iS/ħ)
+    ∇²ψ = (∇²A + (2i/ħ)∇A·∇S + (i/ħ)A∇²S − (1/ħ²)A(∇S)²)·e^(iS/ħ)
+Yerine koyup `e^(iS/ħ)` sadeleşince, GERÇEL ve SANAL kısımlar iki ayrı
+denklem verir:
+
+  * **Gerçel kısım:**
+        ∂S/∂t + (∇S)²/2m + V − (ħ²/2m)(∇²A/A) = 0
+  * **Sanal kısım:**
+        ∂A²/∂t + ∇·(A²∇S/m) = 0
+
+**6. Klasik limit — çember kapanıyor.**
+Gerçel kısımda `ħ → 0` alalım (ya da `A` yavaş değişiyorsa son terim
+ihmal edilir):
+    **∂S/∂t + (∇S)²/2m + V = 0**
+Bu tam olarak 2. adımdaki Hamilton-Jacobi denklemidir. Yani:
+**Schrödinger denklemi, klasik Hamilton-Jacobi denklemini `ħ → 0`
+limitinde geri verir.** Atılan terim
+    Q = −(ħ²/2m)(∇²A/A)
+"kuantum potansiyeli" adını alır ve klasiklikten sapmanın tam ölçüsüdür.
+
+Sanal kısım ise `ρ = A² = |ψ|²` ve `v = ∇S/m` yazılınca
+    ∂ρ/∂t + ∇·(ρv) = 0
+yani OLASILIK SÜREKLİLİK denklemidir — Born kuralının korunumu buradan
+gelir.
+
+**7. Ters yön: Hamilton-Jacobi'den Schrödinger'e.**
+Schrödinger'in mantığı şuydu: `S`nin sağladığı denklem doğrusal DEĞİLDİR
+((∇S)² terimi yüzünden), oysa girişim gözlenen bir olgudur ve girişim
+DOĞRUSAL bir denklem gerektirir. `ψ = e^(iS/ħ)` koyup `S = −iħ ln ψ`
+yazarsak, `(∇S)²` terimi `−ħ²(∇ψ)²/ψ²` olur — hâlâ doğrusal değil. Ama
+`(∇S)² → −ħ²∇²ψ/ψ` seçimi yapılırsa denklem
+    iħ ∂ψ/∂t = −(ħ²/2m)∇²ψ + Vψ
+biçimine gelir ve **doğrusaldır**. Bu seçim, `p → −iħ∇` operatör
+karşılığının ta kendisidir. Yani kanonik kuantumlama, "Hamilton-Jacobi
+denklemini doğrusallaştıran" işlemdir.
+
+**8. Zincirin tamamı.**
+    δS = 0
+      → Euler-Lagrange: d/dt(∂L/∂q̇) = ∂L/∂q
+      → Legendre: H = Σpq̇ − L
+      → Hamilton-Jacobi: H(q,∂S/∂q,t) + ∂S/∂t = 0
+      → ψ = A e^(iS/ħ) ve doğrusallaştırma
+      → Schrödinger: iħ∂ψ/∂t = Ĥψ,  Ĥ = −(ħ²/2m)∇² + V
+Klasik mekanikten kuantum mekaniğine giden yolun tamamı budur.
+
+**Nerede dikkat:** 7. adım bir İSPAT değil, bir GEREKÇEDİR.
+Hamilton-Jacobi'den Schrödinger'i mantıksal zorunlulukla çıkaramazsınız;
+kuantum mekaniği klasik mekaniğin bir sonucu değildir. Yapılan şey,
+doğru denklemi BULMAYA yarayan bir kılavuzdur — doğruluğu deneyle
+sınanır. Ters yön (Schrödinger → Hamilton-Jacobi, 6. adım) ise gerçek
+bir matematiksel limittir.
+""", """
+The Hamilton-Jacobi equation is the form of classical mechanics closest to
+quantum mechanics, and it is the road Schrodinger travelled.
+
+1. A canonical transformation with generating function S(q,P,t) gives
+   p = dS/dq and K = H + dS/dt. Demand K = 0.
+2. That condition is the Hamilton-Jacobi equation:
+   H(q, dS/dq, t) + dS/dt = 0, i.e. (dS/dx)^2/2m + V + dS/dt = 0.
+3. S is the action itself: dS/dt = L, so S = int L dt.
+4. Surfaces of constant S move like wavefronts, with trajectories normal to
+   them - mechanics' "geometrical optics".
+5. Write psi = A exp(iS/hbar) and substitute into the Schrodinger equation.
+   The real part gives dS/dt + (grad S)^2/2m + V - (hbar^2/2m)(lap A)/A = 0;
+   the imaginary part gives the continuity equation for rho = A^2.
+6. As hbar -> 0 the real part becomes exactly Hamilton-Jacobi. The dropped
+   term is the quantum potential.
+7. Conversely, linearising Hamilton-Jacobi via psi = exp(iS/hbar) and the
+   replacement (grad S)^2 -> -hbar^2 (lap psi)/psi produces the Schrodinger
+   equation. That replacement IS the substitution p -> -i hbar grad.
+8. Caveat: step 7 is a heuristic, not a proof. Quantum mechanics is not a
+   consequence of classical mechanics; only the hbar -> 0 direction is a
+   genuine limit.
+""",
+  eqs=["H(q, ∂S/∂q, t) + ∂S/∂t = 0", "(1/2m)(∂S/∂x)² + V + ∂S/∂t = 0",
+       "S = ∫L dt", "p = ∇S", "ψ = A·e^(iS/ħ)",
+       "∂ρ/∂t + ∇·(ρ∇S/m) = 0", "Q = −(ħ²/2m)(∇²A/A)"],
+  ex_tr=["Serbest parçacık: V = 0 için Hamilton-Jacobi denklemi "
+         "(1/2m)(∂S/∂x)² + ∂S/∂t = 0. Ayrıştırarak S = px − Et "
+         "denenirse p²/2m = E çıkar. Karşılık gelen dalga "
+         "ψ = A·e^(i(px−Et)/ħ) = A·e^(i(kx−ωt)) — düzlem dalga, "
+         "p = ħk ve E = ħω ile. de Broglie bağıntıları "
+         "Hamilton-Jacobi'nin en basit çözümünden doğrudan okunuyor."],
+  ex_en=["Free particle: S = px - Et solves Hamilton-Jacobi with p^2/2m = E, "
+         "and psi = A exp(i(px-Et)/hbar) is the plane wave, giving p = hbar k "
+         "and E = hbar omega."],
+  kw="hamilton jacobi denklemi|hamilton-jacobi denklemi turetimi|"
+     "hamilton jacobi nasil elde edilir|hamilton jacobi ispati|"
+     "hamiltonun asal fonksiyonu|uretici fonksiyon kanonik donusum|"
+     "hamilton jacobi dalga fonksiyonu iliskisi|"
+     "hamilton jacobiden schrodingere|klasik mekanikten dalga denklemine|"
+     "kuantum potansiyeli|eylem ve dalga fonksiyonu|"
+     "S = sabit dalga cephesi|mekanigin geometrik optigi|"
+     "psi = A e^(iS/hbar)|schrodinger denklemini nasil buldu|"
+     "hamilton-jacobi equation|hamiltons principal function|"
+     "quantum potential|from hamilton-jacobi to schrodinger|"
+     "wkb connection classical action",
+  related="lagrange_hamilton_gecis|euler_lagrange_turetim|"
+          "kanonik_kuantumlama|kanonik_donusum|klasik_limit|"
+          "poisson_komutator"),
+
 T("klasik_limit", "Kuantumdan Klasiğe: Karşılık Gelme İlkesi",
   "From Quantum to Classical: the Correspondence Principle", """
 Kuantum mekaniği doğruysa, günlük ölçekte neden klasik fizik işliyor?

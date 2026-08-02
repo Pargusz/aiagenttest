@@ -791,6 +791,19 @@ def zor_bosluklari():
 #
 # Ilk olcum 2/20 idi. Icerik yazildikca ve yonlendirme duzeldikce yukseldi.
 KURAMSAL_SORULAR = [
+ # Dis degerlendirme: bu soru DORT asama istiyor, sistem tek kart
+ # donduruyordu — "sorunun yaklasik %25'i cevaplanmis". Olcut, dort
+ # asamanin da cevapta bulunmasi (bkz. bilesik.py).
+ ("Lagrange fonksiyonundan başlayarak Euler-Lagrange denklemlerini elde "
+  "ediniz. Daha sonra Legendre dönüşümünü kullanarak Hamilton fonksiyonuna "
+  "geçişi matematiksel olarak ispatlayınız. Hamilton-Jacobi denklemini "
+  "türeterek bu denklemin dalga fonksiyonu ile olan ilişkisini açıklayınız "
+  "ve son olarak Schrödinger denkleminin Hamiltonyen operatörünü klasik "
+  "Hamilton fonksiyonundan nasıl elde ettiğinizi tüm ara adımlarıyla "
+  "birlikte gösteriniz.",
+  ["δS = 0", "d/dt(∂L/∂q̇) − ∂L/∂q = 0", "PARÇALI İNTEGRASYON"],
+  ["H(q, ∂S/∂q, t) + ∂S/∂t = 0", "e^(iS", "kuantum potansiyeli"]),
+
  # Dis degerlendirmenin (GPT) yakaladigi genel kusur: soru HANGI kavrami
  # istiyorsa ona degil, tanidigi en guclu anahtar kelimeye gidiyordu.
  # Asagidaki iki soru da "Klasik Kinetik Enerjiden Kuantum Operatorune"

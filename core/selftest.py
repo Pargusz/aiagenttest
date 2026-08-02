@@ -1591,6 +1591,129 @@ def run():
     check("hedef: Dirac kuralinin siniri soyleniyor",
           lambda: knowledge.get("poisson_komutator")["tr"],
           contains("Groenewold", "sıralama"))
+
+    # ── CEVAP, SORUNUN KAPSAMI KADAR OLMALI ─────────────────────────
+    # Dis degerlendirmenin yakaladigi ucuncu ve en genel kusur: dort
+    # asamali bir soruya tek kart donuyordu ("sorunun %25'i
+    # cevaplanmis"). Kalip her soruda ayni: "once X, sonra Y,
+    # ardindan Z". Cozum asamalara ayirip SIRAYLA cevaplamak.
+    from . import bilesik as _bil
+    _S_DORT = ("Lagrange fonksiyonundan baslayarak Euler-Lagrange "
+               "denklemlerini elde ediniz. Daha sonra Legendre "
+               "donusumunu kullanarak Hamilton fonksiyonuna gecisi "
+               "matematiksel olarak ispatlayiniz. Hamilton-Jacobi "
+               "denklemini tureterek bu denklemin dalga fonksiyonu ile "
+               "olan iliskisini aciklayiniz ve son olarak Schrodinger "
+               "denkleminin Hamiltonyen operatorunu klasik Hamilton "
+               "fonksiyonundan nasil elde ettiginizi gosteriniz.")
+    check("cekirdek: euler-lagrange turetimi yuklu",
+          lambda: bool(knowledge.get("euler_lagrange_turetim")), True)
+    check("cekirdek: hamilton-jacobi konusu yuklu",
+          lambda: bool(knowledge.get("hamilton_jacobi")), True)
+    check("bilesik: dort asama ayirt ediliyor",
+          lambda: len(_bil.asamalar(_S_DORT)), 4)
+    # Asamalarin ikincisi ve sonrasi neredeyse her zaman artgonderimli
+    # ("BU formulun ..."); baglami devralmazsa alakasiz konuya duser.
+    # Artgonderimli asama ("BU formulun ...") oznesini onceki asamadan
+    # alir; devralmazsa 28 puanla 'kara cisim isimasi'na dusuyordu.
+    check("bilesik: artgonderimli asama baglami devraliyor",
+          lambda: [k for _p, k in _bil.kapsam(
+              "Newton'un ikinci yasasindan baslayarak Lagrange "
+              "denklemlerini ispatla. Daha sonra bu formulun Hamilton "
+              "formalizmine nasil donustugunu tum ara adimlarla "
+              "goster.")][-1],
+          "lagrange_hamilton_gecis")
+    # ...ama baglam HER zayif asamaya eklenmemeli. "Born kuralini
+    # turet" tek basina born_kurali'yi 55 puanla buluyor (esigin
+    # hemen altinda); baglama dusurulunce alakasiz bir konuya
+    # kayiyordu. Kendi oznesini adlandiran asama kendi eslesmesini
+    # korur.
+    check("bilesik: kendi oznesini tasiyan asama baglamla bozulmuyor",
+          lambda: [k for _p, k in _bil.kapsam(
+              "Hermit operatorlerin ozdegerlerinin neden gercel "
+              "oldugunu ayrintili olarak kanitla. Ardindan Born "
+              "kuralini butun ara adimlariyla turet.")],
+          ["hermit_operator", "born_kurali"])
+    check("bilesik: dort asama dort AYRI konuya gidiyor",
+          lambda: [k for _p, k in _bil.kapsam(_S_DORT)],
+          ["euler_lagrange_turetim", "lagrange_hamilton_gecis",
+           "hamilton_jacobi", "kanonik_kuantumlama"])
+    # MUHAFAZAKARLIK: tek asamali soru ve sayisal problem bu yola
+    # girmemeli, yoksa calisan cevaplari bozar.
+    # Asamalar AYNI konuya cikiyorsa bilesik cevap uretmenin anlami
+    # yok; eski yol zaten o karti verecek. Bolmek ugruna bolmemeli.
+    check("bilesik: tek konuya cikan asamalar bilesige girmiyor",
+          lambda: _bil.coz("Noether teoremini varyasyon hesabindan "
+                           "baslayarak matematiksel olarak ispatla. Daha "
+                           "sonra zaman simetrisinin enerji korunumuna "
+                           "nasil yol actigini goster.", "tr"), None)
+    check("bilesik: sayisal problem bilesige girmiyor",
+          lambda: _bil.coz("20 m/s hizla giden 5 kg cismin kinetik "
+                           "enerjisini hesapla. Daha sonra ayni cismin "
+                           "10 m yuksekten dususundeki potansiyel "
+                           "enerjisini bul ve karsilastir.", "tr"), None)
+    check("bilesik: kisa soru bilesige girmiyor",
+          lambda: _bil.asamalar("entropi nedir"), [])
+    # Asama sayisinda UST SINIR yok: 10 asamali soruda onunun da
+    # kendi bolumu olmali. Bir asamanin en iyi konusu daha onceki bir
+    # asamaya gittiyse asama dusurulmez, SIRADAKI adayina gecilir —
+    # yoksa "belirsizlik ilkesinin ispatini yaz" asamasi sessizce
+    # kayboluyordu (olculdu).
+    _S_ON = ("En kucuk etki ilkesinden Euler-Lagrange denklemini turet. "
+             "Daha sonra Legendre donusumuyle Hamilton formalizmine "
+             "gecisi ispatla. Ardindan Poisson parantezinden komutator "
+             "bagintisinin nasil elde edildigini goster. Sonrasinda "
+             "Noether teoremini ispatla. Bunun ardindan Hamilton-Jacobi "
+             "denklemini turet. Devaminda potansiyel enerji teriminin "
+             "neden carpma operatoru oldugunu acikla. Daha sonra Hermit "
+             "operatorlerin ozdegerlerinin neden gercel oldugunu "
+             "kanitla. Ardindan Born kuralini turet. Bunun uzerine "
+             "olasilik akimi ifadesini cikar. Ve son olarak belirsizlik "
+             "ilkesinin ispatini yaz.")
+    check("bilesik: on asama ayirt ediliyor",
+          lambda: len(_bil.asamalar(_S_ON)), 10)
+    check("bilesik: on asamanin onu da AYRI bolum aliyor",
+          lambda: len(re.findall(r"^## ", _bil.coz(_S_ON, "tr") or "",
+                                 re.M)), 10)
+    check("bilesik: on asamada konular tekrar etmiyor",
+          lambda: (lambda ks: len(ks) == len(set(ks)))(
+              [k for _p, k in _bil.kapsam(_S_ON)]), True)
+    # Canli yol: dort asamanin icerigi gercekten cevaba giriyor mu
+    check("bilesik: canli cevap dort asamayi da tasiyor",
+          lambda: brain.respond(_S_DORT, session="_test_dort").text,
+          contains("δS = 0", "PARÇALI İNTEGRASYON",
+                   "Σ p_i q̇_i − L", "H(q, ∂S/∂q, t) + ∂S/∂t = 0",
+                   "−(ħ²/2m)∇²"))
+    check("bilesik: cevap asama basliklariyla numaralaniyor",
+          lambda: brain.respond(_S_DORT, session="_test_dort").text,
+          contains("1. Aşama", "2. Aşama", "3. Aşama", "4. Aşama"))
+    # Euler-Lagrange gercekten VARYASYONLA turetiliyor mu
+    check("euler-lagrange: varyasyon adimlari tam",
+          lambda: knowledge.get("euler_lagrange_turetim")["tr"],
+          contains("η(t₁) = η(t₂) = 0", "PARÇALI İNTEGRASYON",
+                   "temel önermesi"))
+    check("euler-lagrange: Newton saglamasi var",
+          lambda: knowledge.get("euler_lagrange_turetim")["tr"],
+          contains("F = ma"))
+    # Hamilton-Jacobi'nin dalga fonksiyonuyla iliskisi
+    check("hamilton-jacobi: dalga fonksiyonu baglantisi kuruluyor",
+          lambda: knowledge.get("hamilton_jacobi")["tr"],
+          contains("A(x,t)·e^(iS(x,t)/ħ)", "kuantum potansiyeli",
+                   "SÜREKLİLİK"))
+    check("hamilton-jacobi: klasik limit ħ→0 gosteriliyor",
+          lambda: knowledge.get("hamilton_jacobi")["tr"],
+          contains("ħ → 0", "∂S/∂t + (∇S)²/2m + V = 0"))
+    # Durustluk: HJ'den Schrodinger'e gecis bir ISPAT degil
+    check("hamilton-jacobi: gecisin ispat olmadigi soyleniyor",
+          lambda: knowledge.get("hamilton_jacobi")["tr"],
+          contains("İSPAT değil", "deneyle"))
+    # Dis degerlendirmenin iki akademik nuansi
+    check("hamilton: H = E kosulu aciklaniyor",
+          lambda: knowledge.get("hamilton")["tr"],
+          contains("skleronom", "hiza bagli olmamali"))
+    check("hamilton: Ĥ kanonik kuantumlama TEMSILI deniyor",
+          lambda: knowledge.get("hamilton")["tr"],
+          contains("KANONIK KUANTUMLAMA", "TEMSILIDIR"))
     check("cekirdek: klasik limit konusu yuklu",
           lambda: bool(knowledge.get("klasik_limit")), True)
     check("cekirdek: legendre donusumu konusu yuklu",
@@ -1749,7 +1872,7 @@ def run():
           lambda: _prb.fiziksel_gecersiz("20 dereceden 80 dereceye"), None)
 
     check("kuramsal: turetim sorulari gerilemiyor",
-          lambda: _olcum.kuramsal_puani()[0] >= 17, True)
+          lambda: _olcum.kuramsal_puani()[0] >= 21, True)
 
 
     # ── "Sorulan buyukluk, verilmemis olandir" ──────────────────────
@@ -2157,6 +2280,10 @@ def run():
           lambda: nlu.classify("beni unut")[0], "beni_unut")
 
     def profil_akisi():
+        # Once TAMPONU bosalt, sonra unut. Ters sirada, onceki
+        # testlerin bekleyen ilgi-alani yazimlari forget()'ten sonra
+        # diske inip silinenleri geri getiriyordu (olculdu).
+        db.flush_writes()
         _pr.forget()
         db.flush_writes()
         brain.respond("adim Polat", session="_test_pr1")
