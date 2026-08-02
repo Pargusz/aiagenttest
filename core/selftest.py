@@ -780,6 +780,11 @@ def run():
     # ve sohbet 2-3 mesajda tikaniyordu.
     def _akis():
         oturum = "_test_akis"
+        # Oturum temizlenmezse sonuc onceki kosulardan kalan gecmise
+        # bagli oluyordu; test bazen geciyor bazen kaliyordu ve
+        # gercek bir kusuru (devam cevabinin ayni metni tekrar
+        # etmesi) gizliyordu.
+        _oturum_temizle(oturum)
         ilk = brain.respond("ozel gorelilik nedir", session=oturum).text
         ikinci = brain.respond("peki bunun sonuclari neler",
                                session=oturum).text
@@ -792,6 +797,33 @@ def run():
             return "ornek istegi karsilanmadi"
         return "akiyor"
     check("sohbet: devam sorulari ayni cevabi tekrarlamiyor", _akis, "akiyor")
+    # Devam cevabi konunun AYNI govdesinden paragraf secer; ilk cevap
+    # govdenin tamamini verdiyse secilenler zaten okunmus metindir.
+    # Gosterilmis paragraf bir daha secilmemeli.
+    def _tekrar_yok():
+        oturum = "_test_akis2"
+        _oturum_temizle(oturum)
+        ilk = brain.respond("ozel gorelilik nedir", session=oturum).text
+        iki = brain.respond("peki bunun sonuclari neler",
+                            session=oturum).text
+        # Olcut ANLATIM govdesidir. Kaynakca listesi iki cevapta da
+        # ayni cikar ve bu dogaldir — kullanicinin sikayet ettigi sey
+        # alintilarin degil, ANLATIMIN tekrar etmesiydi. Bu yuzden
+        # karsilastirma "Kaynaklar" basligindan onceki kisma yapilir.
+        def _govde(t):
+            # Baslik iki bicimde uretiliyor: "**Kaynaklar:**" ve
+            # "**Kaynaklar**". Onekle ayirmak ikisini de kapsar.
+            for bas in ("**Kaynaklar", "**Sources", "_Kaynak konu:"):
+                t = t.split(bas)[0]
+            return t
+        ilk_g, iki_g = _govde(ilk), _govde(iki)
+        for par in [x.strip() for x in iki_g.split("\n\n") if x.strip()]:
+            n = nlu.norm(par)
+            if len(n) >= 120 and n[:120] in nlu.norm(ilk_g):
+                return "tekrar: " + par[:40]
+        return "temiz"
+    check("sohbet: devam cevabi gosterilen paragrafi tekrarlamiyor",
+          _tekrar_yok, "temiz")
     check("sohbet: yon kelimesi konu sanilmiyor",
           lambda: brain._followup_subject(
               "bir ornek verir misin", {"last_subject": "entropi"}), "entropi")
@@ -1675,6 +1707,72 @@ def run():
     check("bilesik: on asamanin onu da AYRI bolum aliyor",
           lambda: len(re.findall(r"^## ", _bil.coz(_S_ON, "tr") or "",
                                  re.M)), 10)
+    # ── ASAMA ICINDE SAYILAN KAVRAMLAR ─────────────────────────────
+    # Dis degerlendirme, arastirma seviyesi bir soruda 10 eksik saydi.
+    # Kok neden: tek bir ASAMA kendi icinde birden cok kavram sayiyor
+    # ("Poisson parantezi, kanonik donusumler VE Hamilton akisindan
+    # baslayarak..."), sistem ise asama basina tek konu veriyordu.
+    # Ileri duzey sorular kavramlari boyle SIRALAR.
+    _S_ARS = ("Klasik mekanikte Poisson parantezi, kanonik donusumler ve "
+              "Hamilton akisindan baslayarak kuantum mekanigindeki "
+              "operator cebirinin neden zorunlu olarak ortaya ciktigini "
+              "matematiksel olarak aciklayiniz. Stone-von Neumann "
+              "teoremi, Weyl kuantumlamasi ve Dirac kuantumlama kurali "
+              "arasindaki iliskiyi degerlendirerek konum ve momentum "
+              "operatorlerinin neden Schrodinger gosteriminde benzersiz "
+              "oldugunu ispatlayiniz. Ardindan bu yapinin Heisenberg "
+              "belirsizlik ilkesi, Ehrenfest teoremi ve Schrodinger "
+              "denklemi ile olan baglantisini aciklayiniz.")
+    for _k in ("hamilton_akisi", "weyl_kuantumlama", "stone_von_neumann",
+               "ehrenfest_teoremi"):
+        check("cekirdek: %s konusu yuklu" % _k,
+              (lambda k: (lambda: bool(knowledge.get(k))))(_k), True)
+    check("bilesik: uc asama sekiz konuya aciliyor",
+          lambda: len(_bil.asamalar(_S_ARS)), 3)
+    check("bilesik: asama icindeki sayim ayristiriliyor",
+          lambda: len([k for _p, k in _bil.kapsam(_S_ARS) if k]) >= 7, True)
+    check("bilesik: sayilan kavramlarin hepsi cevapta",
+          lambda: brain.respond(_S_ARS, session="_test_ars").text,
+          contains("X_H", "Weyl eşlemesi", "üniter eşdeğer",
+                   "d⟨x̂⟩/dt = ⟨p̂⟩/m", "Δx·Δp ≥ ħ/2"))
+    check("bilesik: operator cebirinin ZORUNLULUGU gerekcelendiriliyor",
+          lambda: brain.respond(_S_ARS, session="_test_ars").text,
+          contains("Wigner teoremi", "Stone teoremi"))
+    # Hamilton akisi: gozlenebilir = uretec
+    check("hamilton akisi: simplektik yapi ve uretec anlatiliyor",
+          lambda: knowledge.get("hamilton_akisi")["tr"],
+          contains("ω = Σ", "ι_{X_H} ω = dH", "ÖTELEME", "DÖNME"))
+    # Weyl: siralama, Wigner, Moyal, Groenewold
+    check("weyl: siralama belirsizligi kapatiliyor",
+          lambda: knowledge.get("weyl_kuantumlama")["tr"],
+          contains("(q̂p̂ + p̂q̂)/2", "Wigner", "Moyal"))
+    check("weyl: Dirac kuralinin ħ mertebesi soyleniyor",
+          lambda: knowledge.get("weyl_kuantumlama")["tr"],
+          contains("{f,g} + O(ħ²)", "Groenewold"))
+    # Stone-von Neumann: dogru ifade + kosullarin gerekliligi
+    check("stone-von neumann: sinirli operatorle olamayacagi soyleniyor",
+          lambda: knowledge.get("stone_von_neumann")["tr"],
+          contains("Wintner-Wielandt", "SINIRSIZ"))
+    check("stone-von neumann: Weyl bicimi veriliyor",
+          lambda: knowledge.get("stone_von_neumann")["tr"],
+          contains("Û(a)V̂(b) = e^(−iab/ħ)"))
+    check("stone-von neumann: teoremin NE DEMEDIGI yaziliyor",
+          lambda: knowledge.get("stone_von_neumann")["tr"],
+          contains("DEMEZ", "EŞDEĞERLİK SINIFI"))
+    check("stone-von neumann: alan kuraminda cokmesi anlatiliyor",
+          lambda: knowledge.get("stone_von_neumann")["tr"],
+          contains("Haag", "SONLU serbestlik"))
+    # Ehrenfest: turetim + klasik limitin GERCEK kosulu
+    check("ehrenfest: turetim adimlari tam",
+          lambda: knowledge.get("ehrenfest_teoremi")["tr"],
+          contains("= iħp̂/m", "d⟨p̂⟩/dt = −⟨∂V/∂x⟩"))
+    check("ehrenfest: <F(x)> ile F(<x>) ayrimi yapiliyor",
+          lambda: knowledge.get("ehrenfest_teoremi")["tr"],
+          contains("⟨F(x̂)⟩ ≠ F(⟨x̂⟩)", "en fazla İKİNCİ derecedendir"))
+    check("ehrenfest: klasik limiti ISPATLAMADIGI soyleniyor",
+          lambda: knowledge.get("ehrenfest_teoremi")["tr"],
+          contains("İSPATLAMAZ", "dekoherens"))
+
     check("bilesik: on asamada konular tekrar etmiyor",
           lambda: (lambda ks: len(ks) == len(set(ks)))(
               [k for _p, k in _bil.kapsam(_S_ON)]), True)
@@ -1872,7 +1970,7 @@ def run():
           lambda: _prb.fiziksel_gecersiz("20 dereceden 80 dereceye"), None)
 
     check("kuramsal: turetim sorulari gerilemiyor",
-          lambda: _olcum.kuramsal_puani()[0] >= 21, True)
+          lambda: _olcum.kuramsal_puani()[0] >= 22, True)
 
 
     # ── "Sorulan buyukluk, verilmemis olandir" ──────────────────────

@@ -791,6 +791,22 @@ def zor_bosluklari():
 #
 # Ilk olcum 2/20 idi. Icerik yazildikca ve yonlendirme duzeldikce yukseldi.
 KURAMSAL_SORULAR = [
+ # Arastirma seviyesi soru: bir ASAMA kendi icinde birden cok kavram
+ # SAYIYOR ("Poisson parantezi, kanonik donusumler VE Hamilton
+ # akisindan..."). Asama basina tek konu verilince dis degerlendirme
+ # 10 eksik saydi. Olcut: sayilan kavramlarin cevapta bulunmasi.
+ ("Klasik mekanikte Poisson parantezi, kanonik dönüşümler ve Hamilton "
+  "akışından başlayarak kuantum mekaniğindeki operatör cebirinin neden "
+  "zorunlu olarak ortaya çıktığını matematiksel olarak açıklayınız. "
+  "Stone-von Neumann teoremi, Weyl kuantumlaması ve Dirac kuantumlama "
+  "kuralı arasındaki ilişkiyi değerlendirerek konum ve momentum "
+  "operatörlerinin neden Schrödinger gösteriminde benzersiz (üniter "
+  "eşdeğerlik anlamında) olduğunu ispatlayınız. Ardından bu yapının "
+  "Heisenberg belirsizlik ilkesi, Ehrenfest teoremi ve Schrödinger "
+  "denklemi ile olan bağlantısını ayrıntılı biçimde açıklayınız.",
+  ["X_H", "Weyl eşlemesi", "Wigner teoremi"],
+  ["üniter eşdeğer", "d⟨x̂⟩/dt = ⟨p̂⟩/m", "Δx·Δp ≥ ħ/2"]),
+
  # Dis degerlendirme: bu soru DORT asama istiyor, sistem tek kart
  # donduruyordu — "sorunun yaklasik %25'i cevaplanmis". Olcut, dort
  # asamanin da cevapta bulunmasi (bkz. bilesik.py).

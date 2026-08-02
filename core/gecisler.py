@@ -707,6 +707,437 @@ quantum mechanics, and it is the road Schrodinger travelled.
           "kanonik_kuantumlama|kanonik_donusum|klasik_limit|"
           "poisson_komutator"),
 
+T("hamilton_akisi",
+  "Hamilton Akışı: Gözlenebilirler Neden Üreteçtir",
+  "Hamiltonian Flow: Why Observables Are Generators", """
+Operatör cebirinin kuantum mekaniğinde neden ZORUNLU olarak ortaya
+çıktığının cevabı burada başlar. Klasik mekanikte de gözlenebilirler
+birer ÜRETEÇTİR; kuantumlama bu yapıyı korur.
+
+**1. Faz uzayı bir simplektik manifolddur.**
+`(q,p)` uzayında temel nesne bir metrik değil, kapalı ve dejenere
+olmayan 2-formdur:
+    ω = Σᵢ dqᵢ ∧ dpᵢ
+Uzunluk kavramı yoktur; ALAN kavramı vardır. Klasik mekaniğin bütün
+yapısı bu formdan çıkar.
+
+**2. Hamilton vektör alanı.**
+Her `H` fonksiyonu bir vektör alanı tanımlar; tanım denklemi:
+    ι_{X_H} ω = dH
+Bileşenlerini açarsak:
+    X_H = (∂H/∂p)·∂/∂q − (∂H/∂q)·∂/∂p
+Bu alanın integral eğrileri tam olarak Hamilton denklemleridir:
+    q̇ = ∂H/∂p,     ṗ = −∂H/∂q
+Yani **hareket, `H`nin ürettiği akıştır** — `φ_t: (q₀,p₀) → (q(t),p(t))`.
+
+**3. Poisson parantezi bu akışın türevidir.**
+    {A,H} = ω(X_A, X_H) = X_H(A)
+ve dolayısıyla
+    dA/dt = {A,H}
+Parantez soyut bir tanım değil, "A niceliğinin H akışı boyunca ne kadar
+değiştiği"dir.
+
+**4. Her gözlenebilir kendi akışını üretir.**
+`H`ye özel bir şey yok. Herhangi bir `G` fonksiyonu sonsuz küçük bir
+kanonik dönüşüm üretir:
+    δq = ε ∂G/∂p,     δp = −ε ∂G/∂q
+Somut karşılıklar:
+    G = p    → uzayda ÖTELEME
+    G = L_z  → z ekseni etrafında DÖNME
+    G = H    → ZAMAN evrimi
+İşte klasik mekaniğin en derin ifadesi: **gözlenebilirler simetri
+dönüşümlerinin üreteçleridir.** Noether teoremi bunun sonucudur —
+`{G,H} = 0` ise hem `G` korunur hem de `G`nin ürettiği dönüşüm bir
+simetridir.
+
+**5. Akış kanonik yapıyı korur.**
+`φ_t` altında `ω` değişmez (`L_{X_H} ω = 0`, Cartan formülü ve `d²=0`
+ile). Sonuçları:
+  * Her `φ_t` bir KANONİK DÖNÜŞÜMDÜR.
+  * `ω^n/n!` hacim formu korunur — **Liouville teoremi**.
+  * Faz uzayı hacmi sıkıştırılamaz; istatistiksel mekaniğin temeli.
+
+**6. Kuantuma geçiş: akış ÜNİTER olur.**
+Şimdi asıl nokta. Klasikte `G` bir akış üretiyordu; kuantumda `Ĝ` bir
+ÜNİTER dönüşüm üretir:
+    Klasik:  A → A + ε{A,G}          (Poisson akışı)
+    Kuantum: Â → Â + (ε/iħ)[Â,Ĝ]     (üniter akış)
+    sonlu:   Û(ε) = e^(−iεĜ/ħ)
+Heisenberg denklemi bunun zaman hâlidir:
+    dÂ/dt = [Â,Ĥ]/(iħ)
+Klasik `dA/dt = {A,H}` ile satır satır aynı.
+
+**Operatör cebiri neden zorunlu?** Çünkü fizik "gözlenebilir = üreteç"
+yapısı üzerine kuruludur. Bir dönüşüm grubunun (öteleme, dönme, zaman
+evrimi) Hilbert uzayındaki temsili üniterdir (Wigner teoremi: simetriler
+üniter ya da anti-üniter olmalıdır ki olasılıklar korunsun). Üniter
+grupların üreteçleri de Hermit OPERATÖRLERDİR (Stone teoremi). Yani
+gözlenebilirlerin operatör olması bir tercih değil, "gözlenebilir üreteç
+demektir" cümlesinin Hilbert uzayındaki zorunlu karşılığıdır.
+""", """
+Operator algebra is forced because observables are generators already in
+classical mechanics.
+
+1. Phase space carries a symplectic form omega = sum dq ^ dp.
+2. Each H defines a Hamiltonian vector field by iota_X omega = dH, whose
+   integral curves are Hamilton's equations: motion is the flow of H.
+3. {A,H} = X_H(A), so dA/dt = {A,H} measures change along that flow.
+4. Any G generates an infinitesimal canonical transformation: p generates
+   translations, L_z rotations, H time evolution. Observables are the
+   generators of symmetries; Noether follows.
+5. The flow preserves omega, hence is canonical, and preserves phase volume
+   (Liouville).
+6. Quantum mechanically the same generator produces a UNITARY flow,
+   U = exp(-i eps G/hbar), and A -> A + (eps/i hbar)[A,G] replaces
+   A -> A + eps{A,G}. Heisenberg's equation mirrors dA/dt = {A,H}.
+
+By Wigner's theorem symmetries act unitarily, and by Stone's theorem the
+generators of unitary groups are self-adjoint operators. So "observable =
+generator" forces observables to be operators.
+""",
+  eqs=["ω = Σ dqᵢ ∧ dpᵢ", "ι_{X_H} ω = dH", "dA/dt = {A,H} = X_H(A)",
+       "δq = ε∂G/∂p, δp = −ε∂G/∂q", "Û(ε) = e^(−iεĜ/ħ)",
+       "dÂ/dt = [Â,Ĥ]/(iħ)"],
+  ex_tr=["Öteleme üreteci: G = p alalım. δq = ε·∂p/∂p = ε, δp = 0 — "
+         "yani sistem ε kadar ötelenir ve momentum değişmez. Kuantum "
+         "karşılığı Û(ε) = e^(−iεp̂/ħ) ve gerçekten "
+         "Û(ε)ψ(x) = ψ(x−ε). Momentum operatörünün −iħ∂/∂x olmasının "
+         "sebebi tam olarak budur: türev, ötelemenin üretecidir."],
+  ex_en=["Take G = p: the flow shifts q by epsilon and leaves p fixed. The "
+         "quantum counterpart is U = exp(-i eps p/hbar), which translates "
+         "psi, which is exactly why p = -i hbar d/dx."],
+  kw="hamilton akisi|hamiltonian flow|simplektik yapi|simplektik form|"
+     "faz uzayi geometrisi|hamilton vektor alani|"
+     "gozlenebilirler neden uretec|uretec ve simetri|"
+     "sonsuz kucuk kanonik donusum|kanonik donusum uretici|"
+     "operator cebiri neden ortaya cikar|operator cebiri zorunlulugu|"
+     "liouville teoremi faz hacmi|wigner teoremi|stone teoremi|"
+     "heisenberg denklemi klasik karsiligi|"
+     "symplectic form|hamiltonian vector field|generators of symmetries|"
+     "why operator algebra is necessary",
+  related="kanonik_donusum|poisson_komutator|noether|hamilton|"
+          "lagrange_hamilton_gecis|stone_von_neumann|ehrenfest_teoremi"),
+
+T("weyl_kuantumlama",
+  "Weyl Kuantumlaması, Moyal Parantezi ve Dirac Kuralının Sınırı",
+  "Weyl Quantization, the Moyal Bracket and the Limits of Dirac's Rule", """
+Dirac kuralı `{A,B} → [Â,B̂]/(iħ)` bir REÇETEDİR ve eksiktir: klasikte
+`qp = pq` iken kuantumda `q̂p̂ ≠ p̂q̂`dir, dolayısıyla `qp` niceliğinin
+karşılığı belirsizdir. Weyl kuantumlaması bu belirsizliği kapatan somut
+bir kuraldır.
+
+**1. Sıralama sorunu.**
+`qp` için hangisi? `q̂p̂`, `p̂q̂`, ya da ortalamaları? İlk ikisi Hermit
+bile değildir (`(q̂p̂)† = p̂q̂`). Hermitlik zorunlu olduğuna göre en az
+simetrikleştirme gerekir.
+
+**2. Weyl'in çözümü: ÜSTELDE simetrikleştir.**
+Klasik `f(q,p)` fonksiyonunun Fourier dönüşümü `f̃(σ,τ)` olsun. Weyl
+eşlemesi:
+    Ŵ[f] = (1/2π)² ∫∫ f̃(σ,τ) · e^(i(σq̂ + τp̂)) dσ dτ
+Püf nokta `e^(i(σq̂+τp̂))` ifadesidir: `q̂` ve `p̂` üstelin İÇİNDE
+toplanmış olduğu için sıralama kendiliğinden simetrikleşir. Sonuç her
+zaman Hermit'tir.
+
+**3. Ne veriyor?**
+    qp    → (q̂p̂ + p̂q̂)/2
+    q²p   → (q̂²p̂ + q̂p̂q̂ + p̂q̂²)/3
+    q^m p^n → bütün olası sıralamaların ortalaması
+Yani Weyl kuralı "tam simetrik sıralama"dır.
+
+**4. Ters yön: Wigner dönüşümü.**
+Eşleme tersine çevrilebilir. Bir `ρ̂` operatöründen faz uzayına dönen
+fonksiyon Wigner fonksiyonudur:
+    W(q,p) = (1/πħ)∫ ψ*(q+y) ψ(q−y) e^(2ipy/ħ) dy
+`W` gerçeldir ve marjinalleri doğru olasılıkları verir, ama NEGATİF
+değer alabilir — bu yüzden "yarı-olasılık" denir. Negatiflik, klasik bir
+olasılık dağılımının açıklayamayacağı kuantum davranışın ölçüsüdür.
+
+**5. Moyal parantezi: Dirac kuralının TAM hâli.**
+Weyl eşlemesi altında operatör çarpımı, faz uzayında bir "yıldız
+çarpımına" (`⋆`, Moyal çarpımı) karşılık gelir. Komütatörün karşılığı:
+    {{f,g}} = (f⋆g − g⋆f)/(iħ)
+Açılımı:
+    {{f,g}} = {f,g} + O(ħ²)
+**İşte Dirac kuralının kesin ifadesi budur:** Poisson parantezi, Moyal
+parantezinin `ħ → 0` limitidir. Dirac'ın `{A,B} → [Â,B̂]/(iħ)` kuralı
+ħ'nin BİRİNCİ mertebesinde doğrudur; daha yüksek mertebelerde düzeltme
+terimleri vardır.
+
+**6. Groenewold-van Hove teoremi — kuralın sınırı.**
+Bütün Poisson parantezlerini tam olarak komütatörlere taşıyan bir
+kuantumlama eşlemesi **YOKTUR** (derecesi 3 ve üstü polinomlar için).
+Yani Dirac kuralı bir Lie cebiri eşyapısı değildir; olamaz da. Weyl
+kuantumlaması iyi ve doğal bir seçimdir ama o da eşyapı kurmaz —
+`{{f,g}} ≠ {f,g}` olduğu yerler tam olarak bu teoremin dediği yerlerdir.
+
+**7. Üç kavramın ilişkisi (sık karıştırılır).**
+    Dirac kuralı      : NE olması gerektiğini söyler — cebir korunsun.
+                        Bir istektir, ħ'nin 1. mertebesinde sağlanır.
+    Weyl kuantumlaması: NASIL yapılacağını söyler — somut, sıralama
+                        belirsizliğini kapatan bir eşleme.
+    Stone-von Neumann : NEREDE yaşadığını söyler — bu cebirin temsili,
+                        üniter eşdeğerlik anlamında tektir.
+Üçü ayrı sorulara cevap verir: gereklilik, gerçekleme, teklik.
+""", """
+Dirac's rule is a recipe with a gap: classically qp = pq but q p operators do
+not commute, so the image of qp is ambiguous.
+
+1. q p, p q are not even Hermitian on their own.
+2. Weyl's fix is to symmetrise inside an exponential:
+   W[f] = (1/2pi)^2 int f~(s,t) exp(i(s q + t p)) ds dt.
+3. This gives qp -> (qp + pq)/2 and q^2 p -> (q^2 p + q p q + p q^2)/3: the
+   average over all orderings.
+4. The inverse map is the Wigner transform; W(q,p) is real with correct
+   marginals but can be negative - a quasi-probability.
+5. Operator products become a star product, and the commutator becomes the
+   Moyal bracket {{f,g}} = (f*g - g*f)/(i hbar) = {f,g} + O(hbar^2). This is
+   the precise content of Dirac's rule: the Poisson bracket is the hbar -> 0
+   limit of the Moyal bracket.
+6. Groenewold-van Hove: no quantisation map reproduces all Poisson brackets
+   exactly beyond quadratic order, so no exact Lie algebra homomorphism exists.
+7. The three notions answer different questions: Dirac says what should hold,
+   Weyl says how to realise it, Stone-von Neumann says the representation is
+   unique up to unitary equivalence.
+""",
+  eqs=["Ŵ[f] = (1/2π)²∫∫f̃(σ,τ)e^(i(σq̂+τp̂))dσdτ",
+       "qp → (q̂p̂ + p̂q̂)/2", "W(q,p) = (1/πħ)∫ψ*(q+y)ψ(q−y)e^(2ipy/ħ)dy",
+       "{{f,g}} = (f⋆g − g⋆f)/(iħ)", "{{f,g}} = {f,g} + O(ħ²)"],
+  ex_tr=["Harmonik salınıcının taban durumu için Wigner fonksiyonu "
+         "W(q,p) ∝ e^(−(mωq² + p²/mω)/ħ) — her yerde POZİTİF bir Gauss. "
+         "Bu yüzden koherent durumlar 'en klasik' kuantum durumlardır. "
+         "Buna karşılık birinci uyarılmış durumun Wigner fonksiyonu "
+         "orijinde NEGATİFTİR; klasik bir faz uzayı dağılımıyla "
+         "açıklanamaz."],
+  ex_en=["The oscillator ground state has a positive Gaussian Wigner "
+         "function, which is why coherent states are the most classical "
+         "states; the first excited state is negative at the origin."],
+  kw="weyl kuantumlamasi|weyl quantization|weyl siralama|"
+     "siralama belirsizligi|operator siralamasi|"
+     "wigner fonksiyonu|wigner donusumu|yari olasilik dagilimi|"
+     "moyal parantezi|moyal bracket|yildiz carpimi|star product|"
+     "groenewold van hove teoremi|dirac kuralinin siniri|"
+     "dirac kuantumlama kurali|faz uzayi kuantum mekanigi|"
+     "deformasyon kuantumlamasi|"
+     "wigner function|ordering ambiguity|deformation quantization",
+  related="poisson_komutator|kanonik_kuantumlama|stone_von_neumann|"
+          "hamilton_akisi|klasik_limit"),
+
+T("stone_von_neumann",
+  "Stone-von Neumann Teoremi: Gösterimin Tekliği",
+  "The Stone-von Neumann Theorem: Uniqueness of the Representation", """
+"Konum çarpma, momentum `−iħ∇`" seçimi neden ZORUNLUDUR? Cevap bu
+teoremdir — ama teoremin ne dediği sık sık fazla iddialı aktarılır.
+
+**1. Önce sorun: `[x̂,p̂] = iħ` sınırlı operatörlerle SAĞLANAMAZ.**
+Wintner-Wielandt teoremi: bir Banach cebirinde `[A,B] = cI` (c ≠ 0)
+olamaz. Kanıt fikri: `[A,Bⁿ] = ncB^(n−1)` bağıntısından
+`n|c|·‖B^(n−1)‖ ≤ 2‖A‖‖B‖·‖B^(n−1)‖` çıkar, yani `n|c| ≤ 2‖A‖‖B‖` her
+`n` için — imkânsız. Sonuç: `x̂` ve `p̂` SINIRSIZ olmak zorundadır ve
+sınırsız operatörlerin tanım kümesi sorunları vardır. Bu yüzden bağıntı
+titiz biçimde ÜSTEL hâlde yazılır.
+
+**2. Weyl biçimi.**
+    Û(a) = e^(−iap̂/ħ)   (öteleme),   V̂(b) = e^(ibx̂/ħ)   (faz çarpımı)
+İkisi de ÜNİTERDİR (sınırlı, tanım kümesi tüm uzay). Komütasyon bağıntısı
+şu biçime girer:
+    Û(a)V̂(b) = e^(−iab/ħ) V̂(b)Û(a)
+Bu, `[x̂,p̂] = iħ`nin matematiksel olarak kusursuz karşılığıdır.
+
+**3. Teorem.**
+Ayrılabilir bir Hilbert uzayında, Weyl bağıntılarının **kuvvetli
+sürekli** ve **indirgenemez** her temsili, `L²(ℝ)` üzerindeki Schrödinger
+temsirine **ÜNİTER EŞDEĞERDİR.** Yani bir `Ŝ` üniter operatörü vardır ve
+    Ŝ x̂_temsil Ŝ⁻¹ = (x ile çarpma),   Ŝ p̂_temsil Ŝ⁻¹ = −iħ d/dx
+
+**4. Ne DEMEZ.**
+"Başka operatör yoktur" DEMEZ. Momentum gösterimi (`p̂` çarpma, `x̂` ise
+`iħ∂/∂p`) ve Bargmann-Fock gösterimi bambaşka görünürler ama üçü de
+üniter eşdeğerdir; aradaki dönüşüm Fourier dönüşümüdür. Teoremin
+söylediği, bunların hepsinin AYNI FİZİĞİ verdiğidir. "Teklik" bir
+gösterim değil, bir EŞDEĞERLİK SINIFI teklığıdır.
+
+**5. Üç koşul da gereklidir; biri düşerse teklik biter.**
+  * **İndirgenemezlik.** Temsil indirgenebilirse (örneğin `L²(ℝ)⊕L²(ℝ)`),
+    Schrödinger temsirinin katları çıkar; fiziksel olarak bu ek bir iç
+    serbestlik derecesi (spin gibi) demektir.
+  * **Süreklilik.** Kuvvetli süreklilik olmadan patolojik temsiller vardır.
+  * **SONLU serbestlik derecesi.** En önemli koşul budur. Sonsuz
+    serbestlik dereceli sistemlerde (ALAN KURAMI) teorem ÇÖKER:
+    birbirine üniter eşdeğer OLMAYAN sonsuz sayıda temsil vardır.
+    **Haag teoremi** bunun sonucudur — etkileşimli alan kuramında
+    etkileşim resmi kesin anlamda mevcut değildir. Faz geçişleri,
+    kendiliğinden simetri kırılması ve farklı vakumlar hep bu eşdeğer
+    olmayan temsirlerle anlatılır.
+  * Ayrıca konfigürasyon uzayı BASİT BAĞLANTILI değilse (delikli uzay)
+    farklı temsiller doğar: Aharonov-Bohm etkisi ve iki boyutta anyonlar
+    bu yüzden mümkündür.
+
+**6. Sonuç — soruya doğru cevap.**
+`p̂ = −iħ∇` seçimi, şu koşullar altında tektir: sonlu serbestlik
+derecesi, indirgenemezlik, kuvvetli süreklilik. "Tek" derken üniter
+eşdeğerlik kastedilir. Bu yüzden `p̂`yi seçmek keyfi değildir — fizikçe
+farklı bir seçenek yoktur — ama "matematiksel olarak başka hiçbir
+operatör olamaz" demek yanlıştır.
+
+**Adaş uyarısı:** "Stone teoremi" ayrı bir teoremdir (tek parametreli
+üniter grupların üreteci öz-eştir). İkisi birlikte kullanılır:
+Stone teoremi gözlenebilirin OPERATÖR olmasını, Stone-von Neumann ise
+o operatörün HANGİ operatör olduğunu verir.
+""", """
+Why is "position multiplies, momentum is -i hbar grad" forced?
+
+1. [x,p] = i hbar cannot hold for bounded operators (Wintner-Wielandt), so
+   x and p must be unbounded, with domain subtleties. The rigorous statement
+   uses exponentials.
+2. Weyl form: U(a) = exp(-i a p/hbar), V(b) = exp(i b x/hbar) are unitary and
+   satisfy U(a)V(b) = exp(-i a b/hbar) V(b)U(a).
+3. Theorem: on a separable Hilbert space, every strongly continuous
+   irreducible representation of the Weyl relations is unitarily EQUIVALENT
+   to the Schrodinger representation on L^2(R).
+4. It does not say no other operator exists. The momentum and Bargmann-Fock
+   representations look different but are unitarily equivalent (via Fourier).
+   Uniqueness is of the equivalence class.
+5. All three hypotheses matter. Reducibility adds internal degrees of freedom;
+   continuity excludes pathologies; and with infinitely many degrees of freedom
+   (field theory) the theorem fails outright - inequivalent representations
+   exist, which is the content of Haag's theorem and the reason distinct vacua
+   and spontaneous symmetry breaking are possible. Non-simply-connected
+   configuration spaces also give inequivalent representations (Aharonov-Bohm,
+   anyons).
+6. Note the different Stone theorem: generators of one-parameter unitary groups
+   are self-adjoint. Stone gives that observables ARE operators;
+   Stone-von Neumann gives WHICH operators.
+""",
+  eqs=["Û(a) = e^(−iap̂/ħ)", "V̂(b) = e^(ibx̂/ħ)",
+       "Û(a)V̂(b) = e^(−iab/ħ)V̂(b)Û(a)",
+       "Ŝ x̂ Ŝ⁻¹ = x·,  Ŝ p̂ Ŝ⁻¹ = −iħd/dx"],
+  ex_tr=["Momentum gösterimi somut örnektir: φ(p) = ⟨p|ψ⟩ alalım. "
+         "Burada p̂ çarpma, x̂ ise iħ∂/∂p olur — konum gösteriminin "
+         "tam tersi. İkisini bağlayan üniter operatör Fourier "
+         "dönüşümüdür: Ŝ = F. Aynı deneyler, aynı özdeğerler, aynı "
+         "olasılıklar; yalnızca taban farklı."],
+  ex_en=["The momentum representation, where p multiplies and x is i hbar d/dp, "
+         "is related to the Schrodinger one by the Fourier transform - the same "
+         "physics in a different basis."],
+  kw="stone von neumann teoremi|stone-von neumann|"
+     "gosterimin tekligi|uniter esdegerlik|"
+     "schrodinger gosterimi neden benzersiz|"
+     "konum momentum operatorleri neden tek|"
+     "weyl bagintilari|weyl relations|kanonik komutasyon temsili|"
+     "haag teoremi|esdeger olmayan temsiller|"
+     "sinirsiz operator komutator|wintner wielandt|"
+     "stone teoremi uretec|aharonov bohm temsil|"
+     "stone-von neumann theorem|uniqueness of representation|"
+     "unitary equivalence|haags theorem",
+  related="kanonik_kuantumlama|poisson_komutator|weyl_kuantumlama|"
+          "hermit_operator|kuantum_formalizm|hamilton_akisi"),
+
+T("ehrenfest_teoremi",
+  "Ehrenfest Teoremi ve Klasik Limitin Gerçek Koşulu",
+  "Ehrenfest's Theorem and the True Condition for the Classical Limit", """
+Kuantum mekaniği doğruysa Newton yasaları nereye gitti? Cevap: beklenen
+değerlerde duruyorlar — ama sanıldığından daha dar bir koşulla.
+
+**1. Genel bağıntı.**
+`⟨Â⟩ = ⟨ψ|Â|ψ⟩` olsun. Zamana göre türetelim:
+    d⟨Â⟩/dt = ⟨∂ψ/∂t|Â|ψ⟩ + ⟨ψ|Â|∂ψ/∂t⟩ + ⟨ψ|∂Â/∂t|ψ⟩
+Schrödinger denklemi `∂ψ/∂t = Ĥψ/(iħ)` ve eşleniği
+`⟨∂ψ/∂t| = −⟨ψ|Ĥ/(iħ)` yerine konursa:
+    d⟨Â⟩/dt = (1/iħ)⟨ψ|(ÂĤ − ĤÂ)|ψ⟩ + ⟨∂Â/∂t⟩
+yani
+    **d⟨Â⟩/dt = (1/iħ)⟨[Â,Ĥ]⟩ + ⟨∂Â/∂t⟩**
+Klasik `dA/dt = {A,H} + ∂A/∂t` ile satır satır aynı — Dirac kuralının
+doğrudan sonucu.
+
+**2. Konum için.**
+`Ĥ = p̂²/2m + V` ve `[x̂,p̂] = iħ` ile:
+    [x̂,p̂²] = p̂[x̂,p̂] + [x̂,p̂]p̂ = 2iħp̂
+    [x̂,Ĥ] = [x̂,p̂²]/2m = iħp̂/m
+Yerine koyarsak:
+    **d⟨x̂⟩/dt = ⟨p̂⟩/m**
+Klasik `ẋ = p/m` bağıntısı.
+
+**3. Momentum için.**
+`[p̂,V(x̂)]` hesabı (keyfi ψ üzerinde):
+    p̂(Vψ) = −iħ(V′ψ + Vψ′),   V p̂ψ = −iħVψ′
+    [p̂,V]ψ = −iħV′ψ
+O hâlde `[p̂,Ĥ] = [p̂,V] = −iħ ∂V/∂x` ve
+    **d⟨p̂⟩/dt = −⟨∂V/∂x⟩ = ⟨F(x̂)⟩**
+
+**4. Birleştir.**
+    m d²⟨x̂⟩/dt² = ⟨F(x̂)⟩
+Newton'un ikinci yasası, beklenen değerler düzeyinde geri geldi. ∎
+
+**5. KRİTİK İNCE NOKTA — burası çoğu anlatımda atlanır.**
+Elde ettiğimiz `⟨F(x̂)⟩`dir, `F(⟨x̂⟩)` DEĞİL. Bunlar genelde EŞİT
+DEĞİLDİR:
+    ⟨F(x̂)⟩ ≠ F(⟨x̂⟩)
+`F`yi `⟨x̂⟩` etrafında açalım:
+    ⟨F(x̂)⟩ = F(⟨x̂⟩) + ½F″(⟨x̂⟩)·(Δx)² + …
+Yani klasik denklem ancak düzeltme terimi ihmal edilebilirse geçerlidir.
+
+**Tam eşitlik koşulu:** `F″ = 0`, yani `V` en fazla İKİNCİ derecedendir.
+Üç durumda tam olarak klasik:
+    V = 0        (serbest parçacık)
+    V = −Fx      (düzgün alan)
+    V = ½kx²     (harmonik salınıcı)
+Bunların dışında Ehrenfest teoremi klasik hareketi **yaklaşık** verir ve
+koşul şudur: dalga paketi, kuvvetin değiştiği ölçeğe göre DAR olmalı.
+
+**6. Sonuç: Ehrenfest klasik limiti İSPATLAMAZ.**
+Sık rastlanan "Ehrenfest teoremi klasik mekaniği kuantumdan çıkarır"
+cümlesi fazla iddialıdır. Teorem yalnızca beklenen değerlerin klasik
+BİÇİMDE denklemler sağladığını söyler. Gerçek klasik limit ayrıca şunu
+gerektirir: paketin dar KALMASI. Oysa paketler yayılır — serbest
+parçacıkta `Δx(t)` zamanla büyür — ve kaotik sistemlerde bu yayılma
+üstel hızlıdır. Klasikliğin asıl mekanizması dekoherenstir.
+
+**7. Korunum yasaları.**
+`∂Â/∂t = 0` ve `[Â,Ĥ] = 0` ise `⟨Â⟩` sabittir. Klasik `{A,H} = 0`
+koşulunun tıpatıp karşılığı; Noether teoreminin kuantum yüzü budur.
+""", """
+Where did Newton go? Into expectation values - under a narrower condition than
+usually stated.
+
+1. Differentiating <A> and using the Schrodinger equation gives
+   d<A>/dt = (1/i hbar)<[A,H]> + <dA/dt>, mirroring dA/dt = {A,H} + dA/dt.
+2. With H = p^2/2m + V: [x,H] = i hbar p/m, so d<x>/dt = <p>/m.
+3. [p,V] = -i hbar dV/dx, so d<p>/dt = -<dV/dx> = <F>.
+4. Hence m d^2<x>/dt^2 = <F(x)>.
+5. The subtlety: this is <F(x)>, not F(<x>). Expanding,
+   <F(x)> = F(<x>) + F''(<x>)(dx)^2/2 + ..., so the classical equation is exact
+   only when F'' = 0, i.e. V at most quadratic: free particle, uniform field,
+   harmonic oscillator. Otherwise it holds only for packets narrow compared to
+   the scale on which the force varies.
+6. So Ehrenfest does not by itself prove the classical limit: packets spread,
+   exponentially fast in chaotic systems. Decoherence is the actual mechanism.
+7. If [A,H] = 0 then <A> is conserved - the quantum face of Noether.
+""",
+  eqs=["d⟨Â⟩/dt = (1/iħ)⟨[Â,Ĥ]⟩ + ⟨∂Â/∂t⟩", "[x̂,Ĥ] = iħp̂/m",
+       "d⟨x̂⟩/dt = ⟨p̂⟩/m", "[p̂,V] = −iħ ∂V/∂x",
+       "d⟨p̂⟩/dt = −⟨∂V/∂x⟩ = ⟨F⟩", "m d²⟨x̂⟩/dt² = ⟨F(x̂)⟩",
+       "⟨F(x̂)⟩ = F(⟨x̂⟩) + ½F″(⟨x̂⟩)(Δx)² + …"],
+  ex_tr=["Harmonik salınıcı: F = −kx olduğundan F″ = 0 ve "
+         "d⟨p⟩/dt = −k⟨x⟩ TAM olarak sağlanır. Bu yüzden koherent "
+         "durumun merkezi, paket ne kadar geniş olursa olsun tam "
+         "klasik yörüngeyi izler ve paket yayılmaz. Buna karşılık "
+         "anharmonik bir kuyuda (V = λx⁴) F″ ≠ 0'dır; merkez klasik "
+         "yörüngeden sapar ve sapma paketin genişliğiyle büyür."],
+  ex_en=["For the oscillator F'' = 0, so d<p>/dt = -k<x> holds exactly and a "
+         "coherent state follows the classical orbit without spreading; in an "
+         "anharmonic well the centre drifts away from the classical path."],
+  kw="ehrenfest teoremi|ehrenfest theorem|ehrenfest ispati|"
+     "beklenen deger zaman turevi|beklenen degerlerin evrimi|"
+     "kuantumdan newton yasasi|newton yasasi beklenen deger|"
+     "klasik limit kosulu|dalga paketi yayilmasi|"
+     "kuantum korunum yasasi komutator|"
+     "d<x>/dt = <p>/m|klasik denklemler ne zaman tam|"
+     "ehrenfest theorem derivation|expectation value dynamics|"
+     "classical limit condition",
+  related="klasik_limit|poisson_komutator|hamilton_akisi|"
+          "kanonik_kuantumlama|potansiyel_operatoru|noether"),
+
 T("klasik_limit", "Kuantumdan Klasiğe: Karşılık Gelme İlkesi",
   "From Quantum to Classical: the Correspondence Principle", """
 Kuantum mekaniği doğruysa, günlük ölçekte neden klasik fizik işliyor?

@@ -3457,6 +3457,23 @@ def _yon_cevabi(message, konu, onceki_metin, lang, ctx):
         paragraflar = [p.strip() for p in govde.split("\n\n") if p.strip()]
         secili = [p for p in paragraflar
                   if any(a in nlu.norm(p) for a in anahtar)]
+        # ZATEN GOSTERILENI TEKRAR ETME. Devam cevabi konunun AYNI
+        # govdesinden paragraf seciyor; ilk cevap govdenin tamamini
+        # verdiyse secilen paragraflar kullanicinin bir onceki mesajda
+        # okudugu metnin ta kendisi oluyor. Olculdu ve kullanici da
+        # bildirmisti: "ozel gorelilik nedir" -> ders, ardindan "peki
+        # bunun sonuclari neler" -> ayni metnin bir dilimi; sohbet
+        # 2-3 mesajda tikaniyordu. Test bunu yakaliyordu ama oturum
+        # durumuna bagli oldugu icin bazen geciyordu.
+        _onceki = "\n".join(
+            nlu.norm(h.get("content") or "")
+            for h in (ctx.get("history") or [])
+            if (h.get("role") or "") != "user")
+        if _onceki:
+            _yeni = [p for p in secili if nlu.norm(p)[:120] not in _onceki]
+            # Hepsi gosterilmisse devam cevabi uretme; asagidaki
+            # yollar (dil modeli, ilgili konular) daha iyisini verir.
+            secili = _yeni
         if secili:
             baslik = {"sonuc": "Sonuçları", "ornek": "Örnek",
                       "formul": "Bağıntılar", "kanit": "Deneysel dayanak",

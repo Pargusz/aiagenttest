@@ -172,6 +172,54 @@ def _en_iyi_konu(parca, esik=60, baglam=""):
     return ad[0] if ad else None
 
 
+# Asama ICINDE sayilan kavramlarin ayraci: virgul ve "ve".
+# NOT: asamalar _norm'dan gecmis olarak gelir ve _norm noktalama
+# isaretlerini BOSLUGA cevirir; bu yuzden virgulun izi ARDISIK IKI
+# BOSLUKTUR. Yalnizca virgule bakinca "A, B ve C" siralamasi ikiye
+# bolunuyor ve ortadaki kavram kayboluyordu (olculdu: "Heisenberg
+# belirsizlik ilkesi, Ehrenfest teoremi ve Schrodinger denklemi"
+# uclusunde belirsizlik ilkesi dusuyordu).
+_SAYIM = re.compile(r"\s{2,}|\s*,\s*|\s+ve\s+|\s+and\s+", re.I)
+
+
+def _asama_konulari(parca, baglam="", en_fazla=4):
+    """Bir asamada adi gecen KONULARIN hepsi, gorunme sirasiyla.
+
+    Olculdu (arastirma seviyesi soru): "Poisson parantezi, kanonik
+    donusumler VE Hamilton akisindan baslayarak operator cebirinin
+    neden zorunlu ortaya ciktigini aciklayiniz." Tek asama, ama
+    ICINDE uc ayri kavram sayiliyor. Asama basina tek konu verince
+    ikisi dusuyordu; ayni sey "Heisenberg belirsizlik ilkesi,
+    Ehrenfest teoremi VE Schrodinger denklemi" asamasinda da oluyordu.
+
+    Ileri duzey sorular kavramlari boyle SIRALAR; bu yuzden asamanin
+    kendisi de bolunmelidir. Once asamanin butunu aranir (baglam
+    butunde saklidir), sonra sayim ogeleri tek tek eklenir.
+
+    en_fazla=4: olculdu, sinir 3 iken "Poisson parantezi, kanonik
+    donusumler ve Hamilton akisindan baslayarak operator cebiri..."
+    asamasinda dorduncu kavram (Hamilton akisi) disarida kaliyordu.
+    Bir asamada dortten fazla kavram sayilmasi seyrek; sinirsiz
+    birakmak da cevabi sisiriyor.
+    """
+    out = []
+    for t in _adaylar(parca, baglam)[:1]:
+        out.append(t)
+    for oge in _SAYIM.split(parca):
+        if len(_anahtar_kelimeler(oge)) < 2:
+            continue
+        hits = knowledge.search(oge, limit=2) or []
+        # Sayim ogesi kisa ve baglamsizdir; yalnizca GUCLU eslesme
+        # kabul edilir, yoksa gurultu giriyor.
+        if hits and hits[0][0] >= 60:
+            for _s, t in hits[:1]:
+                if all(t["key"] != u["key"] for u in out):
+                    out.append(t)
+        if len(out) >= en_fazla:
+            break
+    return out[:en_fazla]
+
+
 def _sec(parcalar):
     """Asamalari konulara esle; (asama, konu) ciftlerini sirayla dondur.
 
@@ -187,13 +235,20 @@ def _sec(parcalar):
     """
     out, gorulen = [], set()
     for p in parcalar:
-        secilen = None
-        for t in _adaylar(p, _baglam(parcalar, p)):
-            if t["key"] not in gorulen:
-                gorulen.add(t["key"])
-                secilen = t
-                break
-        out.append((p, secilen))
+        baglam = _baglam(parcalar, p)
+        yeni = [t for t in _asama_konulari(p, baglam)
+                if t["key"] not in gorulen]
+        if not yeni:
+            # Asamanin bulduklarinin hepsi baska asamaya gitmis:
+            # asamayi dusurmeden siradaki adayina bak.
+            yeni = [t for t in _adaylar(p, baglam)
+                    if t["key"] not in gorulen][:1]
+        if not yeni:
+            out.append((p, None))
+            continue
+        for t in yeni:
+            gorulen.add(t["key"])
+            out.append((p, t))
     return out
 
 
