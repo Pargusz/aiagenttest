@@ -303,6 +303,16 @@ def duzelt(metin, esik=0.87):
         # yazim hatasi kokte olur, ekte degil.
         if _ayni_kok(n, yakin[0]):
             return kelime
+        # UZUN kelimede BOY FARKI 2+ ise bu yazim hatasi degil, BASKA
+        # bir kelimedir. Gercek yazim hatasi bir harf duser, fazladan
+        # basilir ya da yer degistirir; iki harf birden kaybolmaz.
+        # Olculdu (canli sohbet): "gecildigini" -> "geldigini" diye
+        # duzeltildi (11 -> 9 harf) ve sorunun anlami degisti:
+        # "hangi gerekceyle GECILDIGINI aciklayiniz" cumlesi
+        # "GELDIGINI" oldu. Ayni sinif kusur daha once "tanit" ->
+        # "tait" olarak da cikmisti.
+        if len(n) >= 8 and abs(len(n) - len(yakin[0])) >= 2:
+            return kelime
         duzeltmeler.append((kelime, yakin[0]))
         return yakin[0]
 

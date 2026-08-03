@@ -118,9 +118,57 @@ def _norm(s):
     return knowledge._norm(s or "")
 
 
+# OK ZINCIRI: "A -> B -> C -> ... bunlarin her birini acikla".
+# Ileri duzey sorularda cok kullanilan bicim. Buradaki ogeler kisa
+# adlardir ve KENDILERINDE yonerge fiili YOKTUR; yonerge en sonda tek
+# bir cumlede, hepsi icin birden verilir. Bu yuzden ok zinciri normal
+# asama ayirmasindan AYRI ele alinir.
+#
+# Olculdu (canli sohbet): "δS = 0 → Euler-Lagrange → Hamilton →
+# Hamilton-Jacobi → Schrodinger → Klein-Gordon → Dirac → Noether →
+# Kuantum Alan Kurami  gecislerinin her birinin hangi fiziksel
+# problemi cozdugunu ... aciklayiniz." Sekiz gecis istendi; asama
+# ayirici 0 asama buldu ve cevapta Klein-Gordon, Dirac ve Noether
+# HIC yer almadi.
+_OK = re.compile(r"\s*(?:→|->|⇒|=>|➔|⟶)\s*")
+
+
+def _ok_zinciri(metin):
+    """Ok zinciri varsa ogelerini dondur, yoksa bos liste."""
+    ham = metin or ""
+    if len(_OK.findall(ham)) < 2:
+        return []            # en az uc oge (iki ok) aranir
+    ogeler = []
+    for parca in _OK.split(ham):
+        # Ilk oge okun solunda, son oge sagindadir; son ogenin
+        # ardindan genellikle YONERGE cumlesi gelir. Ogeyi ilk
+        # satirindan alarak yonergeden ayiririz.
+        ilk_satir = parca.strip().split("\n")[0].strip(" .;:,")
+        if not ilk_satir:
+            continue
+        # SON oge ile YONERGE ayni satirda olabilir: "... → Kuantum
+        # Alan Kurami gecislerinin her birinin ... aciklayiniz."
+        # Kuram adlari kisadir; uzun parcanin ilk birkac kelimesini
+        # aday sayariz. Yanlis tahmin zararsizdir, cunku ok ogesi
+        # ancak ADI TUTAN bir konu bulursa kabul edilir (_ad_adaylari).
+        # Olculdu: soru tek satir yazilinca son oge (Kuantum Alan
+        # Kurami) tamamen dusuyordu.
+        if len(ilk_satir) > 60:
+            ilk_satir = " ".join(ilk_satir.split()[:4])
+        ogeler.append(_norm(ilk_satir))
+    # Formul kalintisi oge degildir: "δS = 0" normalizasyondan sonra
+    # " s   0" olarak kaliyor ve konu aramasi bos donuyordu. Olcut,
+    # ogenin gercek bir AD tasimasi: en az uc HARF.
+    return [o for o in ogeler
+            if sum(1 for ch in o if ch.isalpha()) >= 3]
+
+
 def asamalar(metin):
     """Soruyu sirali asamalarina ayir; asama yoksa bos liste."""
     ham = metin or ""
+    ok = _ok_zinciri(ham)
+    if len(ok) >= 3:
+        return ok
     if len(ham) < 100:
         return []
     # Once cumlelere, sonra her cumleyi sirali baglaclara bol. Sira
@@ -258,6 +306,38 @@ def _arac_obekleri(parca):
     return out
 
 
+def _ad_adaylari(oge, en_fazla=4):
+    """Ok zinciri ogesi icin adaylar: ADI TUTAN konular.
+
+    Ok zincirindeki oge, bir cumle degil bir ADDIR ("Dirac",
+    "Hamilton", "Noether"). Bu yuzden normal esik burada ise yaramaz:
+    tek kelimelik sorgu 14 puan aliyor ve dogru konu esigi gecemiyor.
+    Komsu ogelerle birlikte aratmak da denendi ve DAHA KOTU: sorgu
+    ogeyi kendinden uzaklastirip komsusunun konusuna cekiyor
+    ("hamilton hamilton jacobi" -> hamilton_jacobi 102).
+
+    Dogru olcut ADIN TUTMASIDIR: konunun basligi ya da anahtarlari
+    ogeyi ICERMELI. Bu kural yalnizca ok zincirinde uygulanabilir,
+    cunku orada ogenin TAMAMI bir addir; normal bir asamada ayni kural
+    genel tabirleri de yakalayip cevabi sisiriyordu (bkz. asagidaki
+    "adiyla anma" notu).
+    """
+    # BASLIKTA gecen ad, yalnizca anahtar listesinde gecene tercih
+    # edilir. Olculdu: "Dirac" ogesi icin arama once weyl_kuantumlama'yi
+    # veriyordu (anahtarlarinda "dirac kuantumlama kurali" var), oysa
+    # dogru konu basliginda Dirac gecen klein_gordon_dirac.
+    basliktan, anahtardan = [], []
+    for _skor, t in knowledge.search(oge, limit=10) or []:
+        baslikta = any(oge in _norm(t.get(a) or "")
+                       for a in ("tr_title", "en_title"))
+        anahtarda = any(oge in _norm(k) for k in (t.get("kw") or []))
+        if baslikta:
+            basliktan.append(t)
+        elif anahtarda:
+            anahtardan.append(t)
+    return (basliktan + anahtardan)[:en_fazla]
+
+
 def _asama_konulari(parca, baglam="", en_fazla=4):
     """Bir asamada adi gecen KONULARIN hepsi, gorunme sirasiyla.
 
@@ -326,11 +406,26 @@ def _sec(parcalar):
     coz() ve kapsam() AYNI islevi kullanir; ayri yazildiklarinda olcum
     cevabin gercekte ne icerdigini yansitmiyordu (olculdu).
     """
+    ok_mu = len(parcalar) >= 3 and all(len(p) <= 60 for p in parcalar)
     out, gorulen = [], set()
     for p in parcalar:
         baglam = _baglam(parcalar, p)
-        yeni = [t for t in _asama_konulari(p, baglam)
-                if t["key"] not in gorulen]
+        adaylar = (_ad_adaylari(p) if ok_mu
+                   else _asama_konulari(p, baglam))
+        if ok_mu:
+            # Ok zincirinde bir oge = bir ADdir, dolayisiyla BIR
+            # konudur. Hepsini almak cevabi sisiriyor (olculdu: dokuz
+            # ogeli zincir 14 bolum uretti; "noether" ogesi tek basina
+            # uc konu cekti).
+            #
+            # Ayrica siradaki adaya GECILMEZ: adi tutan en iyi konu
+            # zaten secilmisse oge KAPSANMIS demektir. Olculdu:
+            # "Klein-Gordon" ve "Dirac" ogelerinin ikisi de ayni konuda
+            # anlatiliyor; ikinciyi siradaki adaya tasiyinca cevaba
+            # alakasiz bir konu (Weyl kuantumlamasi) giriyordu.
+            yeni = [t for t in adaylar[:1] if t["key"] not in gorulen]
+        else:
+            yeni = [t for t in adaylar if t["key"] not in gorulen]
         if not yeni:
             # Asamanin bulduklarinin hepsi baska asamaya gitmis:
             # asamayi dusurmeden siradaki adayina bak.
@@ -357,7 +452,11 @@ def coz(metin, lang="tr"):
     if not parcalar:
         return None
     # Sayisal bir problemse bu yol yanlistir; hesap istenmistir.
-    if re.search(r"\d", metin or ""):
+    # AMA ok zinciri kavramsaldir: icindeki rakam bir hesap istegi
+    # degil, bir denklemin parcasidir. Olculdu: "δS = 0 → Euler-Lagrange
+    # → ..." sorusunda tek basina "0" rakami bu kurala takiliyor ve
+    # dokuz asamalik bilesik cevap komple iptal oluyordu.
+    if not _ok_zinciri(metin) and re.search(r"\d", metin or ""):
         return None
 
     secili = [t for _p, t in _sec(parcalar) if t is not None]

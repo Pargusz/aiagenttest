@@ -791,6 +791,19 @@ def zor_bosluklari():
 #
 # Ilk olcum 2/20 idi. Icerik yazildikca ve yonlendirme duzeldikce yukseldi.
 KURAMSAL_SORULAR = [
+ # Canli sohbet: OK ZINCIRI bicimli soru. Asama ayirici 0 asama buldu,
+ # cevap 1501 karakterlik bir PARCA oldu ve Klein-Gordon, Dirac,
+ # Noether, Kuantum Alan Kurami HIC yer almadi. Ayrica yazim
+ # duzeltici "gecildigini"yi "geldigini" yapip sorunun anlamini
+ # degistirmisti.
+ ("δS = 0 → Euler–Lagrange → Hamilton → Hamilton–Jacobi → Schrödinger "
+  "→ Klein–Gordon → Dirac → Noether → Kuantum Alan Kuramı "
+  "geçişlerinin her birinin hangi fiziksel problemi çözdüğünü, neden "
+  "zorunlu olduğunu ve bir sonraki kurama hangi matematiksel veya "
+  "fiziksel gerekçeyle geçildiğini ayrıntılı olarak açıklayınız.",
+  ["d/dt(∂L/∂q̇) − ∂L/∂q = 0", "H(q, ∂S/∂q, t) + ∂S/∂t = 0"],
+  ["Klein-Gordon", "Noether", "alan"]),
+
  # Canli sohbetten: BES asamali soru. Iki genel kusur cikti —
  # (a) son cumle bir BICIM talebiydi ("tum ara adimlari ... eksiksiz
  #     olarak aciklamanizi istiyorum") ama asama sanilip alakasiz bir

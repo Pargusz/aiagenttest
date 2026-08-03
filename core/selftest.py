@@ -36,6 +36,36 @@ def _oturum_temizle(*oturumlar):
         brain._SESSION_MEM.pop(_o, None)
 
 
+ATLANAN = []
+
+
+def _db_yazilabilir():
+    """Veritabanina YAZILABILIYOR mu? (sunucu acikken kilitli olur)
+
+    Sunucu calisirken SQLite yazma kilidini tutar ve depolama isteyen
+    testler "database is locked" ile kaliyor. Bu bir kod kusuru degil,
+    ORTAM kosuludur. Sessizce gecmek de dogru degil; bu yuzden kilit
+    bir kez olculur ve etkilenen testler ATLANAN olarak SAYILIP
+    ozette acikca bildirilir.
+    """
+    try:
+        c = db.conn()
+        c.execute("CREATE TABLE IF NOT EXISTS _kilit_deneme (x INTEGER)")
+        c.execute("DROP TABLE IF EXISTS _kilit_deneme")
+        c.commit()
+        return True
+    except Exception:
+        return False
+
+
+def check_db(ad, fn, bekl):
+    """Yazma gerektiren test: DB kilitliyse atla ve bunu bildir."""
+    if not _db_yazilabilir():
+        ATLANAN.append(ad)
+        return
+    return check(ad, fn, bekl)
+
+
 def check(name, fn, expect=None):
     try:
         got = fn()
@@ -412,10 +442,10 @@ def run():
     # ------------------------------------------------------ sohbet oturumlari
     # Test oturumlari alt cizgiyle basliyor; kullanici listesinde
     # gorunmezler ama DEPOLAMA calismali. ic_dahil=True ile bakiyoruz.
-    check("oturum: kaydediliyor ve listeleniyor",
+    check_db("oturum: kaydediliyor ve listeleniyor",
           lambda: any(r["id"] == "_test_baglam"
                       for r in db.list_sessions(80, ic_dahil=True)), True)
-    check("oturum: baslik ilk mesajdan aliniyor",
+    check_db("oturum: baslik ilk mesajdan aliniyor",
           lambda: next((r["title"] for r in db.list_sessions(80, ic_dahil=True)
                         if r["id"] == "_test_baglam"), ""), contains("entropi"))
 
@@ -430,7 +460,7 @@ def run():
         kaldi = any(r["id"] == "_test_silinecek"
                     for r in db.list_sessions(80, ic_dahil=True))
         return vardi and not kaldi
-    check("oturum: silme calisiyor", sil_ve_kontrol, True)
+    check_db("oturum: silme calisiyor", sil_ve_kontrol, True)
 
     # --------------------------------------------- belge yukleme / inceleme
     from . import belge as _bg, retrieval as _rt
@@ -1783,6 +1813,57 @@ def run():
     check("bilesik: kisa soru bilesige girmiyor",
           lambda: _bil.asamalar("entropi nedir"), [])
 
+    # ── OK ZINCIRI ("A -> B -> C ... her birini acikla") ─────────────
+    # Canli sohbetten: sekiz gecis ok ile siralanmisti; asama ayirici
+    # 0 asama buldu ve cevap 1501 karakterlik bir PARCA oldu —
+    # Klein-Gordon, Dirac, Noether, Kuantum Alan Kurami HIC yer almadi.
+    # Bu bicim ileri duzey sorularda cok yaygin: ogeler kisa ADLARDIR,
+    # yonerge en sonda tek cumlede hepsi icin birden verilir.
+    _S_OK = ("δS = 0 → Euler–Lagrange → Hamilton → Hamilton–Jacobi → "
+             "Schrödinger → Klein–Gordon → Dirac → Noether → "
+             "Kuantum Alan Kuramı geçişlerinin her birinin hangi "
+             "fiziksel problemi çözdüğünü açıklayınız.")
+    check("ok zinciri: ogeler ayirt ediliyor",
+          lambda: len(_bil.asamalar(_S_OK)) >= 8, True)
+    # "δS = 0" normalizasyondan sonra " s   0" olarak kaliyor; formul
+    # kalintisi oge degildir (en az uc HARF sarti).
+    check("ok zinciri: formul kalintisi oge sayilmiyor",
+          lambda: any(sum(1 for c in o if c.isalpha()) < 3
+                      for o in _bil.asamalar(_S_OK)), False)
+    # Oge bir ADdir: konunun BASLIGI ya da anahtarlari onu tasimali.
+    # Puan esigi burada ise yaramaz (tek kelimelik sorgu 14 puan alir),
+    # komsu ogelerle aratmak da DAHA KOTU ("hamilton hamilton jacobi"
+    # -> hamilton_jacobi 102) — olculdu.
+    check("ok zinciri: 'hamilton' kendi konusuna gidiyor",
+          lambda: [t["key"] for t in _bil._ad_adaylari("hamilton")][:1],
+          ["hamilton"])
+    check("ok zinciri: adi tutmayan konu secilmiyor",
+          lambda: all("noether" in _bil._norm(t["tr_title"]) or
+                      any("noether" in _bil._norm(k) for k in t["kw"])
+                      for t in _bil._ad_adaylari("noether")), True)
+    # Ok zinciri KAVRAMSALDIR: icindeki rakam hesap istegi degildir.
+    check("ok zinciri: icindeki rakam bilesigi iptal etmiyor",
+          lambda: _bil.coz(_S_OK, "tr") is not None, True)
+    check("ok zinciri: sayisal problem hâlâ disarida",
+          lambda: _bil.coz("20 m/s hizla giden 5 kg cismin kinetik "
+                           "enerjisini hesapla. Daha sonra 10 m "
+                           "yuksekten dususundeki potansiyel enerjisini "
+                           "bul ve karsilastir.", "tr"), None)
+    check("ok zinciri: adi gecen kuramlarin hepsi cevapta",
+          lambda: brain.respond(_S_OK, session="_test_ok").text,
+          contains("Euler-Lagrange", "Hamilton-Jacobi", "Klein-Gordon",
+                   "Noether"))
+
+    # ── YAZIM: GECERLI KELIME BOZULMAMALI ───────────────────────────
+    # "gecildigini" -> "geldigini" (11 -> 9 harf) diye duzeltiliyor ve
+    # sorunun anlami degisiyordu. Gercek yazim hatasi bir harf duser ya
+    # da yer degistirir; iki harf birden kaybolmaz.
+    check("yazim: uzun kelimede 2 harf kisalma duzeltme sayilmiyor",
+          lambda: _an.duzelt("gecildigini")[0], "gecildigini")
+    check("yazim: gercek yazim hatasi hâlâ duzeltiliyor",
+          lambda: (_an.duzelt("entrpi")[0], _an.duzelt("kinetk")[0]),
+          ("entropi", "kinetik"))
+
     # ── BICIM TALEBI ASAMA DEGILDIR ─────────────────────────────────
     # Uzun sinav sorularinin sonunda hep bulunur: "Tum ara adimlari,
     # kullanilan matematiksel varsayimlari, fiziksel yorumlari ve
@@ -2155,7 +2236,7 @@ def run():
           lambda: _prb.fiziksel_gecersiz("20 dereceden 80 dereceye"), None)
 
     check("kuramsal: turetim sorulari gerilemiyor",
-          lambda: _olcum.kuramsal_puani()[0] >= 25, True)
+          lambda: _olcum.kuramsal_puani()[0] >= 26, True)
 
 
     # ── "Sorulan buyukluk, verilmemis olandir" ──────────────────────
@@ -2605,6 +2686,11 @@ def run():
         print()
     print("  " + "-" * 52)
     print("  %d test gecti, %d test basarisiz." % (len(PASS), len(FAIL)))
+    if ATLANAN:
+        print("  %d test ATLANDI (veritabani kilitli — sunucu acik):"
+              % len(ATLANAN))
+        for _a in ATLANAN:
+            print("     - " + _a)
     print()
     return 1 if FAIL else 0
 
