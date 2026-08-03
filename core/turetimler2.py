@@ -13,6 +13,216 @@ from .knowledge import T
 
 TURETIM2_KONULARI = [
 
+T("degiskenlere_ayirma",
+  "Zamana Bağlı Denklemden Zamandan Bağımsız Denkleme",
+  "From the Time-Dependent to the Time-Independent Equation", """
+Zamandan bağımsız Schrödinger denklemi ayrı bir varsayım değildir;
+zamana bağlı denklemden **değişkenlere ayırma** yöntemiyle türetilir.
+
+**1. Başlangıç ve tek koşul.**
+    iħ ∂Ψ(x,t)/∂t = ĤΨ(x,t),   Ĥ = −(ħ²/2m)∂²/∂x² + V(x)
+Tek koşul: `V` ZAMANA BAĞLI OLMAMALI. Ĥ zamanı içermiyorsa denklem
+**ayrılabilir**.
+
+**2. Çarpım biçiminde çözüm ara.**
+    Ψ(x,t) = φ(x)·f(t)
+Bu bir varsayım değil, bir DENEMEDİR: işe yararsa çözümdür, ayrıca
+bulunan çözümler tam bir taban kurduğu için genel çözüm de onlardan
+üretilir (7. adım).
+
+**3. Yerine koy ve böl.**
+    iħ φ(x)·df/dt = f(t)·Ĥφ(x)
+İki tarafı `φ·f` ile bölelim:
+    iħ (1/f)(df/dt) = (1/φ)·Ĥφ
+
+**4. Kritik akıl yürütme: iki taraf da SABİT olmalı.**
+Sol taraf yalnızca `t`nin, sağ taraf yalnızca `x`in fonksiyonudur.
+Birbirinden bağımsız iki değişkenin fonksiyonları her `x` ve `t` için
+eşitse, ikisi de aynı SABİTE eşittir. Bu sabite **ayırma sabiti** denir
+ve `E` ile gösterilir; boyutu enerjidir, çünkü `Ĥφ/φ` enerji boyutundadır:
+    iħ (1/f)(df/dt) = E        (a)
+    (1/φ)·Ĥφ = E               (b)
+
+**5. Zaman denklemini çöz.**
+(a) birinci mertebeden ve doğrudan integrallenir:
+    df/f = −(iE/ħ)dt  ⇒  **f(t) = e^(−iEt/ħ)**
+
+**6. Konum denklemi: aranan denklem.**
+(b) yeniden yazılınca **zamandan bağımsız Schrödinger denklemidir**:
+    **Ĥφ = Eφ**,   açık hâlde  −(ħ²/2m)φ″ + Vφ = **Eψ**
+Yani `E`, `Ĥ` operatörünün ÖZDEĞERİDİR; ayırma sabiti fiziksel olarak
+enerjidir. Denklemi postüla olarak koymadık, ayırmanın kendisi verdi.
+
+**7. Durağan durumlar.**
+Tam çözüm:
+    Ψ_n(x,t) = φ_n(x)·e^(−iE_n t/ħ)
+Olasılık yoğunluğu:
+    |Ψ_n|² = |φ_n|²·|e^(−iE_n t/ħ)|² = |φ_n|²
+Zamandan BAĞIMSIZDIR — bu yüzden bu çözümlere **durağan durum** denir.
+Faz döner, gözlenebilir hiçbir şey değişmez.
+
+**8. Genel çözüm: üst üste binme.**
+`{φ_n}` tam bir taban kurduğundan her başlangıç durumu açılabilir:
+    Ψ(x,0) = Σ c_n φ_n(x),   c_n = ∫φ_n*Ψ(x,0)dx
+ve zaman evrimi her bileşene kendi fazını verir:
+    **Ψ(x,t) = Σ c_n φ_n(x) e^(−iE_n t/ħ)**
+Ayırma yönteminin gücü budur: tek bir çarpım çözümü aramakla başladık,
+BÜTÜN çözümleri elde ettik. Farklı `E_n` fazları farklı hızda döndüğü
+için üst üste binmiş durumlar zamanla DEĞİŞİR; durağan olmayan davranış
+buradan çıkar.
+
+**Nerede geçersiz:** `V` zamana bağlıysa (`V(x,t)`) ayırma yapılamaz;
+o zaman zamana bağlı pertürbasyon kuramına geçilir.
+""", """
+The time-independent equation is derived, not postulated.
+
+1. Start from i hbar dPsi/dt = H Psi with H independent of time.
+2. Try Psi(x,t) = phi(x) f(t) and divide by phi f:
+   i hbar f'/f = (H phi)/phi.
+3. The left side depends only on t, the right only on x, so both equal a
+   constant E - the separation constant, with units of energy.
+4. Integrating gives f(t) = exp(-iEt/hbar), and the other equation is
+   H phi = E phi: the time-independent Schrodinger equation, so E is an
+   eigenvalue of H.
+5. |Psi_n|^2 = |phi_n|^2 is time independent: these are stationary states.
+6. Since the phi_n form a complete basis, the general solution is
+   Psi = sum c_n phi_n exp(-i E_n t/hbar).
+7. If V depends on time the separation fails and one uses time-dependent
+   perturbation theory instead.
+""",
+  eqs=["Ψ(x,t) = φ(x)f(t)", "iħ f′/f = Ĥφ/φ = E",
+       "f(t) = e^(−iEt/ħ)", "Ĥφ = Eφ",
+       "Ψ(x,t) = Σ c_n φ_n e^(−iE_n t/ħ)"],
+  ex_tr=["Sonsuz kuyuda φ_n = √(2/L)sin(nπx/L) ve E_n = n²π²ħ²/2mL². "
+         "İki düzeyin üst üste binmesi Ψ = (φ₁e^(−iE₁t/ħ) + "
+         "φ₂e^(−iE₂t/ħ))/√2 alınırsa |Ψ|² içinde cos((E₂−E₁)t/ħ) "
+         "terimi belirir: yoğunluk kuyuda ileri geri salınır. Tek "
+         "düzeyde durağan, iki düzeyde hareketli — farkı yaratan "
+         "ayırma sabitlerinin FARKIDIR."],
+  ex_en=["In the infinite well a two-level superposition oscillates at the "
+         "Bohr frequency (E2-E1)/hbar, while a single level is stationary."],
+  kw="degiskenlere ayirma|degiskenlerine ayirma|ayirma yontemi|"
+     "ayirma sabiti|zamandan bagimsiz schrodinger turetimi|"
+     "zamana bagliden zamandan bagimsiza|duragan durum|duragan durumlar|"
+     "neden duragan durum|zamandan bagimsiz schrodinger nasil elde edilir|"
+     "separation of variables|stationary states|separation constant",
+  related="zaman_bagli_schrodinger|kuantum_formalizm|kanonik_kuantumlama|"
+          "perturbasyon_gecis"),
+
+T("perturbasyon_gecis",
+  "Zamana Bağlı Pertürbasyon ve Geçiş Olasılığı",
+  "Time-Dependent Perturbation Theory and Transition Probability", """
+Sistem `Ĥ₀` ile başlar, üzerine küçük ve zamana bağlı bir etki gelir
+(bir ışık demeti gibi). Sorulan şudur: parçacığın `|i⟩` durumundan
+`|f⟩` durumuna geçme olasılığı nedir?
+
+**1. Kurulum.**
+    Ĥ = Ĥ₀ + V̂(t),   Ĥ₀|n⟩ = E_n|n⟩
+`V̂` KÜÇÜK kabul edilir — bütün yöntemin dayandığı varsayım budur.
+
+**2. Tam çözümü Ĥ₀ tabanında aç.**
+Durağan çözümler tam bir taban kurduğu için (bkz. değişkenlere ayırma):
+    |Ψ(t)⟩ = Σ_n c_n(t)·e^(−iE_n t/ħ)|n⟩
+Fazı ayrı yazmak önemlidir: `V̂ = 0` iken `c_n` SABİT kalır, dolayısıyla
+`c_n`in değişimi tamamen pertürbasyonun eseridir.
+
+**3. Katsayıların denklemi (kesin).**
+Bunu `iħ ∂|Ψ⟩/∂t = (Ĥ₀+V̂)|Ψ⟩` içine koyup soldan `⟨f|` ile çarpalım.
+`Ĥ₀` terimleri sadeleşir ve geriye tam olarak şu kalır:
+    **iħ ċ_f(t) = Σ_n c_n(t)·V_fn(t)·e^(iω_fn t)**
+burada
+    V_fn = ⟨f|V̂|n⟩,   ω_fn = (E_f − E_n)/ħ
+Bu denklem HÂLÂ KESİNDİR; henüz hiçbir yaklaşıklık yapılmadı.
+
+**4. Birinci mertebe yaklaşıklığı.**
+Sistem `t = 0`da `|i⟩` durumundaysa `c_i(0) = 1`, ötekiler sıfırdır.
+`V̂` küçük olduğu için kısa sürede `c_i ≈ 1` ve `c_{n≠i} ≈ 0` kalır.
+Sağ taraftaki toplamda yalnızca `n = i` terimini tutarsak:
+    iħ ċ_f ≈ V_fi(t)·e^(iω_fi t)
+İntegralleyelim:
+    **c_f⁽¹⁾(t) = (1/iħ)∫₀^t V_fi(t′)·e^(iω_fi t′) dt′**
+Üst simge, bunun `V̂`de **birinci mertebe** olduğunu gösterir.
+
+**5. Geçiş olasılığı.**
+    **P_{i→f}(t) = |c_f⁽¹⁾(t)|²**
+Geçiş GENLİĞİ bir integraldir; **geçiş olasılığı** onun karesidir. Bu
+ayrım önemlidir: farklı yollardan gelen genlikler önce toplanır, sonra
+karesi alınır — girişim buradan doğar.
+
+**6. Harmonik (tek frekanslı) etki.**
+`V̂(t) = V̂₀·cos(ωt)` alalım. İntegral alınınca
+    P_{i→f}(t) = (|V_fi|²/ħ²)·sin²((ω_fi−ω)t/2)/((ω_fi−ω)/2)²
+Okunuşu:
+  * `ω → ω_fi` olduğunda tepe yapar — **REZONANS**. Soğurma ancak
+    `ħω ≈ E_f − E_i` iken güçlüdür; spektral çizgilerin sebebi budur.
+  * Tepe yüksekliği `t²` ile, genişliği `1/t` ile gider. Bu bir
+    **enerji-zaman belirsizliği** ifadesidir: kısa etkileşim, geniş
+    frekans bandı.
+  * `V_fi = ⟨f|V̂₀|i⟩ = 0` ise geçiş OLMAZ — **seçim kuralları** tam
+    olarak bu matris elemanının sıfırlanmasından çıkar.
+
+**7. Sürekli spektrum: Fermi'nin altın kuralı.**
+Son durumlar sürekliyse tek bir `f` yerine durum yoğunluğu `ρ(E_f)`
+üzerinden toplanır. `t` büyükken yukarıdaki `sin²` ifadesi delta
+fonksiyonuna yaklaşır, olasılık zamanla DOĞRUSAL büyür ve birim
+zamandaki geçiş hızı çıkar:
+    **Γ_{i→f} = (2π/ħ)·|V_fi|²·ρ(E_f)**
+Bozunma hızları, saçılma tesir kesitleri ve soğurma katsayıları bu
+bağıntıdan hesaplanır.
+
+**Nerede dikkat:**
+  * Yöntem `P ≪ 1` iken geçerlidir. `P` 1'e yaklaşıyorsa birinci
+    mertebe yetmez; `c_i ≈ 1` varsayımı çöker.
+  * Altın kuralı için `t` iki yönden sınırlıdır: `1/ω_fi`den uzun, ama
+    `P ≪ 1` kalacak kadar kısa olmalı.
+  * `V_fi = 0` ise birinci mertebe sıfırdır; geçiş İKİNCİ mertebeden
+    olabilir (iki fotonlu süreçler böyledir).
+""", """
+The system starts in an eigenstate of H0 and a small time-dependent V(t) is
+switched on; what is the probability of ending in |f>?
+
+1. H = H0 + V(t) with H0|n> = E_n|n>, V small.
+2. Expand |Psi> = sum c_n(t) exp(-i E_n t/hbar)|n>; with V = 0 the c_n are
+   constant, so any change in them is due to V alone.
+3. Substituting and projecting on <f| gives the EXACT equation
+   i hbar dc_f/dt = sum_n c_n V_fn exp(i w_fn t), with V_fn = <f|V|n> and
+   w_fn = (E_f - E_n)/hbar.
+4. To first order c_i = 1 and the rest vanish, so
+   c_f = (1/i hbar) int_0^t V_fi(t') exp(i w_fi t') dt'.
+5. The transition probability is P = |c_f|^2 - amplitudes add, then square,
+   which is why interference appears.
+6. For V = V0 cos(wt) the result peaks at w = w_fi (resonance), with height
+   growing as t^2 and width as 1/t, an energy-time uncertainty statement.
+   If V_fi = 0 the transition is forbidden: selection rules.
+7. For a continuum of final states one obtains Fermi's golden rule,
+   Gamma = (2 pi/hbar)|V_fi|^2 rho(E_f).
+
+Caveats: valid only while P << 1; the golden rule needs t long compared with
+1/w_fi yet short enough that P stays small; if V_fi vanishes the process may
+still occur at second order.
+""",
+  eqs=["Ĥ = Ĥ₀ + V̂(t)", "|Ψ⟩ = Σ c_n(t)e^(−iE_n t/ħ)|n⟩",
+       "iħ ċ_f = Σ c_n V_fn e^(iω_fn t)",
+       "c_f⁽¹⁾ = (1/iħ)∫₀^t V_fi e^(iω_fi t′)dt′",
+       "P_{i→f} = |c_f⁽¹⁾|²", "Γ = (2π/ħ)|V_fi|²ρ(E_f)"],
+  ex_tr=["Aniden açılan sabit bir etki (`V̂` sabit, `t > 0`) için integral "
+         "doğrudan alınır: c_f = (V_fi/iħ)·(e^(iω_fi t) − 1)/(iω_fi) ve "
+         "P = (4|V_fi|²/ħ²ω_fi²)·sin²(ω_fi t/2). Olasılık zamanla "
+         "SALINIR, tek yönde büyümez — sistem gidip geri döner. Sürekli "
+         "spektrumda bu salınım birçok son durum üzerinden ortalanınca "
+         "düzleşir ve altın kuralın doğrusal büyümesi ortaya çıkar."],
+  ex_en=["For a suddenly switched constant perturbation the probability "
+         "oscillates as sin^2(w t/2); averaging over a continuum of final "
+         "states turns this into the linear growth of the golden rule."],
+  kw="zamana bagli perturbasyon|perturbasyon kurami|perturbasyon|"
+     "gecis olasiligi|gecis genligi|birinci mertebe perturbasyon|"
+     "gecis olasiligini turet|fermi altin kurali|ferminin altin kurali|"
+     "secim kurallari|rezonans sogurma|matris elemani gecis|"
+     "time dependent perturbation theory|transition probability|"
+     "fermi golden rule|selection rules|first order perturbation",
+  related="degiskenlere_ayirma|zaman_bagli_schrodinger|kuantum_formalizm|"
+          "hermit_operator|born_kurali"),
+
 T("fourier_momentum", "Konum ve Momentum Uzayı: Fourier Dönüşümü",
   "Position and Momentum Space: the Fourier Transform", """
 ψ(x) parçacığın konum hakkındaki bilgisini taşır. Momentum hakkındaki

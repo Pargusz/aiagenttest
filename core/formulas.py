@@ -188,6 +188,36 @@ FORMULAS = [
       {"W": ("is", "work", "J"), "F": ("kuvvet", "force", "N"),
        "d": ("yol", "distance", "m"), "theta": ("aci (rad)", "angle (rad)", "rad")},
       "is|yapilan is", "work"),
+    # IS-ENERJI TEOREMI. Olculdu (taze sinav): "1200 kg araba 20 m/s
+    # hizla giderken 25 m'de duruyor fren kuvveti nedir" sorusu
+    # cozulemiyordu — cunku isi kinetik enerji DEGISIMINE baglayan
+    # baginti tabanda yoktu. `is` (W = F·d·cosθ) ve `kinetik`
+    # (Ek = mv²/2) ayri ayri vardi ama aralarindaki kopru yoktu.
+    # Beklenen 9600 N.
+    F("is_enerji", "enerji", "Is-enerji teoremi", "Work-energy theorem",
+      "W = m*v**2/2 - m*v0**2/2",
+      {"W": ("net is", "net work", "J"), "m": ("kutle", "mass", "kg"),
+       "v": ("son hiz", "final speed", "m/s"),
+       "v0": ("ilk hiz", "initial speed", "m/s")},
+      "is enerji teoremi|net is kinetik enerji degisimi|"
+      "kinetik enerji degisimi", "work energy theorem"),
+    # Sabit kuvvetle duran/hizlanan cisim: teoremin dogrudan kuvvet
+    # veren hali. Ogrenci "fren kuvveti" sorulunca tam olarak bunu
+    # kullanir; iki adimi (Ek ve W = F·d) tek bagintiya indirir.
+    F("fren_kuvvet", "enerji", "Fren kuvveti (is-enerji)",
+      "Braking force (work-energy)",
+      "F = m*(v0**2 - v**2)/(2*d)",
+      {"F": ("fren kuvveti", "braking force", "N"),
+       "m": ("kutle", "mass", "kg"),
+       "v0": ("ilk hiz", "initial speed", "m/s"),
+       "v": ("son hiz", "final speed", "m/s"),
+       "d": ("durma mesafesi", "stopping distance", "m")},
+      "fren kuvveti|fren|frenleme kuvveti|durdurma kuvveti|"
+      "durma mesafesi|durma mesafesi kuvvet|metrede duruyor|"
+      "metrede durur|duruyor fren|sabit kuvvetle durma|"
+      "yavaslayarak duran|durana kadar",
+      "braking force|stopping force|stopping distance|"
+      "comes to rest in|brakes to a stop"),
     F("guc", "enerji", "Guc", "Power",
       "P = W/t",
       {"P": ("guc", "power", "W"), "W": ("is/enerji", "work/energy", "J"),

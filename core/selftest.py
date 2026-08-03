@@ -1677,6 +1677,57 @@ def run():
     check("ortuk: manyetik olmayan soruya bulasmiyor",
           lambda: "theta" in _prb.malzeme_degerleri(
               "20 m/s hizla atilan cismin menzili nedir")[0], False)
+    # ── IS-ENERJI TEOREMI ───────────────────────────────────────────
+    # Olculdu (taze sinav): "1200 kg araba 20 m/s hizla giderken 25
+    # m'de duruyor fren kuvveti nedir" cozulemiyordu ve cevap EGIK
+    # ATIS MENZILINE dusuyordu. Kok neden yine EKSIK VERI degil eksik
+    # BAGINTI idi: isi kinetik enerji degisimine baglayan koprü
+    # tabanda yoktu. `is` (W = F·d·cosθ) ve `kinetik` (Ek = mv²/2)
+    # ayri ayri vardi ama aralarinda bag yoktu. Beklenen 9600 N.
+    check("formul: is-enerji teoremi tabanda",
+          lambda: "is_enerji" in formulas.BY_ID, True)
+    check("formul: fren kuvveti bagintisi tabanda",
+          lambda: formulas.BY_ID["fren_kuvvet"]["eq"],
+          "F = m*(v0**2 - v**2)/(2*d)")
+    check("fren: sorulan kuvvet dogru bagintiyla veriliyor",
+          lambda: brain.respond(
+              "1200 kg araba 20 m/s hizla giderken 25 m'de duruyor "
+              "fren kuvveti nedir", session="_test_fren").text,
+          contains("v0**2 - v**2", "9600"))
+    check("fren: durma senaryosu son hizi sifirliyor",
+          lambda: brain.respond(
+              "1200 kg araba 20 m/s hizla giderken 25 m'de duruyor "
+              "fren kuvveti nedir", session="_test_fren").text,
+          contains("son hız", "v0` = 20"))
+
+    # ── TAZE KURAMSALIN IKI ICERIK EKSIGI ───────────────────────────
+    check("cekirdek: degiskenlere ayirma turetimi yuklu",
+          lambda: bool(knowledge.get("degiskenlere_ayirma")), True)
+    check("cekirdek: perturbasyon-gecis turetimi yuklu",
+          lambda: bool(knowledge.get("perturbasyon_gecis")), True)
+    check("ayirma: sabitin NEDEN sabit oldugu gerekcelendiriliyor",
+          lambda: knowledge.get("degiskenlere_ayirma")["tr"],
+          contains("ayırma sabiti", "yalnızca `t`nin", "Ĥφ = Eφ"))
+    check("ayirma: duragan durum gerekcesi veriliyor",
+          lambda: knowledge.get("degiskenlere_ayirma")["tr"],
+          contains("|Ψ_n|² = |φ_n|²", "durağan durum"))
+    check("ayirma: genel cozum ust uste binmeyle kuruluyor",
+          lambda: knowledge.get("degiskenlere_ayirma")["tr"],
+          contains("Σ c_n φ_n(x) e^(−iE_n t/ħ)"))
+    check("perturbasyon: kesin denklem ile yaklasiklik ayriliyor",
+          lambda: knowledge.get("perturbasyon_gecis")["tr"],
+          contains("HÂLÂ KESİNDİR", "birinci mertebe"))
+    check("perturbasyon: gecis olasiligi genligin KARESI",
+          lambda: knowledge.get("perturbasyon_gecis")["tr"],
+          contains("P_{i→f}(t) = |c_f⁽¹⁾(t)|²", "girişim"))
+    check("perturbasyon: altin kural ve secim kurallari var",
+          lambda: knowledge.get("perturbasyon_gecis")["tr"],
+          contains("(2π/ħ)·|V_fi|²·ρ(E_f)", "seçim kuralları",
+                   "REZONANS"))
+    check("perturbasyon: yontemin siniri soyleniyor",
+          lambda: knowledge.get("perturbasyon_gecis")["tr"],
+          contains("P ≪ 1", "İKİNCİ mertebeden"))
+
     check("tel kuvveti: sorulan buyukluk veriliyor",
           lambda: brain.respond(
               "0.4 T manyetik alanda 5 A akim tasiyan 2 m telin "
@@ -2059,7 +2110,7 @@ def run():
           lambda: _tmot.turet_indirgenmis_kutle("tr"),
           contains("m₁m₂/(m₁+m₂)"))
     check("taze: gorulmemis turetimler gerilemiyor (motor genisledi)",
-          lambda: _olcum.taze_kuramsal_puani()[0] >= 2, True)
+          lambda: _olcum.taze_kuramsal_puani()[0] >= 4, True)
     check("motor: kapsam disi soruyu tanimiyor",
           lambda: _tmot.coz("Bloch teoremini ispatla"), None)
     check("genelleme: yazilmamis turetimler cozuluyor",
@@ -2083,9 +2134,9 @@ def run():
     # yakalamak ve ilerlemeyi gorunur kilmak. Bu sayilar yukselmeden
     # "sistem gelisti" denmemelidir.
     check("taze: gorulmemis sayisal problemler gerilemiyor",
-          lambda: _olcum.taze_sayisal_puani()[0] >= 5, True)
+          lambda: _olcum.taze_sayisal_puani()[0] >= 6, True)
     check("taze: gorulmemis turetimler gerilemiyor",
-          lambda: _olcum.taze_kuramsal_puani()[0] >= 2, True)
+          lambda: _olcum.taze_kuramsal_puani()[0] >= 4, True)
     # EN ONEMLISI: imkansiz girdiye dogru tepki. Yanlis cevap, eksik
     # cevaptan zararlidir. 2/4 idi; fiziksel gecerlilik denetimi
     # eklendikten sonra 4/4 — esik TAM PUANA cekildi.
