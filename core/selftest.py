@@ -1863,6 +1863,20 @@ def run():
     check("yazim: gercek yazim hatasi hâlâ duzeltiliyor",
           lambda: (_an.duzelt("entrpi")[0], _an.duzelt("kinetk")[0]),
           ("entropi", "kinetik"))
+    # Dagarcik YALNIZCA fizik metinlerinden kuruluyor; kullanicinin
+    # soruyu KURARKEN kullandigi siradan kelimeler orada yok ve fizik
+    # terimlerine "duzeltiliyorlar". Ayni kusur DORT kez cikti:
+    #   yardim -> yarim, tanit -> tait, gecildigini -> geldigini,
+    #   konusundan -> konumundan (korpus "konum" ile dolu, "konu" yok).
+    # Tek tek kelime eklemek bu sinifi kapatmadi; KOK korumasi kapatti.
+    for _w in ("konusundan", "konusuna", "gecildigini", "gecisleri",
+               "iliskisini", "asamalarini", "yontemiyle", "ornekleri",
+               "tanit", "yardim", "cozumunu", "gerekcesiyle"):
+        check("yazim: '%s' bozulmuyor" % _w,
+              (lambda w: (lambda: _an.duzelt(w)[0]))(_w), _w)
+    check("yazim: gunluk kok korumasi tanimli",
+          lambda: "konu" in _an.KORUNAN_KOK and "gecis" in _an.KORUNAN_KOK,
+          True)
 
     # ── BICIM TALEBI ASAMA DEGILDIR ─────────────────────────────────
     # Uzun sinav sorularinin sonunda hep bulunur: "Tum ara adimlari,

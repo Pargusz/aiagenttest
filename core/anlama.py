@@ -254,6 +254,38 @@ def _ayni_kok(a, b, en_az=5):
     return ortak == len(a) or ortak == len(b)
 
 
+# ── GUNLUK TURKCE KOKLERI ─────────────────────────────────────────────
+# Dagarcik YALNIZCA fizik metinlerinden kuruluyor. Kullanicinin soruyu
+# KURARKEN kullandigi siradan kelimeler orada yok ve bu yuzden fizik
+# terimlerine "duzeltiliyorlar". Ayni kusur dort kez cikti:
+#     yardim      -> yarim        (yari omur makaleleri donuyordu)
+#     tanit       -> tait
+#     gecildigini -> geldigini    (sorunun anlami degisti)
+#     konusundan  -> konumundan   (korpus "konum" ile dolu, "konu" yok)
+# Tek tek kelime eklemek bu sinifi kapatmiyor; KOK korumasi kapatiyor.
+# Kelime bu koklerden biriyle basliyorsa dokunulmaz. Dogru yazilmis bir
+# kelimeyi korumanin bedeli yoktur; bedel yalnizca bu koklerle baslayan
+# gercek bir yazim hatasinin duzeltilmemesidir — nadir ve zararsiz.
+KORUNAN_KOK = (
+    "konu", "gecis", "gecil", "gecir", "iliski", "fark", "benzer",
+    "ornek", "acikla", "tanim", "tanit", "yontem", "asama", "adim",
+    "sonuc", "neden", "amac", "durum", "olay", "surec", "kural",
+    "ilke", "kavram", "bilgi", "soru", "cevap", "cozum", "yardim",
+    "anlat", "goster", "ispat", "kanit", "turet", "hesap", "bulun",
+    "karsilastir", "degerlendir", "incele", "tartis", "yorum",
+    "baslangic", "bitis", "ozet", "ayrinti", "detay", "madde",
+    "baglanti", "koprü", "kopru", "yaklasim", "varsayim", "gerekce",
+)
+
+
+def _gunluk_kok_mu(n):
+    """Kelime siradan bir Turkce kokle mi basliyor?"""
+    for kok in KORUNAN_KOK:
+        if n.startswith(kok) and n[len(kok):].isalpha() or n == kok:
+            return True
+    return False
+
+
 def duzelt(metin, esik=0.87):
     """Yazim hatalarini dagarciktaki en yakin kelimeyle duzelt.
 
@@ -272,7 +304,7 @@ def duzelt(metin, esik=0.87):
         n = normalize(kelime)
         if len(n) < 4 or n in sozluk or n in STOP or n.isdigit():
             return kelime
-        if n in KORUNAN:
+        if n in KORUNAN or _gunluk_kok_mu(n):
             return kelime
         # Kelimenin KOKU dagarcikta varsa bu bir yazim hatasi degil,
         # cekimli bir bicimdir. Olculdu: "devresinde" -> "cevresinde"
