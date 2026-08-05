@@ -439,3 +439,41 @@ def listele(limit=50):
         return dosyalar
     except OSError:
         return []
+
+
+def soru_metni(metin):
+    """Gorselden okunan metinden SORUYU ayikla.
+
+    Olculdu: bir soru ekran goruntusunun ham OCR ciktisi cozucuyu
+    yaniltiyordu. Metin soyleydi:
+
+        Soru 3 - Kinetik enerji
+        Kutlesi 2 kg olan bir cisim 10 m/s hizla
+        hareket ediyor. Kinetik enerjisi nedir?
+        Ek = (1/2) m v^2
+
+    Baslikten "3", ipucu formulunden "(1/2)" sayilari deger sanildi;
+    sistem `Ek = 1 J` okuyup hizi -1 m/s buldu. Dogru cevap 100 J.
+
+    Iki tur satir atilir:
+      * BASLIK: "Soru 3", "Problem 2", "Ornek 5" gibi kisa satirlar.
+      * YALNIZ FORMUL: icinde "=" olan ama soru sormayan satirlar.
+        Bunlar ipucudur; verilen deger degildir ve sayilari
+        cozucuyu yaniltir.
+    """
+    if not metin:
+        return metin
+    tutulan = []
+    for satir in metin.split("\n"):
+        s = satir.strip()
+        if not s:
+            continue
+        d = s.lower()
+        if re.match(r"^(soru|problem|ornek|example|question|q)\s*[\d.\-–:]*"
+                    r"\s*[-–:]?\s*[\w\s]{0,30}$", d):
+            continue                      # baslik satiri
+        if "=" in s and not re.search(r"[?]|nedir|kactir|kac\b|bulunuz|"
+                                      r"hesapla|what|find", d):
+            continue                      # yalniz formul (ipucu)
+        tutulan.append(s)
+    return " ".join(tutulan).strip() or metin

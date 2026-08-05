@@ -529,6 +529,38 @@ def run():
     else:
         ATLANAN.append("belge: OCR testleri (motor bulunamadi)")
 
+    # ── RESIM HAKKINDA SORU SORMAK ──────────────────────────────────
+    # Kullanicinin asil amaci: "resimle alakali bir yazi yazacagim."
+    # Olculdu — resim yuklendikten sonra "bu resimde ne yaziyor"
+    # sorusu "dogrulanmis bilgim yok" cevabi aliyordu; sistem az once
+    # OKUDUGU metni hatirlamiyordu. Okunan metin artik oturum
+    # bellegine yaziliyor ve resme atif yapan sorular oradan
+    # cevaplaniyor.
+    #
+    # Ayrica ham OCR ciktisi cozucuyu yaniltiyordu: baslik ("Soru 3")
+    # ve ipucu formulu ("Ek = (1/2)mv²") deger sanilip Ek = 1 J,
+    # v = -1 m/s cikariyordu. soru_metni() bunlari ayikliyor.
+    check("belge: OCR metninden baslik ve ipucu formulu ayiklaniyor",
+          lambda: _bg.soru_metni(
+              "Soru 3 - Kinetik enerji\n"
+              "Kutlesi 2 kg olan bir cisim 10 m/s hizla\n"
+              "hareket ediyor. Kinetik enerjisi nedir?\n"
+              "Ek = (1/2) m v^2"),
+          lambda g: "Soru 3" not in g and "(1/2)" not in g
+                    and "2 kg" in g and "nedir" in g)
+    if _ocr_var:
+        def _resim_sorusu(soru):
+            _ot = "_test_resim_soru"
+            brain._SESSION_MEM.pop(_ot, None)
+            brain.belge_isle(_gor, "ocr.png", "tr", _ot)
+            return brain.respond(soru, session=_ot).text or ""
+        check("belge: 'bu resimde ne yaziyor' okunani veriyor",
+              lambda: _resim_sorusu("bu resimde ne yaziyor"),
+              contains("okuduğum metin", "Newton"))
+        check("belge: resme atif yapmayan soru etkilenmiyor",
+              lambda: _resim_sorusu("entropi nedir"),
+              lambda g: "okuduğum metin" not in g)
+
     check("belge: metin dosyasi okunuyor",
           lambda: _bg.metin_cikar(_gecici_belge())[0], contains("dolanik"))
     check("belge: bolumler tespit ediliyor",

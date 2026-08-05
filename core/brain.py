@@ -357,6 +357,18 @@ def belge_isle(path, dosya_adi, lang="tr", session="default"):
     _save_turn(session, L(lang, "[belge yüklendi: %s]" % dosya_adi,
                           "[document uploaded: %s]" % dosya_adi),
                rapor, "belge", subject=konu[:80])
+    # BELGENIN ICERIGI oturum bellegine yazilir ki hemen ardindan
+    # gelen "bu resimde ne yaziyor / bu belgede ne anlatiliyor" gibi
+    # sorular cevaplanabilsin. Olculdu: resim yuklendikten sonra
+    # sorulan soru "dogrulanmis bilgim yok" cevabini aliyordu — sistem
+    # az once okudugu metni hatirlamiyordu.
+    try:
+        _m = _SESSION_MEM.setdefault(session, {})
+        _m["son_belge_ad"] = dosya_adi
+        _m["son_belge_metni"] = (s.get("metin") or "")[:6000]
+        _m["son_belge_resim"] = bool(s.get("resim"))
+    except Exception:
+        pass
     return Response(rapor, kind="document",
                     extra={"ogrenildi": ogrenildi, "dosya": dosya_adi})
 
@@ -3935,6 +3947,78 @@ def respond(message, session="default", lang_override=None):
     # cumleden yalnizca "kinetik enerji" cekilip Ek = mv²/2 karti
     # basiliyordu. Soruda IKI kavram ve aralarindaki GECIS isteniyordu.
     # Iliski sorusu tek bir formul karti ile cevaplanamaz.
+    # ── YUKLENEN BELGEYE / RESME ATIF ──────────────────────────────
+    # Olculdu (kullanici bildirdi): resim yuklenip hemen ardindan
+    # "bu resimde ne yaziyor" sorulunca sistem "dogrulanmis bilgim
+    # yok" diyordu — az once OKUDUGU metni hatirlamiyordu. Oysa
+    # kullanicinin resim eklemesinin sebebi tam olarak onun hakkinda
+    # soru sormaktir.
+    #
+    # Kural DAR: yalnizca soru ACIKCA yuklenene isaret ediyorsa ve
+    # oturumda okunmus bir belge varsa devreye girer.
+    try:
+        _bmetin = (ctx.get("son_belge_metni") or "").strip()
+        if _bmetin and re.search(
+                r"(?<!\w)(bu|su|yukarida\w*|attigim|yukledigim|gonderdigim|"
+                r"ekledigim)?\s*(resim\w*|gorsel\w*|foto\w*|belge\w*|"
+                r"dosya\w*|pdf|image|picture|document)(de|da|te|ta|deki|daki|"
+                r"in|un|nin|nun)?\b", nlu.norm(etkin)):
+            _ad = ctx.get("son_belge_ad") or ""
+            _resim = ctx.get("son_belge_resim")
+            # ISTENEN SEY OKUMAK MI, YOKSA COZMEK MI?
+            # "resimdeki soruyu coz / hesapla / anlat" denince metni
+            # geri okumak yetmez; okunan metin sorunun KENDISIDIR ve
+            # normal cozum yolundan gecmelidir.
+            if re.search(r"\b(coz\w*|hesapla\w*|bul\w*|anlat\w*|"
+                         r"acikla\w*|turet\w*|ispatla\w*|"
+                         r"solve|compute|explain)\b", nlu.norm(etkin)) \
+                    and not ctx.get("_belge_cozum"):
+                # Ham OCR ciktisi cozucuyu yaniltiyor: baslik satiri
+                # ("Soru 3") ve ipucu formulu ("Ek = (1/2)mv²") deger
+                # sanilip yanlis cozuluyordu (olculdu: Ek = 1 J,
+                # v = -1 m/s; dogrusu 100 J). Once soru ayiklanir.
+                try:
+                    from . import belge as _blg
+                    _sor = _blg.soru_metni(_bmetin)
+                except Exception:
+                    _sor = _bmetin
+                _ic = respond(_sor, session=session, lang_override=lang)
+                _not = L(lang,
+                         "_**%s** içinden okunan metinle çözüldü._" % _ad,
+                         "_Solved from the text read in **%s**._" % _ad)
+                _ic.text = _not + "\n\n" + (_ic.text or "")
+                return _ic
+
+            _bas = L(lang,
+                     "**%s** içinde okuduğum metin:" % _ad,
+                     "Text I read in **%s**:" % _ad)
+            _govde = [_bas, "", "> " + _bmetin.replace("\n", "\n> ")]
+            # Soru yalnizca "ne yaziyor" degilse, okunan metni baglam
+            # olarak verip normal yola devam etmek daha dogru olur.
+            if not re.search(r"ne\s+yaz|neler\s+yaz|oku|what.*(say|write)",
+                             nlu.norm(etkin)):
+                _govde.append("")
+                _govde.append(L(lang,
+                    "Bu metinle ilgili hesap ya da açıklama istersen "
+                    "doğrudan sorabilirsin.",
+                    "Ask me to compute or explain anything from this text."))
+            resp = Response("\n".join(_govde), kind="document",
+                            extra={"intent": "belge", "dosya": _ad,
+                                   "resim": bool(_resim)})
+            _save_turn(session, message, resp.text, "belge",
+                       subject=(_ad or "belge")[:60])
+            resp.extra["lang"] = lang
+            return resp
+    except Exception:
+        # NOT: burasi sessizce yutuyor ve bu bir kez PAHALIYA MAL OLDU —
+        # respond() cagrisinda parametre adi yanlisti (lang yerine
+        # lang_override) ve kapi gorunmez bicimde devre disi kaldi;
+        # disaridan yalnizca "cevap tuhaf" olarak goruluyordu.
+        # Gelistirirken tani koyabilmek icin izi stderr'e yaziyoruz;
+        # kullanici cevabi etkilenmez, akis normal yoldan devam eder.
+        import traceback
+        traceback.print_exc()
+
     # ── SORUNUN KAPSAMI KADAR CEVAP ────────────────────────────────
     # Olculdu (dis degerlendirme): "Once Euler-Lagrange'i elde ediniz.
     # Daha sonra Legendre ile Hamilton'a gecisi ispatlayiniz.

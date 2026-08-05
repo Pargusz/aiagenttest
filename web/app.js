@@ -509,6 +509,18 @@ function scrollDown() { chat.scrollTop = chat.scrollHeight; }
 // ─────────────────────────────────────────── gönderme
 function send(text) {
   text = (text || input.value).trim();
+  // Bekleyen dosya varsa YAZI OLMASA DA gonderilir; yazi varsa
+  // dosyalar yuklendikten SONRA ayni oturumda sorulur.
+  if (BEKLEYEN.length && !busy) {
+    var kuyruk = BEKLEYEN.slice();
+    var yazi = text;
+    BEKLEYEN = [];
+    bekleyenCiz();
+    input.value = "";
+    autoGrow();
+    dosyaYukle(kuyruk, yazi);
+    return;
+  }
   if (!text || busy) return;
   stopTyping();               // önceki cevap hâlâ yazılıyorsa hemen tamamla
   busy = true;
@@ -598,7 +610,65 @@ function dosyaBaloncugu(file) {
   scrollDown();
 }
 
-function dosyaYukle(files) {
+
+// ─────────────────────────────────────────── bekleyen dosyalar
+// Kullanicinin bildirdigi kusur: "resim eklendiginde yazi yazamiyoruz,
+// sectigimiz gibi gonderiyor." Dosya secilir secilmez yukleniyordu;
+// resimle ilgili bir soru yazmaya firsat kalmiyordu.
+//
+// Artik dosya BEKLETILIR: composer'in ustunde kucuk bir serit olarak
+// gorunur, kullanici isterse yaninda yazi yazar, Gonder'e basinca
+// once dosyalar yuklenir sonra yazi ayni oturumda sorulur. Boylece
+// "bu resimde ne yaziyor?" gibi sorular calisir.
+var BEKLEYEN = [];
+
+function dosyaBeklet(files) {
+  if (!files || !files.length) return;
+  for (var i = 0; i < files.length; i++) {
+    if (BEKLEYEN.length >= 5) break;
+    if (files[i].size > MAX_DOSYA) {
+      addMessage("bot", "⚠️ **" + files[i].name + "** — " + t("tooBig"), false);
+      continue;
+    }
+    BEKLEYEN.push(files[i]);
+  }
+  bekleyenCiz();
+  input.focus();
+}
+
+function bekleyenSil(i) {
+  BEKLEYEN.splice(i, 1);
+  bekleyenCiz();
+}
+
+function bekleyenCiz() {
+  var kutu = document.getElementById("pending");
+  if (!kutu) return;
+  kutu.innerHTML = "";
+  kutu.classList.toggle("hidden", !BEKLEYEN.length);
+  BEKLEYEN.forEach(function (f, i) {
+    var el = document.createElement("div");
+    el.className = "pend-item";
+    var ic = "";
+    if (/^image\//.test(f.type)) {
+      ic = '<img class="pend-img" alt="">';
+    } else {
+      ic = '<span class="fc-icon">' + dosyaSimgesi(f.name) + "</span>";
+    }
+    el.innerHTML = ic + '<span class="pend-ad"></span>' +
+                   '<button class="pend-sil" type="button" ' +
+                   'aria-label="kaldır">×</button>';
+    el.querySelector(".pend-ad").textContent = f.name;
+    var im = el.querySelector(".pend-img");
+    if (im) im.src = URL.createObjectURL(f);
+    el.querySelector(".pend-sil").addEventListener("click", function () {
+      bekleyenSil(i);
+    });
+    kutu.appendChild(el);
+  });
+}
+
+function dosyaYukle(files, sonrakiYazi) {
   if (!files || !files.length || busy) return;
   var liste = [];
   for (var i = 0; i < files.length && i < 5; i++) {
@@ -637,6 +707,10 @@ function dosyaYukle(files) {
     $("attachBtn").disabled = false;
     $("thinkingBadge").classList.add("hidden");
     loadSessions();
+    // Kullanici dosyayla BIRLIKTE yazi yazdiysa simdi sorulur.
+    // Belge raporu ayni oturuma kaydedildigi icin soru onun
+    // baglaminda cevaplanir.
+    if (sonrakiYazi) { send(sonrakiYazi); return; }
     input.focus();
   });
 }
@@ -915,7 +989,7 @@ document.querySelectorAll(".lang").forEach(function (b) {
 
 $("attachBtn").addEventListener("click", function () { $("fileInput").click(); });
 $("fileInput").addEventListener("change", function () {
-  dosyaYukle(this.files);
+  dosyaBeklet(this.files);
   this.value = "";           // aynı dosya tekrar seçilebilsin
 });
 
@@ -938,7 +1012,7 @@ document.addEventListener("drop", function (e) {
   e.preventDefault();
   suruklemeSayaci = 0;
   $("dropHint").classList.add("hidden");
-  dosyaYukle(e.dataTransfer.files);
+  dosyaBeklet(e.dataTransfer.files);
 });
 
 // Panodan resim/dosya yapıştırma
@@ -951,7 +1025,7 @@ input.addEventListener("paste", function (e) {
       if (f) dosyalar.push(f);
     }
   }
-  if (dosyalar.length) { e.preventDefault(); dosyaYukle(dosyalar); }
+  if (dosyalar.length) { e.preventDefault(); dosyaBeklet(dosyalar); }
 });
 
 $("menuBtn").addEventListener("click", function () {
