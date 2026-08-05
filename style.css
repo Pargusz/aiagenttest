@@ -20,30 +20,32 @@
    satir ici kullandigi --bg ve --fg degiskenleri de tanimli.
    ═══════════════════════════════════════════════════════════════════ */
 
+/* ── Referans tasarima gore palet ───────────────────────────────────
+   Kullanicinin gonderdigi ekran goruntusu: neredeyse siyah zemin,
+   biraz daha acik kenar cubugu, dusuk kontrastli ince ayraclar,
+   hap bicimli yazma kutusu. Koyu tema ASIL tasarimdir; acik tema
+   ayni duzenin aydinlik karsiligidir. */
 :root {
-  color-scheme: light dark;
-
-  /* Sicak notr palet — acik tema */
-  --bg:          #faf9f7;
-  --bg-2:        #ffffff;
-  --bg-3:        #f3f1ee;
-  --sidebar:     #f3f1ee;
-  --fg:          #23201d;
-  --fg-soft:     #4a4540;
-  --muted:       #8a827a;
-  --border:      #e3ded7;
-  --border-soft: #eae5df;
-  --accent:      #c8643c;
-  --accent-2:    #a94f2c;
-  --accent-bg:   #f6ece6;
-  --user-bg:     #eeebe6;
-  --code-bg:     #f5f2ee;
+  color-scheme: dark;
+  --bg:          #0d0d0d;
+  --bg-2:        #1a1a1a;
+  --bg-3:        #212121;
+  --sidebar:     #171717;
+  --fg:          #ececec;
+  --fg-soft:     #c8c8c8;
+  --muted:       #8f8f8f;
+  --border:      #2b2b2b;
+  --border-soft: #212121;
+  --accent:      #d97757;
+  --accent-2:    #e08a6d;
+  --accent-bg:   #262626;
+  --user-bg:     #2f2f2f;
+  --code-bg:     #0f0f0f;
   --ok:          #3fa06a;
   --warn:        #d9a441;
-  --shadow:      0 1px 2px rgba(40,32,24,.05), 0 8px 24px rgba(40,32,24,.06);
-  --radius:      14px;
+  --shadow:      0 2px 10px rgba(0,0,0,.35);
+  --radius:      26px;
 
-  /* Eski adlar — kaldirilan kurallar bunlara dayaniyordu */
   --text: var(--fg);
   --text-dim: var(--fg-soft);
   --text-faint: var(--muted);
@@ -53,26 +55,6 @@
           "Helvetica Neue", Arial, sans-serif;
   --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
           "Liberation Mono", monospace;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg:          #211f1d;
-    --bg-2:        #2a2724;
-    --bg-3:        #232120;
-    --sidebar:     #1a1917;
-    --fg:          #edeae5;
-    --fg-soft:     #cdc7bf;
-    --muted:       #9a938a;
-    --border:      #3a3632;
-    --border-soft: #332f2b;
-    --accent:      #d97757;
-    --accent-2:    #e08a6d;
-    --accent-bg:   #3a2b23;
-    --user-bg:     #322e2a;
-    --code-bg:     #1e1c1a;
-    --shadow:      0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.28);
-  }
 }
 
 * { box-sizing: border-box; }
@@ -150,10 +132,7 @@ button { cursor: pointer; background: none; border: 0; }
   font-size: 13.5px; color: var(--fg-soft);
   cursor: pointer; transition: background .13s, color .13s;
 }
-.session-item:hover { background: rgba(0,0,0,.045); color: var(--fg); }
-@media (prefers-color-scheme: dark) {
-  .session-item:hover { background: rgba(255,255,255,.055); }
-}
+.session-item:hover { background: rgba(255,255,255,.06); color: var(--fg); }
 .session-item.active { background: var(--accent-bg); color: var(--fg);
                        font-weight: 500; }
 .s-title { flex: 1; min-width: 0; overflow: hidden;
@@ -324,8 +303,7 @@ details[open] > .status-summary::after { transform: rotate(-90deg); }
 .content pre code { background: none; border: 0; padding: 0;
                     font-size: 13px; line-height: 1.6; }
 .tok-key { color: var(--accent-2); font-weight: 600; }
-.tok-num { color: #3a7d9e; }
-@media (prefers-color-scheme: dark) { .tok-num { color: #7fb8d4; } }
+.tok-num { color: #7fb8d4; }
 
 .copy-btn {
   position: absolute; top: 8px; right: 8px;
@@ -538,3 +516,117 @@ details[open] > .status-summary::after { transform: rotate(-90deg); }
 
 /* Kenar cubugu basliklari daha sessiz */
 .panel-head { font-size: 10.5px; letter-spacing: .07em; }
+
+/* ══════════════ REFERANS TASARIM ══════════════
+   Kullanicinin gonderdigi ekran goruntusundeki duzen. Uc belirleyici
+   oge var: (1) ikonlu, cerceve siz kenar cubugu satirlari, (2) hap
+   bicimli yazma kutusu, (3) bos ekranda ORTADA duran karsilama ve
+   altinda ikonlu oneri SATIRLARI (kart degil).
+
+   Kullanicinin ozel istegi: referanstaki "kullanici adi" satirinin
+   yerinde bizim ACILIR-KAPANIR bilgi birikimi bolumumuz dursun. */
+
+/* ── Kenar cubugu: cercevesiz, ikonlu satirlar ── */
+#sidebar { padding: 10px 8px calc(10px + env(safe-area-inset-bottom));
+           gap: 6px; border-right: 0; }
+.brand { padding: 6px 8px 10px; gap: 9px; }
+.logo { width: 28px; height: 28px; flex-basis: 28px; border-radius: 8px; }
+.brand-sub { display: none; }          /* referansta alt baslik yok */
+
+.btn-new {
+  justify-content: flex-start; gap: 10px;
+  background: none; border: 0; border-radius: 9px;
+  padding: 9px 10px; font-size: 14px; font-weight: 400; color: var(--fg);
+}
+.btn-new:hover { background: var(--accent-bg); border: 0; }
+.btn-new svg { flex: 0 0 17px; opacity: .9; }
+
+.panel-head { padding: 14px 10px 6px; font-size: 12px; font-weight: 600;
+              letter-spacing: 0; text-transform: none; color: var(--muted); }
+.session-item { border-radius: 9px; padding: 8px 10px; font-size: 13.5px; }
+.session-item.active { background: var(--accent-bg); }
+
+/* ── Bilgi birikimi: referanstaki kullanici satirinin yerinde ── */
+.status-box { border-top: 1px solid var(--border-soft); margin-top: auto;
+              padding-top: 4px; }
+.status-summary { padding: 10px 10px; border-radius: 9px; font-size: 12.5px; }
+.status-summary:hover { background: var(--accent-bg); }
+#statusLine { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ── Ust cubuk: sade baslik ── */
+#topbar { border-bottom: 0; }
+.topbar-title { font-size: 15px; font-weight: 600; }
+
+/* ── Yazma kutusu: HAP bicimli ── */
+.composer-inner {
+  border-radius: 999px; padding: 6px 6px 6px 8px; gap: 6px;
+  background: var(--bg-3); border-color: transparent;
+  box-shadow: none; align-items: center;
+}
+.composer-inner:focus-within { border-color: var(--border); box-shadow: none; }
+#input { padding: 8px 4px; max-height: 148px; }
+.attach-btn, #send { width: 36px; height: 36px; border-radius: 999px; }
+.attach-btn { border: 1px solid var(--border); }
+.attach-btn:hover { background: var(--accent-bg); }
+#composer { border-top: 0; }
+
+/* ── Bos ekran: karsilama ORTADA, oneriler ikonlu satir ── */
+#welcome { padding: 0 24px; }
+#welcome h1 { font-size: 30px; font-weight: 400; letter-spacing: -.02em;
+              margin-bottom: 26px; }
+.hero-logo { width: 44px; height: 44px; font-size: 22px; margin-bottom: 16px;
+             border-radius: 12px; }
+.hero-sub { display: none; }           /* referansta uzun alt metin yok */
+
+.suggestions { display: flex; flex-direction: column; gap: 2px;
+               max-width: 420px; margin: 0 auto; }
+.sugg {
+  display: flex; align-items: center; gap: 13px; text-align: left;
+  background: none; border: 0; border-radius: 10px;
+  padding: 11px 12px; color: var(--fg-soft); font-size: 14.5px;
+}
+.sugg:hover { background: var(--accent-bg); border: 0; transform: none;
+              color: var(--fg); }
+.sugg-ic { width: 19px; height: 19px; flex: 0 0 19px; opacity: .85; }
+.sugg-tx { min-width: 0; }
+.sugg b { font-size: 14.5px; font-weight: 400; letter-spacing: 0;
+          text-transform: none; color: var(--fg); margin-bottom: 0;
+          display: inline; }
+.sugg span { display: block; font-size: 12.5px; color: var(--muted); }
+
+/* Sohbet BOSKEN karsilama ve yazma kutusu dikeyde ORTALANIR; ilk mesaj
+   gelince kutu asagi iner. :has() desteklemeyen tarayicida kutu zaten
+   altta kalir — duzen bozulmaz, yalnizca ortalama olmaz. */
+#main:has(#welcome) #chat {
+  display: flex; align-items: center; justify-content: center;
+}
+#main:has(#welcome) #composer { padding-bottom: 8vh; }
+
+@media (max-width: 860px) {
+  .composer-inner { border-radius: 999px; padding: 5px 5px 5px 7px; }
+  .attach-btn, #send { width: 34px; height: 34px; }
+  #welcome h1 { font-size: 24px; margin-bottom: 20px; }
+  .suggestions { max-width: none; }
+  .sugg { padding: 12px 10px; }
+  #main:has(#welcome) #composer { padding-bottom: calc(14px + env(safe-area-inset-bottom)); }
+  #sidebar { width: 272px; }
+}
+
+/* Karsilama bloğu sohbet alanindan UZUN olunca tasip logoyu kesiyordu
+   (olculdu: 650px icerik, 610px alan). Referansta da yalnizca birkac
+   eylem satiri var; listeyi kisaltip araliklari daralttik. Kalanlar
+   yazarak zaten erisilebilir. */
+.sugg:nth-of-type(n+5) { display: none; }
+.sugg { padding: 9px 12px; }
+.suggestions { gap: 0; }
+#welcome h1 { margin-bottom: 18px; }
+.hero-logo { margin-bottom: 12px; }
+
+/* Kenar cubugu alt bolumu referanstaki gibi SESSIZ: dil secimi kucuk,
+   aciklama metni gizli. Asil vurgu bilgi birikimi satirinda. */
+.sidebar-foot { gap: 6px; padding: 8px 4px 0; }
+.sidebar-foot .hint { display: none; }
+.toggle-btn { padding: 6px 9px; font-size: 12px; border-radius: 8px; }
+.lang { padding: 5px; font-size: 12px; border-radius: 8px; }
+.lang.active { background: var(--accent-bg); border-color: var(--border);
+               color: var(--fg); }

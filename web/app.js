@@ -1,3 +1,27 @@
+/* Oneri satiri ikonlari — referans tasarimdaki gibi solda kucuk isaret.
+   Tek renk cizgi ikonlar; emoji kullanilmaz. */
+var SUGG_IKONLAR = {
+  formul:  '<path d="M4 5h16M4 12h10M4 19h7"/>',
+  konu:    '<path d="M4 5.5A2.5 2.5 0 016.5 3H19v18H6.5A2.5 2.5 0 014 18.5z"/>',
+  turev:   '<path d="M3 17c4 0 5-10 9-10s5 10 9 10"/>',
+  birim:   '<path d="M7 7h10M7 12h10M7 17h6"/><path d="M17 15l3 2-3 2"/>',
+  matlab:  '<path d="M9 8l-5 4 5 4M15 8l5 4-5 4"/>',
+  makale:  '<circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/>',
+  ornek:   '<path d="M12 3l2.5 5.5L20 10l-4 4 1 6-5-2.8L7 20l1-6-4-4 5.5-1.5z"/>',
+  sabit:   '<circle cx="12" cy="12" r="8"/><path d="M12 8v5M12 16h.01"/>'
+};
+function SUGG_IKON(baslik) {
+  var b = (baslik || "").toLocaleLowerCase("tr");
+  var d = null;
+  for (var k in SUGG_IKONLAR) {
+    if (b.indexOf(k) >= 0) { d = SUGG_IKONLAR[k]; break; }
+  }
+  if (!d) d = '<circle cx="12" cy="12" r="8"/>';
+  return '<svg class="sugg-ic" viewBox="0 0 24 24" fill="none" ' +
+         'stroke="currentColor" stroke-width="1.7" stroke-linecap="round" ' +
+         'stroke-linejoin="round" aria-hidden="true">' + d + "</svg>";
+}
+
 /* Marka isareti — emoji yerine cizilmis SVG. Tek renk
    (currentColor) oldugu icin acik/koyu temada ve her boyutta
    ayni durur; emojinin isletim sistemine gore degisen
@@ -75,6 +99,7 @@ var I18N = {
     langHint: "Konuşma dili. Makaleler her dilden taranır.",
     heroSub: "Fizik hesaplamaları, konu anlatımı, formül çözümü, MATLAB kodu ve canlı literatür taraması.",
     placeholder: "Bir fizik sorusu sorun, formül yazın veya hesaplama isteyin…",
+    placeholderKisa: "Bir fizik sorusu sorun…",
     foot: "Enter ile gönder · Shift+Enter yeni satır",
     you: "Sen", bot: "ParguszPhysics", copy: "kopyala", copied: "kopyalandı",
     typing: "Yazma efekti", on: "açık", off: "kapalı",
@@ -102,6 +127,7 @@ var I18N = {
     langHint: "Conversation language. Papers are scanned in every language.",
     heroSub: "Physics calculations, topic explanations, formula solving, MATLAB code and live literature search.",
     placeholder: "Ask a physics question, write a formula or request a calculation…",
+    placeholderKisa: "Ask a physics question…",
     foot: "Enter to send · Shift+Enter for a new line",
     you: "You", bot: "ParguszPhysics", copy: "copy", copied: "copied",
     typing: "Typing effect", on: "on", off: "off",
@@ -128,7 +154,24 @@ function applyLang() {
     el.textContent = t(el.getAttribute("data-i18n"));
   });
   document.querySelectorAll("[data-i18n-ph]").forEach(function (el) {
-    el.placeholder = t(el.getAttribute("data-i18n-ph"));
+    // DAR EKRANDA KISA METIN. Olculdu (375px): uzun yer tutucu iki
+    // satira sariyor ve ikinci satir kutunun altindan tasip
+    // kesiliyordu. Textarea'da yer tutucu kirpilamaz; dogru cozum
+    // metni kisaltmak.
+    var _k = el.getAttribute("data-i18n-ph");
+    el.placeholder = (_k === "placeholder" && window.innerWidth < 520)
+      ? t("placeholderKisa") : t(_k);
+    // Ekran genisligi degisince (telefonu yan cevirmek gibi) yeniden
+    // secilir. Dinleyici BURADA kuruluyor cunku t() yalnizca bu
+    // kapsamda gorunur; dosya sonuna eklenince "t is not defined"
+    // hatasi veriyordu (olculdu, konsol).
+    if (_k === "placeholder" && !el._phDinleyici) {
+      el._phDinleyici = true;
+      window.addEventListener("resize", function () {
+        el.placeholder = window.innerWidth < 520
+          ? t("placeholderKisa") : t("placeholder");
+      });
+    }
   });
   document.querySelectorAll(".lang").forEach(function (b) {
     b.classList.toggle("active", b.dataset.lang === LANG);
@@ -611,7 +654,12 @@ function loadSuggestions() {
       var el = document.createElement("button");
       el.type = "button";
       el.className = "sugg";
-      el.innerHTML = "<b>" + esc(s.baslik) + "</b><span>" + esc(s.metin) + "</span>";
+      // Referans tasarimdaki gibi ikonlu SATIR: solda isaret, sonra
+      // etiket ve ornek. Ikon basliga gore secilir; eslesme yoksa
+      // notr bir isaret kullanilir.
+      el.innerHTML = SUGG_IKON(s.baslik) +
+                     '<span class="sugg-tx"><b>' + esc(s.baslik) +
+                     "</b><span>" + esc(s.metin) + "</span></span>";
       el.addEventListener("click", function () { send(s.metin); });
       box.appendChild(el);
     });
@@ -1112,3 +1160,5 @@ setInterval(refreshStatus, 4000);
 input.focus();
 
 })();
+
+
