@@ -552,10 +552,19 @@ def run():
           lambda: _bg.metin_cikar(_gecici_belge("\x00\x01binary", ".zzz")),
           lambda g: True)   # ikili veri metin gibi okunur, cokmez
 
-    check("belge: OCR olmadigi durustce soyleniyor",
+    # Bu test ESKIDEN "bu bilgisayarda OCR kurulu degil" mesajini
+    # bekliyordu — yani BOZUK davranisi kodluyordu. OCR artik calisiyor
+    # (macOS Vision), dolayisiyla dogru olcut sudur: metin OKUNDUYSA
+    # rapor onu gostermeli; okunacak yazi YOKSA bunu duzgun soylemeli.
+    check("belge: yazisiz gorselde durum duzgun soyleniyor",
           lambda: brain.belge_raporu({"dosya": "a.png", "resim": True,
-                                      "meta": {}}, "tr"),
-          contains("OCR"))
+                                      "meta": {}, "metin": ""}, "tr"),
+          contains("okunabilir bir yazı bulamadım"))
+    check("belge: okunan yazi raporda gosteriliyor",
+          lambda: brain.belge_raporu(
+              {"dosya": "a.png", "resim": True, "meta": {},
+               "metin": "F = m*a"}, "tr"),
+          contains("okudum", "F = m*a"))
 
     # ---------------------------------------------------- makale inceleme
     check("inceleme: bulgu turu siniflandirmasi",
