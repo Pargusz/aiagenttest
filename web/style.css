@@ -227,6 +227,17 @@ details[open] > .status-summary::after { transform: rotate(-90deg); }
                color: #fff; }
 .hint { font-size: 11px; color: var(--muted); line-height: 1.45; }
 
+
+/* ── Marka isareti ──────────────────────────────────────────────────
+   Emoji yerine cizilmis SVG. Tek renk (currentColor) oldugu icin
+   acik/koyu temada ve her boyutta ayni durur; emojinin isletim
+   sistemine gore degisen gorunumu de ortadan kalkar. */
+.mark { width: 100%; height: 100%; display: block; }
+.logo .mark      { padding: 6px; }
+.hero-logo .mark { padding: 10px; }
+.avatar .mark    { padding: 5px; }
+.msg.user .avatar { color: var(--muted); }
+
 /* ══════════════════════ ANA ALAN ══════════════════════ */
 #main { flex: 1; display: flex; flex-direction: column;
         min-width: 0; position: relative; }
@@ -495,3 +506,35 @@ details[open] > .status-summary::after { transform: rotate(-90deg); }
     transition-duration: .01ms !important; scroll-behavior: auto !important;
   }
 }
+
+/* ── Sadelestirme ───────────────────────────────────────────────────
+   Kullanicinin istegi: "daha modern, sade, anlasilir, kolay
+   kullanimli". Kalabalik yapan uc sey vardi ve ucu de sohbetin onune
+   geciyordu:
+     * her mesajin ustundeki BUYUK HARFLI rol etiketi ("SEN",
+       "PARGUSZPHYSICS") — kim konustugu zaten isaretten belli,
+     * mesajlar arasi tam genislikte cizgiler ve kullanici satirinin
+       zemin rengi — sayfayi seritlere boluyordu,
+     * kenar cubugundaki alti kutuluk istatistik izgarasi.
+   Rol etiketi kaldirildi, ayrim BOSLUK ve isaretle kuruldu, sayilar
+   tek satira indi. Bilgi kaybi yok; gurultu gitti. */
+
+.role { display: none; }
+.msg + .msg { border-top: 0; }
+.msg { padding: 16px 24px; }
+.msg.user { background: none; }
+/* Kullanici satiri: kendi ici cerceveli kart — zemin serisi yerine */
+.msg.user .body { background: var(--user-bg); border-radius: 12px;
+                  padding: 11px 14px; }
+.msg.user .content p { margin: 0; }
+.msg.assistant { padding-bottom: 26px; }
+
+/* Istatistikler: alti kutu yerine tek satir okunur ozet */
+.stat-grid { display: flex; flex-wrap: wrap; gap: 4px 14px; }
+.stat { background: none; border: 0; padding: 0; text-align: left;
+        display: flex; align-items: baseline; gap: 4px; }
+.stat b { display: inline; font-size: 12.5px; }
+.stat span { font-size: 11.5px; }
+
+/* Kenar cubugu basliklari daha sessiz */
+.panel-head { font-size: 10.5px; letter-spacing: .07em; }

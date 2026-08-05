@@ -449,6 +449,24 @@ def serve(host=None, port=None, open_browser=True, start_learning=True):
     print("   Veri   : %s" % config.DB_PATH)
     print("   Kayit  : %s" % config.LOG_PATH)
     print("")
+    # PAYLASILACAK BAGLANTIYI HAZIR VER.
+    # Anahtar mekanizmasi zaten "bir kez gir, bir daha sorulmasin"
+    # bicimindedir: #anahtar=... iceren bir baglantiya tiklayan kisinin
+    # tarayicisi anahtari saklar ve adres degisse bile bir daha
+    # sormaz (bkz. app.js, "1. Adres cubugundaki anahtari al").
+    #
+    # Eksik olan sey mekanizma degil, o baglantinin ELDE OLMAMASIYDI:
+    # kullanici duz adresi paylasinca karsi taraf anahtar ekranini
+    # goruyordu. Artik baglanti aciliste basiliyor; kopyalayip
+    # gonderen kisi icin is bitiyor.
+    _ank = (config.ANAHTAR or "").strip()
+    if _ank:
+        print("   Paylasilacak baglanti (anahtar icinde, bir kez yeter):")
+        print("   %s/#anahtar=%s" % (url.rstrip("/"), _ank))
+        print("   Bu baglantiya tiklayan kisiden bir daha anahtar")
+        print("   istenmez. Baglantiyi herkese acik yerde paylasmayin.")
+        print("")
+
     print("   Ogrenme motoru arka planda calisiyor.")
     print("   Bilgisayari acik biraktiginiz surece ogrenmeye devam eder.")
     print("   Durdurmak icin: Ctrl+C")

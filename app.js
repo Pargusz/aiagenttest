@@ -1,3 +1,10 @@
+/* Marka isareti — emoji yerine cizilmis SVG. Tek renk
+   (currentColor) oldugu icin acik/koyu temada ve her boyutta
+   ayni durur; emojinin isletim sistemine gore degisen
+   gorunumu de ortadan kalkar. */
+var MARKA_IM = "<svg class='mark' viewBox='0 0 32 32' fill='none' aria-hidden='true'><g stroke='currentColor' stroke-width='1.6' opacity='.95'><ellipse cx='16' cy='16' rx='13' ry='5.4'/><ellipse cx='16' cy='16' rx='13' ry='5.4' transform='rotate(60 16 16)'/><ellipse cx='16' cy='16' rx='13' ry='5.4' transform='rotate(120 16 16)'/></g><circle cx='16' cy='16' r='3.1' fill='currentColor'/></svg>";
+var KULLANICI_IM = "<svg class='mark' viewBox='0 0 32 32' fill='none' aria-hidden='true'><circle cx='16' cy='11.5' r='4.6' stroke='currentColor' stroke-width='1.7'/><path d='M6.5 26.5c0-5.2 4.3-8 9.5-8s9.5 2.8 9.5 8' stroke='currentColor' stroke-width='1.7' stroke-linecap='round'/></svg>";
+
 /* ParguszPhysics — arayüz mantığı */
 (function () {
 "use strict";
@@ -412,7 +419,7 @@ function addMessage(role, text, animate) {
   var isUser = role === "user";
   wrap.innerHTML =
     '<div class="msg-inner">' +
-      '<div class="avatar">' + (isUser ? "👤" : "⚛") + "</div>" +
+      '<div class="avatar">' + (isUser ? KULLANICI_IM : MARKA_IM) + "</div>" +
       '<div class="body">' +
         '<div class="role">' + (isUser ? t("you") : t("bot")) + "</div>" +
         '<div class="content"></div>' +
@@ -526,7 +533,7 @@ function dosyaBaloncugu(file) {
   var wrap = document.createElement("div");
   wrap.className = "msg user";
   wrap.innerHTML =
-    '<div class="msg-inner"><div class="avatar">👤</div>' +
+    '<div class="msg-inner"><div class="avatar">' + KULLANICI_IM + '</div>' +
     '<div class="body"><div class="role">' + t("you") + "</div>" +
     '<div class="content"></div></div></div>';
   var c = wrap.querySelector(".content");
@@ -671,6 +678,7 @@ function refreshStatus() {
   });
 }
 
+
 // ─────────────────────────────────────────── sohbet listesi
 function loadSessions() {
   api("/api/oturumlar").then(function (r) { return r.json(); })
@@ -770,7 +778,7 @@ function deleteSession(id) {
 function showWelcome() {
   chat.innerHTML =
     '<div id="welcome">' +
-      '<div class="hero-logo">⚛</div><h1>ParguszPhysics</h1>' +
+      '<div class="hero-logo">' + MARKA_IM + '</div><h1>ParguszPhysics</h1>' +
       '<p class="hero-sub" data-i18n="heroSub"></p>' +
       '<div id="suggestions" class="suggestions"></div>' +
     "</div>";
