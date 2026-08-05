@@ -36,9 +36,9 @@
   --muted:       #8f8f8f;
   --border:      #2b2b2b;
   --border-soft: #212121;
-  --accent:      #d97757;
-  --accent-2:    #e08a6d;
-  --accent-bg:   #262626;
+  --accent:      #fd3db5;
+  --accent-2:    #ff63c6;
+  --accent-bg:   #2b1f27;
   --user-bg:     #2f2f2f;
   --code-bg:     #0f0f0f;
   --ok:          #3fa06a;
@@ -630,3 +630,31 @@ details[open] > .status-summary::after { transform: rotate(-90deg); }
 .lang { padding: 5px; font-size: 12px; border-radius: 8px; }
 .lang.active { background: var(--accent-bg); border-color: var(--border);
                color: var(--fg); }
+
+/* ── Eklenen gorsel onizlemesi ──────────────────────────────────────
+   Olculdu (kullanici bildirdi): mobilde gorsel eklenince onizleme
+   ASIRI BUYUK geliyor ve duzeni bozuyordu. Sebep: img.file-prev icin
+   hicbir boyut siniri yoktu; dosyanin kendi pikselleri kadar
+   buyuyordu (telefon fotografi 3000+ piksel).
+   Cozum: genislik kutuya sigar, yukseklik sinirli, oran korunur. */
+img.file-prev {
+  display: block;
+  max-width: 100%;
+  max-height: 320px;
+  width: auto; height: auto;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  margin: 6px 0 0;
+  object-fit: contain;
+  background: var(--code-bg);
+}
+
+/* Cevap icindeki her gorsel de kutuyu asmaz */
+.content img { max-width: 100%; height: auto; border-radius: 10px; }
+
+@media (max-width: 860px) {
+  img.file-prev { max-height: 220px; }
+}
+@media (max-width: 380px) {
+  img.file-prev { max-height: 180px; }
+}

@@ -216,14 +216,32 @@ def belge_raporu(s, lang="tr"):
         if bilgi:
             satir.append(" · ".join(bilgi))
             satir.append("")
+        # OCR ile metin OKUNDUYSA rapor onun uzerine kurulur.
+        # Olculdu: metin cikarilmasina ragmen bu dal her zaman
+        # "okuyamiyorum" diyordu ve resim icerigi hic kullanilmiyordu.
+        okunan = (s.get("metin") or "").strip()
+        if okunan:
+            satir.append(L(lang,
+                "Resimdeki metni **okudum**:", "I **read** the text in the image:"))
+            satir.append("")
+            satir.append("> " + okunan.replace("\n", "\n> "))
+            satir.append("")
+            # Icerikte fizik varsa ne yapabilecegini soyle
+            satir.append(L(lang,
+                "Bu içerik üzerinde hesap yaptırabilir, formülü çözdürebilir "
+                "ya da konuyu anlattırabilirsiniz — yazarak sorun.",
+                "You can ask me to compute with this, solve the formula, or "
+                "explain the topic — just ask."))
+            return "\n".join(satir)
+
         satir.append(L(lang,
-            "Resmi kaydettim, ancak **içindeki metni okuyamıyorum**: bu "
-            "bilgisayarda bir OCR (görüntüden yazı tanıma) motoru kurulu değil. "
-            "Grafiğin veya formülün içeriğini yazıyla anlatırsanız üzerinde "
-            "hesap yapabilir, yorumlayabilirim.",
-            "I've saved the image, but **I can't read text inside it**: no OCR "
-            "engine is installed on this machine. Describe the plot or formula "
-            "in text and I can compute with it or comment on it."))
+            "Resmi kaydettim ama **içinde okunabilir bir yazı bulamadım**. "
+            "Görsel yalnızca çizim/grafikse ya da yazı çok bulanıksa bu olur. "
+            "İçeriği yazıyla anlatırsanız üzerinde hesap yapabilir, "
+            "yorumlayabilirim.",
+            "I saved the image but **found no readable text in it**. That "
+            "happens when the image is only a drawing or the text is too "
+            "blurry. Describe the content and I can compute with it."))
         return "\n".join(satir)
 
     if s.get("bos"):

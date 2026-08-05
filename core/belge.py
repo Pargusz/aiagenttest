@@ -103,6 +103,82 @@ def _duz_metin(path):
     raise BelgeHatasi("Dosyanin kodlamasi cozulemedi.")
 
 
+def _ocr_mac(path):
+    """macOS'un YERLESIK metin tanima motoru (Vision framework).
+
+    Kullanicinin istegi: "gorsel taramasi yapabiliyor olmali."
+    Onceden resimden hicbir metin cikarilmiyordu; yalnizca boyut ve
+    bicim okunuyordu.
+
+    Neden Vision: macOS'ta hazir gelir, ek bir program KURULMASI
+    gerekmez ve Turkce'yi tanir. tesseract secenegi ayrica denenir
+    ama o, isletim sistemi duzeyinde ayri bir kurulum ister.
+
+    Basarisiz olursa None doner; cagiran taraf oteki yollari dener.
+    """
+    try:
+        import Vision
+        import Quartz
+        from Foundation import NSURL
+    except Exception:
+        return None
+    try:
+        url = NSURL.fileURLWithPath_(path)
+        kaynak = Quartz.CGImageSourceCreateWithURL(url, None)
+        if not kaynak:
+            return None
+        img = Quartz.CGImageSourceCreateImageAtIndex(kaynak, 0, None)
+        if not img:
+            return None
+        istek = Vision.VNRecognizeTextRequest.alloc().init()
+        istek.setRecognitionLevel_(0)        # 0 = dogru (yavas), 1 = hizli
+        istek.setUsesLanguageCorrection_(True)
+        try:
+            istek.setRecognitionLanguages_(["tr-TR", "en-US"])
+        except Exception:
+            pass
+        isleyici = Vision.VNImageRequestHandler.alloc()\
+            .initWithCGImage_options_(img, None)
+        tamam, _hata = isleyici.performRequests_error_([istek], None)
+        if not tamam:
+            return None
+        satirlar = []
+        for gozlem in (istek.results() or []):
+            adaylar = gozlem.topCandidates_(1)
+            if adaylar and len(adaylar):
+                satirlar.append(str(adaylar[0].string()))
+        return "\n".join(satirlar).strip() or None
+    except Exception:
+        return None
+
+
+def _ocr_tesseract(path):
+    """tesseract kuruluysa onu kullan (macOS disi sistemler icin)."""
+    try:
+        import pytesseract
+        from PIL import Image
+    except Exception:
+        return None
+    try:
+        with Image.open(path) as im:
+            return (pytesseract.image_to_string(im, lang="tur+eng")
+                    or "").strip() or None
+    except Exception:
+        return None
+
+
+def resim_metni(path):
+    """Resimden metin oku. Once yerlesik motor, sonra tesseract."""
+    for motor in (_ocr_mac, _ocr_tesseract):
+        try:
+            metin = motor(path)
+        except Exception:
+            metin = None
+        if metin:
+            return metin, motor.__name__.replace("_ocr_", "")
+    return None, None
+
+
 def _resim_bilgisi(path):
     meta = {"resim": True}
     try:
@@ -113,7 +189,10 @@ def _resim_bilgisi(path):
             meta["mod"] = im.mode
     except Exception:
         pass
-    return "", meta
+    metin, motor = resim_metni(path)
+    if metin:
+        meta["ocr"] = motor
+    return (metin or ""), meta
 
 
 def metin_cikar(path):
@@ -261,8 +340,17 @@ def cozumle(path, dosya_adi, lang="tr"):
         "uzunluk": len(metin or ""),
         "kelime": len((metin or "").split()),
     }
+    # RESIMDEN METIN OKUNDUYSA belge gibi cozumlenir.
+    # Kullanicinin istegi: "gorselleri de okuyabiliyor, gorebiliyor ve
+    # ALGILAYABILIYOR olmali." Onceden resim dali burada erken donuyor
+    # ve OCR metni hicbir yerde kullanilmiyordu; formul, kavram ve
+    # sayisal bulgu cikarimi hic calismiyordu. Artik metin varsa
+    # asagidaki normal cozumleme yolundan geciyor; boylece resimdeki
+    # formul uzerinde hesap yapilabiliyor ve icerik ogrenilebiliyor.
     if sonuc["resim"]:
-        return sonuc
+        if not (metin or "").strip():
+            return sonuc
+        sonuc["metin"] = metin
 
     if not (metin or "").strip():
         sonuc["bos"] = True

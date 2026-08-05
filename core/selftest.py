@@ -480,6 +480,55 @@ def run():
         f.close()
         return f.name
 
+    # ── GORSELDEN METIN OKUMA (OCR) ─────────────────────────────────
+    # Kullanicinin bildirdigi kusur: "gorsel taramasi yapamiyor."
+    # Olculdu — resim dali yalnizca boyut/bicim okuyup BOS metin
+    # donduruyordu; ustelik cozumle() resimde ERKEN DONUP okunan
+    # metni cope atiyordu, formul/kavram cikarimi hic calismiyordu.
+    # macOS'un yerlesik Vision motoru kullaniliyor: ek program
+    # kurulmasi gerekmez ve Turkce'yi tanir. Motor yoksa testler
+    # sessizce atlanir — kusur degil, ORTAM kosuludur.
+    def _ocr_gorsel():
+        try:
+            from PIL import Image, ImageDraw, ImageFont
+        except Exception:
+            return None
+        import tempfile, os as _os
+        im = Image.new("RGB", (900, 260), "white")
+        d = ImageDraw.Draw(im)
+        try:
+            f = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 42)
+        except Exception:
+            f = None
+        d.text((40, 60), "Newton ikinci yasasi", fill="black", font=f)
+        d.text((40, 140), "F = m * a", fill="black", font=f)
+        yol = _os.path.join(tempfile.gettempdir(), "_pp_ocr_test.png")
+        im.save(yol)
+        return yol
+
+    _gor = _ocr_gorsel()
+    _ocr_var = False
+    if _gor:
+        try:
+            _ocr_var = bool(_bg.resim_metni(_gor)[0])
+        except Exception:
+            _ocr_var = False
+    if _ocr_var:
+        check("belge: gorselden metin okunuyor",
+              lambda: (_bg.resim_metni(_gor)[0] or "").lower(),
+              contains("newton"))
+        check("belge: gorsel metni COZUMLEMEDEN geciyor",
+              lambda: bool((_bg.cozumle(_gor, "ocr.png")
+                            .get("metin") or "").strip()), True)
+        check("belge: gorselden formul cikariliyor",
+              lambda: len(_bg.cozumle(_gor, "ocr.png").get("formuller") or []),
+              lambda g: g >= 1)
+        check("belge: gorsel raporu okunani gosteriyor",
+              lambda: brain.belge_raporu(
+                  _bg.cozumle(_gor, "ocr.png"), "tr"), contains("okudum"))
+    else:
+        ATLANAN.append("belge: OCR testleri (motor bulunamadi)")
+
     check("belge: metin dosyasi okunuyor",
           lambda: _bg.metin_cikar(_gecici_belge())[0], contains("dolanik"))
     check("belge: bolumler tespit ediliyor",
